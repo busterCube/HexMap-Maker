@@ -604,6 +604,9 @@ document.addEventListener('mousemove', (e) => {
         camera.lookAt(cameraOffsetX, cameraOffsetY, 0);
         updateScrollbars();
         updateTagPositions();
+        updateIconPositions();
+        updateTextPositions();
+        updateDrawingCanvasPosition();
     }
     
     if (isDraggingScrollbarV) {
@@ -624,6 +627,9 @@ document.addEventListener('mousemove', (e) => {
         camera.lookAt(cameraOffsetX, cameraOffsetY, 0);
         updateScrollbars();
         updateTagPositions();
+        updateIconPositions();
+        updateTextPositions();
+        updateDrawingCanvasPosition();
     }
 });
 
@@ -656,6 +662,9 @@ document.getElementById('canvas').addEventListener('wheel', (e) => {
     camera.lookAt(cameraOffsetX, cameraOffsetY, 0);
     updateScrollbars();
     updateTagPositions();
+    updateIconPositions();
+    updateTextPositions();
+    updateDrawingCanvasPosition();
     e.preventDefault();
 }, { passive: false });
 
@@ -725,11 +734,27 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     // Resize drawing canvas if it exists
     if (drawingCanvas) {
-        drawingCanvas.width = window.innerWidth;
-        drawingCanvas.height = window.innerHeight;
+        // Save current drawing
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = drawingCanvas.width;
+        tempCanvas.height = drawingCanvas.height;
+        tempCanvas.getContext('2d').drawImage(drawingCanvas, 0, 0);
+        
+        // Resize canvas
+        drawingCanvas.width = window.innerWidth * 3;
+        drawingCanvas.height = window.innerHeight * 3;
+        
+        // Restore drawing
+        drawingCtx.drawImage(tempCanvas, 0, 0);
     }
     // Update tag positions
     updateTagPositions();
+    // Update icon positions
+    updateIconPositions();
+    // Update text positions
+    updateTextPositions();
+    // Update drawing canvas position
+    updateDrawingCanvasPosition();
 });
 
 // Add interactivity
@@ -894,6 +919,26 @@ function addTagToHex(hex, text) {
     hex.userData.tagElement = tagElement;
 }
 
+// Convert screen coordinates to world coordinates
+function screenToWorld(screenX, screenY) {
+    const ndcX = (screenX / window.innerWidth) * 2 - 1;
+    const ndcY = -(screenY / window.innerHeight) * 2 + 1;
+    
+    const worldX = cameraOffsetX + ndcX * (camera.right - camera.left) / 2;
+    const worldY = cameraOffsetY + ndcY * (camera.top - camera.bottom) / 2;
+    
+    return { x: worldX, y: worldY };
+}
+
+// Convert world coordinates to screen coordinates
+function worldToScreen(worldX, worldY) {
+    const pos = new THREE.Vector3(worldX, worldY, 0);
+    pos.project(camera);
+    const screenX = (pos.x * 0.5 + 0.5) * window.innerWidth;
+    const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+    return { x: screenX, y: screenY };
+}
+
 // Update tag positions on camera change
 function updateTagPositions() {
     hexes.forEach(hex => {
@@ -917,6 +962,45 @@ function updateTagPositions() {
     });
 }
 
+// Update icon positions on camera change
+function updateIconPositions() {
+    mapIcons.forEach(icon => {
+        if (icon.dataset.worldX !== undefined && icon.dataset.worldY !== undefined) {
+            const worldX = parseFloat(icon.dataset.worldX);
+            const worldY = parseFloat(icon.dataset.worldY);
+            const screenPos = worldToScreen(worldX, worldY);
+            const width = icon.offsetWidth;
+            const height = icon.offsetHeight;
+            icon.style.left = (screenPos.x - width / 2) + 'px';
+            icon.style.top = (screenPos.y - height / 2) + 'px';
+        }
+    });
+}
+
+// Update text label positions on camera change
+function updateTextPositions() {
+    textElements.forEach(label => {
+        if (label.dataset.worldX !== undefined && label.dataset.worldY !== undefined) {
+            const worldX = parseFloat(label.dataset.worldX);
+            const worldY = parseFloat(label.dataset.worldY);
+            const screenPos = worldToScreen(worldX, worldY);
+            label.style.left = screenPos.x + 'px';
+            label.style.top = screenPos.y + 'px';
+        }
+    });
+}
+
+// Update drawing canvas position on camera change
+function updateDrawingCanvasPosition() {
+    if (drawingCanvas && drawingCanvas.dataset.worldX !== undefined) {
+        const worldX = parseFloat(drawingCanvas.dataset.worldX);
+        const worldY = parseFloat(drawingCanvas.dataset.worldY);
+        const screenPos = worldToScreen(worldX, worldY);
+        drawingCanvas.style.left = screenPos.x + 'px';
+        drawingCanvas.style.top = screenPos.y + 'px';
+    }
+}
+
 window.addEventListener('click', onMouseClick);
 window.addEventListener('contextmenu', onContextMenu);
 
@@ -933,10 +1017,17 @@ function initDrawingCanvas() {
         drawingCanvas.style.left = '0';
         drawingCanvas.style.pointerEvents = 'none';
         drawingCanvas.style.zIndex = '100';
-        drawingCanvas.width = window.innerWidth;
-        drawingCanvas.height = window.innerHeight;
+        // Make canvas larger to accommodate scrolling
+        drawingCanvas.width = window.innerWidth * 3;
+        drawingCanvas.height = window.innerHeight * 3;
         document.body.appendChild(drawingCanvas);
         drawingCtx = drawingCanvas.getContext('2d');
+        
+        // Store the world coordinates of the canvas origin (top-left corner at current camera position)
+        const topLeftWorld = screenToWorld(-window.innerWidth, -window.innerHeight);
+        drawingCanvas.dataset.worldX = topLeftWorld.x;
+        drawingCanvas.dataset.worldY = topLeftWorld.y;
+        updateDrawingCanvasPosition();
     }
 }
 
@@ -959,15 +1050,21 @@ function onMouseDown(event) {
     drawingCtx.lineCap = 'round';
     drawingCtx.lineJoin = 'round';
     drawingCtx.beginPath();
-    drawingCtx.moveTo(event.clientX, event.clientY);
+    // Convert to canvas-local coordinates
+    const canvasX = event.clientX - drawingCanvas.offsetLeft;
+    const canvasY = event.clientY - drawingCanvas.offsetTop;
+    drawingCtx.moveTo(canvasX, canvasY);
 }
 
 function onMouseMove(event) {
     if (!isMouseDown || (!isDrawing && !isErasing)) return;
-    drawingCtx.lineTo(event.clientX, event.clientY);
+    // Convert to canvas-local coordinates
+    const canvasX = event.clientX - drawingCanvas.offsetLeft;
+    const canvasY = event.clientY - drawingCanvas.offsetTop;
+    drawingCtx.lineTo(canvasX, canvasY);
     drawingCtx.stroke();
     drawingCtx.beginPath();
-    drawingCtx.moveTo(event.clientX, event.clientY);
+    drawingCtx.moveTo(canvasX, canvasY);
 }
 
 function onMouseUp(event) {
@@ -1015,6 +1112,12 @@ function onCanvasClick(event) {
             label.style.cursor = 'move';
             label.style.userSelect = 'none';
             label.style.zIndex = '1001';
+            
+            // Store world coordinates
+            const worldPos = screenToWorld(parseFloat(input.style.left), parseFloat(input.style.top));
+            label.dataset.worldX = worldPos.x;
+            label.dataset.worldY = worldPos.y;
+            
             document.body.appendChild(label);
             textElements.push(label);
             
@@ -1035,6 +1138,10 @@ function onCanvasClick(event) {
                 if (isDragging) {
                     label.style.left = (e.clientX - offsetX) + 'px';
                     label.style.top = (e.clientY - offsetY) + 'px';
+                    // Update world coordinates
+                    const worldPos = screenToWorld(e.clientX - offsetX, e.clientY - offsetY);
+                    label.dataset.worldX = worldPos.x;
+                    label.dataset.worldY = worldPos.y;
                 }
             });
             
@@ -1232,13 +1339,23 @@ document.getElementById('canvas').addEventListener('click', (e) => {
     }
 });
 
-function placeIconOnMap(imageData, x, y, width = 80, height = 80) {
+function placeIconOnMap(imageData, x, y, width = 80, height = 80, worldX = null, worldY = null) {
     const mapIcon = document.createElement('div');
     mapIcon.className = 'map-icon';
     mapIcon.style.left = (x - width / 2) + 'px';
     mapIcon.style.top = (y - height / 2) + 'px';
     mapIcon.style.width = width + 'px';
     mapIcon.style.height = height + 'px';
+    
+    // Store world coordinates (convert from screen if not provided)
+    if (worldX !== null && worldY !== null) {
+        mapIcon.dataset.worldX = worldX;
+        mapIcon.dataset.worldY = worldY;
+    } else {
+        const worldPos = screenToWorld(x, y);
+        mapIcon.dataset.worldX = worldPos.x;
+        mapIcon.dataset.worldY = worldPos.y;
+    }
     
     const img = document.createElement('img');
     img.src = imageData;
@@ -1285,6 +1402,12 @@ function placeIconOnMap(imageData, x, y, width = 80, height = 80) {
         if (isDragging) {
             mapIcon.style.left = (e.clientX - dragOffsetX) + 'px';
             mapIcon.style.top = (e.clientY - dragOffsetY) + 'px';
+            // Update world coordinates after dragging
+            const centerX = e.clientX - dragOffsetX + mapIcon.offsetWidth / 2;
+            const centerY = e.clientY - dragOffsetY + mapIcon.offsetHeight / 2;
+            const worldPos = screenToWorld(centerX, centerY);
+            mapIcon.dataset.worldX = worldPos.x;
+            mapIcon.dataset.worldY = worldPos.y;
         }
     });
     
@@ -1342,6 +1465,13 @@ function placeIconOnMap(imageData, x, y, width = 80, height = 80) {
         mapIcon.style.height = newHeight + 'px';
         mapIcon.style.left = newLeft + 'px';
         mapIcon.style.top = newTop + 'px';
+        
+        // Update world coordinates after resize (center may have moved)
+        const centerX = newLeft + newWidth / 2;
+        const centerY = newTop + newHeight / 2;
+        const worldPos = screenToWorld(centerX, centerY);
+        mapIcon.dataset.worldX = worldPos.x;
+        mapIcon.dataset.worldY = worldPos.y;
     });
     
     document.addEventListener('mouseup', () => {
@@ -1431,25 +1561,25 @@ document.getElementById('save-map').addEventListener('click', () => {
         drawingData = drawingCanvas.toDataURL('image/png');
     }
     
-    // Collect text labels
+    // Collect text labels (save world coordinates)
     const textLabels = [];
     document.querySelectorAll('.text-label').forEach(label => {
         textLabels.push({
             text: label.textContent,
-            left: label.style.left,
-            top: label.style.top,
+            worldX: parseFloat(label.dataset.worldX),
+            worldY: parseFloat(label.dataset.worldY),
             fontSize: label.style.fontSize,
             color: label.style.color
         });
     });
     
-    // Collect map icons
+    // Collect map icons (save world coordinates for position-independent storage)
     const mapIconsData = [];
     mapIcons.forEach(icon => {
         mapIconsData.push({
             imageData: icon.dataset.imageData,
-            left: icon.style.left,
-            top: icon.style.top,
+            worldX: parseFloat(icon.dataset.worldX),
+            worldY: parseFloat(icon.dataset.worldY),
             width: icon.style.width,
             height: icon.style.height
         });
@@ -1581,13 +1711,28 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                     label.className = 'text-label';
                     label.textContent = labelData.text;
                     label.style.position = 'absolute';
-                    label.style.left = labelData.left;
-                    label.style.top = labelData.top;
                     label.style.fontSize = labelData.fontSize;
                     label.style.color = labelData.color;
                     label.style.cursor = 'move';
                     label.style.userSelect = 'none';
                     label.style.zIndex = '1001';
+                    
+                    // Check if saved with world coordinates (new format) or screen coordinates (old format)
+                    if (labelData.worldX !== undefined && labelData.worldY !== undefined) {
+                        label.dataset.worldX = labelData.worldX;
+                        label.dataset.worldY = labelData.worldY;
+                        const screenPos = worldToScreen(labelData.worldX, labelData.worldY);
+                        label.style.left = screenPos.x + 'px';
+                        label.style.top = screenPos.y + 'px';
+                    } else {
+                        // Legacy format with screen coordinates - convert to world
+                        label.style.left = labelData.left;
+                        label.style.top = labelData.top;
+                        const worldPos = screenToWorld(parseFloat(labelData.left), parseFloat(labelData.top));
+                        label.dataset.worldX = worldPos.x;
+                        label.dataset.worldY = worldPos.y;
+                    }
+                    
                     document.body.appendChild(label);
                     textElements.push(label);
                     
@@ -1606,6 +1751,10 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                         if (isDragging) {
                             label.style.left = (e.clientX - offsetX) + 'px';
                             label.style.top = (e.clientY - offsetY) + 'px';
+                            // Update world coordinates
+                            const worldPos = screenToWorld(e.clientX - offsetX, e.clientY - offsetY);
+                            label.dataset.worldX = worldPos.x;
+                            label.dataset.worldY = worldPos.y;
                         }
                     });
                     document.addEventListener('mouseup', () => {
@@ -1639,13 +1788,28 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             mapIcons.length = 0;
             if (saveData.mapIcons) {
                 saveData.mapIcons.forEach(iconData => {
-                    const icon = placeIconOnMap(
-                        iconData.imageData, 
-                        parseInt(iconData.left) + parseInt(iconData.width) / 2,
-                        parseInt(iconData.top) + parseInt(iconData.height) / 2,
-                        parseInt(iconData.width),
-                        parseInt(iconData.height)
-                    );
+                    // Check if saved with world coordinates (new format) or screen coordinates (old format)
+                    if (iconData.worldX !== undefined && iconData.worldY !== undefined) {
+                        const screenPos = worldToScreen(iconData.worldX, iconData.worldY);
+                        const icon = placeIconOnMap(
+                            iconData.imageData, 
+                            screenPos.x,
+                            screenPos.y,
+                            parseInt(iconData.width),
+                            parseInt(iconData.height),
+                            iconData.worldX,
+                            iconData.worldY
+                        );
+                    } else {
+                        // Legacy format with screen coordinates
+                        const icon = placeIconOnMap(
+                            iconData.imageData, 
+                            parseInt(iconData.left) + parseInt(iconData.width) / 2,
+                            parseInt(iconData.top) + parseInt(iconData.height) / 2,
+                            parseInt(iconData.width),
+                            parseInt(iconData.height)
+                        );
+                    }
                 });
                 setActiveMapIcon(null); // Deselect all after restore
             }
