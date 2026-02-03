@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Maker</title>
+    <title>Character Sheet</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
         #canvas { display: block; width: 100%; height: 100%; }
@@ -109,88 +109,6 @@
         .color-picker input[type="color"] {
             margin-right: 10px;
         }
-        /* Palette styles */
-        .palette-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .palette-header h4 {
-            margin: 0;
-            font-size: 14px;
-        }
-        .palette-add-btn {
-            width: 28px;
-            height: 28px;
-            border: 1px solid #ccc;
-            background: #fff;
-            cursor: pointer;
-            font-size: 18px;
-            line-height: 1;
-            border-radius: 4px;
-        }
-        .palette-add-btn:hover {
-            background: #e0e0e0;
-        }
-        .palette-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .palette-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 50px;
-        }
-        .palette-color {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #333;
-            border-radius: 4px;
-            cursor: pointer;
-            position: relative;
-        }
-        .palette-color:hover {
-            border-color: #007bff;
-        }
-        .palette-color.selected {
-            border-color: #007bff;
-            box-shadow: 0 0 5px #007bff;
-        }
-        .palette-color .delete-btn {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 16px;
-            height: 16px;
-            background: #ff4444;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 10px;
-            cursor: pointer;
-            display: none;
-            line-height: 1;
-        }
-        .palette-color:hover .delete-btn {
-            display: block;
-        }
-        .palette-name {
-            font-size: 10px;
-            text-align: center;
-            max-width: 50px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-        .palette-name:hover {
-            text-decoration: underline;
-        }
         .text-input {
             position: absolute;
             background: white;
@@ -218,19 +136,6 @@
         .text-input .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
         .text-input .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
         .text-input .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
-        #context-menu {
-            position: absolute;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-            z-index: 2000;
-            display: none;
-            min-width: 150px;
-        }
-        #context-menu.visible {
-            display: block;
-        }
         #text-context-menu {
             position: absolute;
             background: white;
@@ -460,111 +365,28 @@
         .map-icon .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
         .map-icon .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
         .map-icon .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
-        .square-tag {
-            position: absolute;
-            pointer-events: none;
-            text-align: center;
-            font-weight: bold;
-            z-index: 50;
-        }
-        /* Scrollbars */
-        .scrollbar {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.1);
-            z-index: 100;
-            display: none;
-        }
-        .scrollbar.visible {
-            display: block;
-        }
-        #scrollbar-h {
-            left: 60px;
-            bottom: 10px;
-            right: 60px;
-            height: 12px;
-            border-radius: 6px;
-        }
-        #scrollbar-v {
-            top: 60px;
-            right: 10px;
-            bottom: 60px;
-            width: 12px;
-            border-radius: 6px;
-        }
-        .scrollbar-thumb {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.6);
-        }
-        #scrollbar-h .scrollbar-thumb {
-            height: 100%;
-            min-width: 30px;
-        }
-        #scrollbar-v .scrollbar-thumb {
-            width: 100%;
-            min-height: 30px;
-        }
     </style>
 </head>
 <body>
-    <div id="bg-image-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;">
-        <img id="bg-image" style="display: none; width: 100%; height: 100%; object-fit: cover;">
-    </div>
     <canvas id="canvas"></canvas>
-    <div id="scrollbar-h" class="scrollbar"><div class="scrollbar-thumb" id="scrollbar-h-thumb"></div></div>
-    <div id="scrollbar-v" class="scrollbar"><div class="scrollbar-thumb" id="scrollbar-v-thumb"></div></div>
-    <div id="context-menu">
-        <div class="context-menu-item" id="ctx-clear-square">Clear Square</div>
-        <div class="context-menu-item" id="ctx-clear-fill">Clear Fill</div>
-        <div class="context-menu-item" id="ctx-add-tag">Add Tag</div>
-    </div>
-    <div id="text-context-menu">
-        <div class="context-menu-item" id="ctx-edit-text">Edit Text</div>
-        <div class="context-menu-item" id="ctx-change-size">Change Size</div>
-        <div class="context-menu-item" id="ctx-delete-text">Delete Text</div>
-    </div>
-    <div id="icon-context-menu">
-        <div class="context-menu-item" id="ctx-remove-icon">Remove Icon</div>
-    </div>
-    <button id="menu-toggle">☰ Tools</button>
-    <button id="system-toggle">☰ System</button>
+    <button id="system-toggle">System Menu</button>
+    <button id="menu-toggle">Tools</button>
+    
     <div id="system-menu">
         <h2>System</h2>
         <div class="tool-section collapsed">
             <h3>Appearance</h3>
             <div class="tool-section-content">
-                <button id="toggle-dark-mode">Enable Dark Mode</button>
-                <p>Toggle between light and dark appearance.</p>
+                <label>Canvas Width: <input type="number" id="canvas-width" value="2000" min="500" max="10000"></label><br><br>
+                <label>Canvas Height: <input type="number" id="canvas-height" value="2000" min="500" max="10000"></label><br><br>
+                <button id="apply-canvas-size">Apply Size</button>
             </div>
         </div>
         <div class="tool-section collapsed">
             <h3>Navigation</h3>
             <div class="tool-section-content">
-                <button id="nav-hexmap" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Hex Map Maker</button>
-                <button id="nav-dungeon" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">Dungeon Maker</button>
-                <button id="nav-character" style="width: 100%; padding: 10px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">Character Sheet</button>
-                <p>Switch between different map maker systems.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Grid Size</h3>
-            <div class="tool-section-content">
-                <label>Width (1-300): <input type="number" id="grid-width" min="1" max="300" value="20"></label><br><br>
-                <label>Height (1-300): <input type="number" id="grid-height" min="1" max="300" value="20"></label><br><br>
-                <button id="apply-grid-size">Apply Grid Size</button>
-                <p>Set the number of squares across and down.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Square Size</h3>
-            <div class="tool-section-content">
-                <label>Size (10-100 px): <input type="number" id="square-size" min="10" max="100" value="50"></label><br><br>
-                <button id="apply-square-size">Apply Square Size</button>
-                <p>Set the visual size of each square in pixels.</p>
+                <button id="reset-view">Reset View</button>
+                <p>Use mouse wheel to zoom in/out. Click and drag to pan the view.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -575,48 +397,22 @@
                     <input type="color" id="bg-color" value="#ffffff">
                     <input type="text" id="bg-color-text" value="#ffffff" maxlength="7">
                 </div>
-                <button id="apply-bg-color">Apply Color</button><br><br>
-                <label>Or use an image:</label><br>
-                <button id="import-bg-image">Import Image</button>
-                <input type="file" id="bg-image-file" accept="image/*" style="display: none;"><br>
-                <button id="clear-bg-image">Clear Image</button>
-                <p>Set a background color or image for the dungeon.</p>
+                <button id="clear-background-image">Clear Background Image</button><br><br>
+                <button id="upload-background-image">Upload Background Image</button>
+                <input type="file" id="background-image-file" accept="image/*" style="display: none;">
             </div>
         </div>
         <div class="tool-section collapsed">
             <h3>Save / Load</h3>
             <div class="tool-section-content">
-                <button id="save-map">Save Dungeon</button><br><br>
-                <button id="import-map">Import Dungeon</button>
-                <input type="file" id="import-file" accept=".json" style="display: none;">
-                <p>Save your dungeon as JSON or import a previously saved dungeon.</p>
+                <button id="save-map">Save Character Sheet</button><br><br>
+                <button id="import-map">Load Character Sheet</button>
+                <input type="file" id="import-map-file" accept=".json" style="display: none;">
             </div>
         </div>
     </div>
     <div id="menu">
         <h2>Tools</h2>
-        <div class="tool-section collapsed">
-            <h3>Square Fill Color</h3>
-            <div class="tool-section-content">
-                <div class="color-picker">
-                    <input type="color" id="square-color" value="#888888">
-                    <input type="text" id="square-color-text" value="#888888" maxlength="7">
-                </div>
-                <p>Click on a square to fill it with the selected color.</p>
-                <div class="palette-section">
-                    <div class="palette-header">
-                        <h4>Palette</h4>
-                        <button class="palette-add-btn" id="palette-add" title="Add color to palette">+</button>
-                    </div>
-                    <div class="palette-container" id="palette-container"></div>
-                    <div class="palette-actions" style="margin-top: 10px;">
-                        <button id="save-palette" style="margin-right: 5px;">Save Palette</button>
-                        <button id="import-palette">Import Palette</button>
-                        <input type="file" id="import-palette-file" accept=".json" style="display: none;">
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="tool-section collapsed">
             <h3>Free Hand Drawing</h3>
             <div class="tool-section-content">
@@ -628,50 +424,26 @@
                 <button id="toggle-drawing">Enable Drawing</button>
                 <button id="toggle-eraser">Enable Eraser</button><br><br>
                 <button id="clear-all-drawing">Clear All Drawing</button>
-                <p>Click and drag to draw lines on the dungeon. Use eraser to remove drawings.</p>
+                <p>Click and drag to draw lines on the sheet. Use eraser to remove drawings.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
             <h3>Text Tool</h3>
             <div class="tool-section-content">
-                <label>Font Size: <input type="number" id="text-size" min="10" max="50" value="20"></label>
+                <label>Font Size: <input type="number" id="text-size" min="10" max="100" value="20"></label>
                 <div class="color-picker">
                     <input type="color" id="text-color" value="#000000">
                     <input type="text" id="text-color-text" value="#000000" maxlength="7">
                 </div>
-                <label><input type="checkbox" id="text-frame-enabled"> Show text box frame</label><br><br>
+                <label><input type="checkbox" id="text-frame-enabled"> Show text box frame</label><br>
+                <label>Frame Opacity: <input type="range" id="text-frame-opacity" min="0" max="100" value="100" style="width: 150px;"></label>
+                <span id="text-frame-opacity-value">100%</span><br><br>
                 <button id="toggle-text">Enable Text Tool</button>
                 <p>Click on the canvas to add text. Right-click text to edit or delete.</p>
             </div>
         </div>
-        <div class="tool-section collapsed">            <h3>Border Tool</h3>
-            <div class="tool-section-content">
-                <label>Border Color:</label>
-                <div class="color-picker">
-                    <input type="color" id="border-color" value="#000000">
-                    <input type="text" id="border-color-text" value="#000000" maxlength="7">
-                </div>
-                <label>Thickness: <input type="range" id="border-thickness" min="1" max="10" value="3"></label>
-                <span id="border-thickness-value">3</span><br><br>
-                <button id="toggle-border">Enable Border Tool</button><br><br>
-                <button id="toggle-remove-border">Enable Remove Border</button><br><br>
-                <button id="clear-all-borders">Clear All Borders</button>
-                <p>Click on square edges to customize individual borders. Selected borders will use your chosen color and thickness.</p>
-                <div class="palette-section">
-                    <div class="palette-header">
-                        <h4>Border Palette</h4>
-                        <button class="palette-add-btn" id="border-palette-add" title="Add color to border palette">+</button>
-                    </div>
-                    <div class="palette-container" id="border-palette-container"></div>
-                    <div class="palette-actions" style="margin-top: 10px;">
-                        <button id="save-border-palette" style="margin-right: 5px;">Save Palette</button>
-                        <button id="import-border-palette">Import Palette</button>
-                        <input type="file" id="import-border-palette-file" accept=".json" style="display: none;">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="tool-section collapsed">            <h3>Icons</h3>
+        <div class="tool-section collapsed">
+            <h3>Icons</h3>
             <div class="tool-section-content">
                 <div class="palette-header">
                     <h4>Icon Library</h4>
@@ -679,26 +451,31 @@
                 </div>
                 <input type="file" id="icon-file" accept="image/*" style="display: none;">
                 <div class="icon-container" id="icon-container"></div>
-                <p style="margin-top: 10px;">Click + to add icons (max 40). Click an icon to place it on the dungeon.</p>
+                <p style="margin-top: 10px;">Click + to add icons (max 40). Click an icon to place it on the sheet.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
             <h3>RNG</h3>
             <div class="tool-section-content">
-                <div class="palette-header">
-                    <h4>Random Number Generators</h4>
-                    <button class="palette-add-btn" id="rng-add" title="Add RNG">+</button>
-                </div>
+                <button id="add-rng">Add RNG</button>
                 <div class="rng-container" id="rng-container"></div>
-                <div class="palette-actions" style="margin-top: 10px;">
-                    <button id="save-rng" style="margin-right: 5px;">Save RNGs</button>
-                    <button id="import-rng">Import RNGs</button>
-                    <input type="file" id="import-rng-file" accept=".json" style="display: none;">
-                </div>
-                <p style="margin-top: 10px;">Click + to add random number generators (max 20).</p>
+                <p style="margin-top: 10px;">Add random number generators. Link RNGs to roll them together.</p>
             </div>
         </div>
     </div>
-    <script type="module" src="dungeon-maker.js"></script>
+
+    <!-- Context menus -->
+    <div id="text-context-menu">
+        <div class="context-menu-item" id="edit-text">Edit Text</div>
+        <div class="context-menu-item" id="toggle-resize">Toggle Resize Handles</div>
+        <div class="context-menu-item" id="delete-text">Delete Text</div>
+    </div>
+    <div id="icon-context-menu">
+        <div class="context-menu-item" id="delete-icon">Delete Icon</div>
+        <div class="context-menu-item" id="bring-to-front">Bring to Front</div>
+        <div class="context-menu-item" id="send-to-back">Send to Back</div>
+    </div>
+
+    <script type="module" src="character-sheet.js"></script>
 </body>
 </html>

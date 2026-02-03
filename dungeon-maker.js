@@ -65,6 +65,7 @@ let drawingPoints = [];
 let currentLine = null;
 let textElements = [];
 let isTextMode = false;
+let textFrameEnabled = false;
 
 // Icons state
 let iconLibrary = []; // Array of {data: base64, name: string}
@@ -88,6 +89,10 @@ document.getElementById('nav-hexmap').addEventListener('click', () => {
 
 document.getElementById('nav-dungeon').addEventListener('click', () => {
     window.location.href = 'dungeon-maker.html';
+});
+
+document.getElementById('nav-character').addEventListener('click', () => {
+    window.open('character-sheet.html', '_blank');
 });
 
 // Dark mode toggle
@@ -317,6 +322,145 @@ document.getElementById('import-palette-file').addEventListener('change', (e) =>
     e.target.value = '';
 });
 
+// Border Palette functionality
+const borderPaletteContainer = document.getElementById('border-palette-container');
+const borderPaletteAddBtn = document.getElementById('border-palette-add');
+let borderPalette = []; // Array of {color: string, name: string}
+const MAX_BORDER_PALETTE_SIZE = 30;
+
+function renderBorderPalette() {
+    borderPaletteContainer.innerHTML = '';
+    borderPalette.forEach((item, index) => {
+        const paletteItem = document.createElement('div');
+        paletteItem.className = 'palette-item';
+        
+        const colorDiv = document.createElement('div');
+        colorDiv.className = 'palette-color';
+        colorDiv.style.backgroundColor = item.color;
+        colorDiv.title = item.name + ' (' + item.color + ')';
+        colorDiv.addEventListener('click', () => {
+            // Set the border color to this palette color
+            document.getElementById('border-color').value = item.color;
+            document.getElementById('border-color-text').value = item.color;
+            // Update selection visual
+            document.querySelectorAll('#border-palette-container .palette-color').forEach(el => el.classList.remove('selected'));
+            colorDiv.classList.add('selected');
+        });
+        
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = '×';
+        deleteBtn.title = 'Remove from palette';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            borderPalette.splice(index, 1);
+            renderBorderPalette();
+        });
+        colorDiv.appendChild(deleteBtn);
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'palette-name';
+        nameSpan.textContent = item.name;
+        nameSpan.title = 'Click to rename';
+        nameSpan.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const newName = prompt('Enter new name for this color:', item.name);
+            if (newName !== null && newName.trim() !== '') {
+                borderPalette[index].name = newName.trim();
+                renderBorderPalette();
+            }
+        });
+        
+        paletteItem.appendChild(colorDiv);
+        paletteItem.appendChild(nameSpan);
+        borderPaletteContainer.appendChild(paletteItem);
+    });
+}
+
+borderPaletteAddBtn.addEventListener('click', () => {
+    if (borderPalette.length >= MAX_BORDER_PALETTE_SIZE) {
+        alert('Border palette is full! Maximum ' + MAX_BORDER_PALETTE_SIZE + ' colors allowed.');
+        return;
+    }
+    const currentColor = document.getElementById('border-color').value;
+    const name = prompt('Enter a name for this border color:', 'Border Color ' + (borderPalette.length + 1));
+    if (name !== null) {
+        borderPalette.push({ color: currentColor, name: name.trim() || 'Border Color ' + (borderPalette.length + 1) });
+        renderBorderPalette();
+    }
+});
+
+// Save Border Palette functionality
+document.getElementById('save-border-palette').addEventListener('click', () => {
+    if (borderPalette.length === 0) {
+        alert('Border palette is empty. Add some colors first.');
+        return;
+    }
+    
+    const paletteData = {
+        version: 1,
+        type: 'border-palette',
+        colors: borderPalette
+    };
+    
+    const blob = new Blob([JSON.stringify(paletteData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dungeon_border_palette_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+// Import Border Palette functionality
+document.getElementById('import-border-palette').addEventListener('click', () => {
+    document.getElementById('import-border-palette-file').click();
+});
+
+document.getElementById('import-border-palette-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const paletteData = JSON.parse(event.target.result);
+            
+            if (!paletteData.type || paletteData.type !== 'border-palette' || !paletteData.colors) {
+                alert('Invalid border palette file format.');
+                return;
+            }
+            
+            // Ask user if they want to replace or merge
+            const action = borderPalette.length > 0 
+                ? confirm('Do you want to replace the current border palette? Click OK to replace, Cancel to merge.')
+                : true;
+            
+            if (action) {
+                // Replace palette
+                borderPalette = paletteData.colors.slice(0, MAX_BORDER_PALETTE_SIZE);
+            } else {
+                // Merge palettes
+                const remaining = MAX_BORDER_PALETTE_SIZE - borderPalette.length;
+                const toAdd = paletteData.colors.slice(0, remaining);
+                borderPalette = borderPalette.concat(toAdd);
+            }
+            
+            renderBorderPalette();
+            alert('Border palette imported successfully! (' + borderPalette.length + ' colors)');
+        } catch (err) {
+            alert('Error importing border palette: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    e.target.value = '';
+});
+
 document.getElementById('line-color').addEventListener('input', (e) => {
     document.getElementById('line-color-text').value = e.target.value;
 });
@@ -360,6 +504,30 @@ document.getElementById('clear-all-drawing').addEventListener('click', () => {
 document.getElementById('toggle-text').addEventListener('click', () => {
     isTextMode = !isTextMode;
     document.getElementById('toggle-text').textContent = isTextMode ? 'Disable Text Tool' : 'Enable Text Tool';
+});
+
+document.getElementById('text-frame-enabled').addEventListener('change', (e) => {
+    textFrameEnabled = e.target.checked;
+    // Update all existing text elements
+    textElements.forEach(textEl => {
+        if (textFrameEnabled) {
+            textEl.element.style.border = '1px solid #ccc';
+            textEl.element.style.background = 'white';
+            textEl.element.setAttribute('contenteditable', 'true');
+            textEl.element.style.minWidth = '100px';
+            textEl.element.style.minHeight = '30px';
+            // Show resize handles
+            const handles = textEl.element.querySelector('.resize-handles');
+            if (handles) handles.style.display = 'block';
+        } else {
+            textEl.element.style.border = 'none';
+            textEl.element.style.background = 'transparent';
+            textEl.element.setAttribute('contenteditable', 'false');
+            // Hide resize handles
+            const handles = textEl.element.querySelector('.resize-handles');
+            if (handles) handles.style.display = 'none';
+        }
+    });
 });
 
 // Border Tool
@@ -1264,85 +1432,212 @@ function onCanvasClick(event) {
     if (!isTextMode || event.target !== document.getElementById('canvas')) return;
     const textSize = parseInt(document.getElementById('text-size').value) || 20;
     const textColor = document.getElementById('text-color').value;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'text-input';
-    input.style.left = event.clientX + 'px';
-    input.style.top = event.clientY + 'px';
-    input.style.fontSize = textSize + 'px';
-    input.style.color = textColor;
-    input.style.background = 'transparent';
-    input.style.border = '1px dashed #999';
-    input.placeholder = 'Enter text';
-    document.body.appendChild(input);
-    input.focus();
-
-    function convertToLabel() {
-        const text = input.value.trim();
-        if (text) {
-            const label = document.createElement('div');
-            label.className = 'text-label';
-            label.textContent = text;
-            label.style.position = 'absolute';
-            label.style.left = input.style.left;
-            label.style.top = input.style.top;
-            label.style.fontSize = textSize + 'px';
-            label.style.color = textColor;
-            label.style.cursor = 'move';
-            label.style.userSelect = 'none';
-            label.style.zIndex = '1001';
-            
-            // Store world coordinates
-            const worldPos = screenToWorld(parseFloat(input.style.left), parseFloat(input.style.top));
-            label.dataset.worldX = worldPos.x;
-            label.dataset.worldY = worldPos.y;
-            
-            document.body.appendChild(label);
-            textElements.push(label);
-            
-            // Make label draggable
-            let isDragging = false;
-            let offsetX, offsetY;
-            
-            label.addEventListener('mousedown', (e) => {
-                if (e.button === 0) { // Left click only
-                    isDragging = true;
-                    offsetX = e.clientX - label.offsetLeft;
-                    offsetY = e.clientY - label.offsetTop;
-                    e.stopPropagation();
-                }
-            });
-            
-            document.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    label.style.left = (e.clientX - offsetX) + 'px';
-                    label.style.top = (e.clientY - offsetY) + 'px';
-                    // Update world coordinates
-                    const worldPos = screenToWorld(e.clientX - offsetX, e.clientY - offsetY);
-                    label.dataset.worldX = worldPos.x;
-                    label.dataset.worldY = worldPos.y;
-                }
-            });
-            
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-            
-            // Right-click context menu for text
-            label.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                showTextContextMenu(e.clientX, e.clientY, label);
-            });
+    
+    const text = prompt('Enter text:');
+    if (text !== null && text.trim() !== '') {
+        const label = document.createElement('div');
+        label.className = 'text-label';
+        label.textContent = text;
+        label.style.position = 'absolute';
+        label.style.left = event.clientX + 'px';
+        label.style.top = event.clientY + 'px';
+        label.style.fontSize = textSize + 'px';
+        label.style.color = textColor;
+        label.style.cursor = 'move';
+        label.style.userSelect = 'none';
+        label.style.zIndex = '1001';
+        label.style.padding = '5px';
+        label.style.whiteSpace = 'pre-wrap';
+        
+        if (textFrameEnabled) {
+            label.style.border = '1px solid #ccc';
+            label.style.background = 'white';
+            label.setAttribute('contenteditable', 'true');
+            label.style.minWidth = '100px';
+            label.style.minHeight = '30px';
+        } else {
+            label.style.border = 'none';
+            label.style.background = 'transparent';
+            label.setAttribute('contenteditable', 'false');
         }
-        input.remove();
+        
+        // Store world coordinates
+        const worldPos = screenToWorld(event.clientX, event.clientY);
+        label.dataset.worldX = worldPos.x;
+        label.dataset.worldY = worldPos.y;
+        label.dataset.text = text;
+        label.dataset.fontSize = textSize;
+        label.dataset.color = textColor;
+        
+        // Add resize handles
+        const handles = document.createElement('div');
+        handles.className = 'resize-handles';
+        handles.style.display = textFrameEnabled ? 'block' : 'none';
+        ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = 'resize-handle ' + pos;
+            handles.appendChild(handle);
+        });
+        label.appendChild(handles);
+        
+        document.body.appendChild(label);
+        
+        const textData = {
+            element: label,
+            text: text,
+            x: event.clientX,
+            y: event.clientY,
+            fontSize: textSize,
+            color: textColor,
+            width: 100,
+            height: 30
+        };
+        textElements.push(textData);
+        
+        makeTextDraggable(label, textData);
+        makeTextResizable(label, textData);
+        
+        // Update text content on input
+        label.addEventListener('input', () => {
+            textData.text = label.textContent;
+            label.dataset.text = label.textContent;
+        });
+        
+        // Right-click context menu for text
+        label.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showTextContextMenu(e.clientX, e.clientY, textData);
+        });
     }
+}
 
-    input.addEventListener('blur', convertToLabel);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            convertToLabel();
+function makeTextDraggable(element, textData) {
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+    
+    element.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('resize-handle')) return;
+        if (e.button !== 0) return;
+        
+        // If frame is enabled, allow drag only when clicking on the element border/padding
+        // by checking if the click is close to the edge
+        if (textFrameEnabled && element.getAttribute('contenteditable') === 'true') {
+            const rect = element.getBoundingClientRect();
+            const borderZone = 10; // pixels from edge to allow drag
+            const inBorderZone = 
+                e.clientX < rect.left + borderZone ||
+                e.clientX > rect.right - borderZone ||
+                e.clientY < rect.top + borderZone ||
+                e.clientY > rect.bottom - borderZone;
+            
+            if (!inBorderZone) {
+                return; // Click in content area, allow editing
+            }
+            // Click near border, prevent editing and allow drag
+            e.preventDefault();
         }
+        
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseInt(element.style.left);
+        startTop = parseInt(element.style.top);
+        e.stopPropagation();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        const newLeft = startLeft + dx;
+        const newTop = startTop + dy;
+        
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+        
+        // Update world coordinates
+        const worldPos = screenToWorld(newLeft, newTop);
+        element.dataset.worldX = worldPos.x;
+        element.dataset.worldY = worldPos.y;
+        textData.x = newLeft;
+        textData.y = newTop;
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+}
+
+function makeTextResizable(element, textData) {
+    const handles = element.querySelector('.resize-handles');
+    if (!handles) return;
+    
+    Array.from(handles.children).forEach(handle => {
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight, startLeft, startTop;
+        const direction = handle.className.split(' ')[1];
+        
+        handle.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            isResizing = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            const rect = element.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
+            startLeft = parseInt(element.style.left);
+            startTop = parseInt(element.style.top);
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            if (direction.includes('e')) {
+                const newWidth = Math.max(50, startWidth + dx);
+                element.style.width = newWidth + 'px';
+                textData.width = newWidth;
+            }
+            if (direction.includes('w')) {
+                const newWidth = Math.max(50, startWidth - dx);
+                if (newWidth >= 50) {
+                    const newLeft = startLeft + (startWidth - newWidth);
+                    element.style.left = newLeft + 'px';
+                    element.style.width = newWidth + 'px';
+                    textData.x = newLeft;
+                    textData.width = newWidth;
+                    const worldPos = screenToWorld(newLeft, parseInt(element.style.top));
+                    element.dataset.worldX = worldPos.x;
+                }
+            }
+            if (direction.includes('s')) {
+                const newHeight = Math.max(30, startHeight + dy);
+                element.style.height = newHeight + 'px';
+                textData.height = newHeight;
+            }
+            if (direction.includes('n')) {
+                const newHeight = Math.max(30, startHeight - dy);
+                if (newHeight >= 30) {
+                    const newTop = startTop + (startHeight - newHeight);
+                    element.style.top = newTop + 'px';
+                    element.style.height = newHeight + 'px';
+                    textData.y = newTop;
+                    textData.height = newHeight;
+                    const worldPos = screenToWorld(parseInt(element.style.left), newTop);
+                    element.dataset.worldY = worldPos.y;
+                }
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+        });
     });
 }
 
@@ -1350,10 +1645,10 @@ document.getElementById('canvas').addEventListener('click', onCanvasClick);
 
 // Text context menu functionality
 const textContextMenu = document.getElementById('text-context-menu');
-let selectedTextLabel = null;
+let selectedTextData = null;
 
-function showTextContextMenu(x, y, label) {
-    selectedTextLabel = label;
+function showTextContextMenu(x, y, textData) {
+    selectedTextData = textData;
     textContextMenu.style.left = x + 'px';
     textContextMenu.style.top = y + 'px';
     textContextMenu.classList.add('visible');
@@ -1361,7 +1656,7 @@ function showTextContextMenu(x, y, label) {
 
 function hideTextContextMenu() {
     textContextMenu.classList.remove('visible');
-    selectedTextLabel = null;
+    selectedTextData = null;
 }
 
 // Hide text context menu on click elsewhere
@@ -1374,11 +1669,19 @@ document.addEventListener('click', (e) => {
 // Edit text
 document.getElementById('ctx-edit-text').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedTextLabel) {
-        const currentText = selectedTextLabel.textContent;
+    if (selectedTextData) {
+        const currentText = selectedTextData.text;
         const newText = prompt('Edit text:', currentText);
         if (newText !== null && newText.trim() !== '') {
-            selectedTextLabel.textContent = newText.trim();
+            selectedTextData.text = newText.trim();
+            selectedTextData.element.textContent = newText.trim();
+            selectedTextData.element.dataset.text = newText.trim();
+            
+            // Re-add resize handles after setting textContent
+            const handles = selectedTextData.element.querySelector('.resize-handles');
+            if (handles) {
+                selectedTextData.element.appendChild(handles);
+            }
         }
     }
     hideTextContextMenu();
@@ -1387,12 +1690,14 @@ document.getElementById('ctx-edit-text').addEventListener('click', (e) => {
 // Change size
 document.getElementById('ctx-change-size').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedTextLabel) {
-        const currentSize = parseInt(selectedTextLabel.style.fontSize) || 20;
+    if (selectedTextData) {
+        const currentSize = selectedTextData.fontSize;
         const newSize = prompt('Enter new font size (10-100):', currentSize);
         if (newSize !== null) {
             const size = Math.min(100, Math.max(10, parseInt(newSize) || currentSize));
-            selectedTextLabel.style.fontSize = size + 'px';
+            selectedTextData.element.style.fontSize = size + 'px';
+            selectedTextData.fontSize = size;
+            selectedTextData.element.dataset.fontSize = size;
         }
     }
     hideTextContextMenu();
@@ -1401,12 +1706,12 @@ document.getElementById('ctx-change-size').addEventListener('click', (e) => {
 // Delete text
 document.getElementById('ctx-delete-text').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedTextLabel) {
-        const index = textElements.indexOf(selectedTextLabel);
+    if (selectedTextData) {
+        const index = textElements.indexOf(selectedTextData);
         if (index > -1) {
             textElements.splice(index, 1);
         }
-        selectedTextLabel.remove();
+        selectedTextData.element.remove();
     }
     hideTextContextMenu();
 });
@@ -1724,8 +2029,112 @@ document.getElementById('ctx-remove-icon').addEventListener('click', (e) => {
 
 const rngContainer = document.getElementById('rng-container');
 const rngAddBtn = document.getElementById('rng-add');
-let rngList = []; // Array of {name: string, min: number, max: number}
+let rngList = []; // Array of {id, name: string, min: number, max: number, result, linkedRngs: []}
+let nextRngId = 1;
 const MAX_RNG_COUNT = 20;
+
+function showRngLinkDialog(rng) {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+    
+    // Create dialog box
+    const dialog = document.createElement('div');
+    dialog.style.cssText = 'background: white; padding: 20px; border-radius: 8px; max-width: 400px; max-height: 500px; overflow-y: auto;';
+    
+    const title = document.createElement('h3');
+    title.textContent = 'Link RNGs to ' + rng.name;
+    title.style.marginTop = '0';
+    dialog.appendChild(title);
+    
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Select RNGs to link together. When one rolls, all linked RNGs roll together.';
+    instructions.style.fontSize = '12px';
+    instructions.style.color = '#666';
+    dialog.appendChild(instructions);
+    
+    // Create checkboxes for each RNG (except current)
+    const checkboxes = [];
+    rngList.forEach(otherRng => {
+        if (otherRng.id === rng.id) return; // Skip self
+        
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.style.marginBottom = '8px';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = rng.linkedRngs.includes(otherRng.id);
+        checkbox.dataset.rngId = otherRng.id;
+        checkboxes.push(checkbox);
+        
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' ' + otherRng.name));
+        dialog.appendChild(label);
+    });
+    
+    // Buttons
+    const buttonRow = document.createElement('div');
+    buttonRow.style.cssText = 'margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', () => {
+        // Clear current links
+        rng.linkedRngs = [];
+        
+        // Add selected links (bidirectional)
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                const otherId = parseInt(cb.dataset.rngId);
+                
+                // Add to this RNG's list
+                if (!rng.linkedRngs.includes(otherId)) {
+                    rng.linkedRngs.push(otherId);
+                }
+                
+                // Add this RNG to the other RNG's list (bidirectional)
+                const otherRng = rngList.find(r => r.id === otherId);
+                if (otherRng && !otherRng.linkedRngs.includes(rng.id)) {
+                    otherRng.linkedRngs.push(rng.id);
+                }
+            } else {
+                // If unchecked, remove bidirectional link
+                const otherId = parseInt(cb.dataset.rngId);
+                const otherRng = rngList.find(r => r.id === otherId);
+                if (otherRng) {
+                    const idx = otherRng.linkedRngs.indexOf(rng.id);
+                    if (idx !== -1) {
+                        otherRng.linkedRngs.splice(idx, 1);
+                    }
+                }
+            }
+        });
+        
+        document.body.removeChild(overlay);
+        renderRNGList();
+    });
+    
+    buttonRow.appendChild(cancelBtn);
+    buttonRow.appendChild(saveBtn);
+    dialog.appendChild(buttonRow);
+    
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    });
+}
 
 function renderRNGList() {
     rngContainer.innerHTML = '';
@@ -1754,6 +2163,13 @@ function renderRNGList() {
         deleteBtn.textContent = '×';
         deleteBtn.title = 'Delete RNG';
         deleteBtn.addEventListener('click', () => {
+            // Remove this RNG from other RNGs' linked lists
+            rngList.forEach(otherRng => {
+                const idx = otherRng.linkedRngs.indexOf(rng.id);
+                if (idx !== -1) {
+                    otherRng.linkedRngs.splice(idx, 1);
+                }
+            });
             rngList.splice(index, 1);
             renderRNGList();
         });
@@ -1794,7 +2210,7 @@ function renderRNGList() {
         
         const resultDisplay = document.createElement('div');
         resultDisplay.className = 'rng-result';
-        resultDisplay.textContent = '-';
+        resultDisplay.textContent = rng.result || '-';
         
         const generateBtn = document.createElement('button');
         generateBtn.className = 'rng-generate-btn';
@@ -1808,28 +2224,84 @@ function renderRNGList() {
                 return;
             }
             
-            // Add animation effect
+            // Add animation effect - show ... on this and all linked RNGs
             resultDisplay.style.backgroundColor = '#e0e0e0';
             resultDisplay.style.color = '#999';
             resultDisplay.textContent = '...';
             generateBtn.disabled = true;
             
+            // Also animate linked RNGs
+            const linkedDisplays = [];
+            rng.linkedRngs.forEach(linkedId => {
+                const linkedRng = rngList.find(r => r.id === linkedId);
+                if (linkedRng) {
+                    const linkedItem = rngContainer.children[rngList.indexOf(linkedRng)];
+                    if (linkedItem) {
+                        const linkedDisplay = linkedItem.querySelector('.rng-result');
+                        const linkedBtn = linkedItem.querySelector('.rng-generate-btn');
+                        if (linkedDisplay) {
+                            linkedDisplay.style.backgroundColor = '#e0e0e0';
+                            linkedDisplay.style.color = '#999';
+                            linkedDisplay.textContent = '...';
+                            linkedDisplays.push({ display: linkedDisplay, rng: linkedRng, btn: linkedBtn });
+                        }
+                        if (linkedBtn) linkedBtn.disabled = true;
+                    }
+                }
+            });
+            
             setTimeout(() => {
-                const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
-                resultDisplay.textContent = randomNum;
+                // Roll this RNG
+                rng.result = Math.floor(Math.random() * (max - min + 1)) + min;
+                resultDisplay.textContent = rng.result;
                 resultDisplay.style.backgroundColor = 'white';
                 resultDisplay.style.color = '#333';
                 generateBtn.disabled = false;
+                
+                // Roll all linked RNGs
+                linkedDisplays.forEach(({ display, rng: linkedRng, btn }) => {
+                    linkedRng.result = Math.floor(Math.random() * (linkedRng.max - linkedRng.min + 1)) + linkedRng.min;
+                    display.textContent = linkedRng.result;
+                    display.style.backgroundColor = 'white';
+                    display.style.color = '#333';
+                    if (btn) btn.disabled = false;
+                });
             }, 1000);
         });
         
         resultDiv.appendChild(resultDisplay);
         resultDiv.appendChild(generateBtn);
         
+        // Link button
+        const linkBtn = document.createElement('button');
+        linkBtn.className = 'rng-link-btn';
+        linkBtn.textContent = '+';
+        linkBtn.title = 'Link RNGs';
+        linkBtn.style.cssText = 'width: 24px; height: 24px; margin-left: 5px; cursor: pointer; font-size: 14px; font-weight: bold; border: 1px solid #ccc; border-radius: 3px; background: #f5f5f5;';
+        linkBtn.addEventListener('click', () => {
+            showRngLinkDialog(rng);
+        });
+        resultDiv.appendChild(linkBtn);
+        
         // Assemble the item
         rngItem.appendChild(header);
         rngItem.appendChild(inputsDiv);
         rngItem.appendChild(resultDiv);
+        
+        // Show linked RNG info
+        if (rng.linkedRngs.length > 0) {
+            const linkInfo = document.createElement('div');
+            linkInfo.style.fontSize = '10px';
+            linkInfo.style.color = '#666';
+            linkInfo.style.marginTop = '4px';
+            const linkedNames = rng.linkedRngs.map(id => {
+                const linkedRng = rngList.find(r => r.id === id);
+                return linkedRng ? linkedRng.name : '?';
+            }).join(', ');
+            linkInfo.textContent = 'Linked with: ' + linkedNames;
+            rngItem.appendChild(linkInfo);
+        }
+        
         rngContainer.appendChild(rngItem);
     });
 }
@@ -1840,12 +2312,15 @@ rngAddBtn.addEventListener('click', () => {
         return;
     }
     
-    const name = prompt('Enter a name for this RNG:', 'RNG ' + (rngList.length + 1));
+    const name = prompt('Enter a name for this RNG:', 'RNG ' + nextRngId);
     if (name !== null) {
         rngList.push({
-            name: name.trim() || 'RNG ' + (rngList.length + 1),
+            id: nextRngId++,
+            name: name.trim() || 'RNG ' + (nextRngId - 1),
             min: 1,
-            max: 100
+            max: 100,
+            result: '-',
+            linkedRngs: []
         });
         renderRNGList();
     }
@@ -1901,11 +2376,28 @@ document.getElementById('import-rng-file').addEventListener('change', (e) => {
             
             if (action) {
                 // Replace RNG list
-                rngList = rngData.rngs.slice(0, MAX_RNG_COUNT);
+                rngList = rngData.rngs.slice(0, MAX_RNG_COUNT).map(rng => ({
+                    id: rng.id || nextRngId++,
+                    name: rng.name,
+                    min: rng.min,
+                    max: rng.max,
+                    result: rng.result || '-',
+                    linkedRngs: rng.linkedRngs || []
+                }));
+                // Update nextRngId to be higher than any loaded id
+                const maxId = Math.max(...rngList.map(r => r.id), 0);
+                nextRngId = maxId + 1;
             } else {
                 // Merge RNG lists
                 const remaining = MAX_RNG_COUNT - rngList.length;
-                const toAdd = rngData.rngs.slice(0, remaining);
+                const toAdd = rngData.rngs.slice(0, remaining).map(rng => ({
+                    id: nextRngId++,
+                    name: rng.name,
+                    min: rng.min,
+                    max: rng.max,
+                    result: rng.result || '-',
+                    linkedRngs: [] // Don't preserve links on merge
+                }));
                 rngList = rngList.concat(toAdd);
             }
             

@@ -199,6 +199,25 @@
             cursor: move;
             z-index: 1001;
         }
+        .text-input .resize-handles {
+            display: none;
+        }
+        .text-input .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #007bff;
+            border: 1px solid white;
+            border-radius: 2px;
+        }
+        .text-input .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .text-input .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .text-input .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .text-input .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .text-input .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .text-input .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .text-input .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+        .text-input .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
         #context-menu {
             position: absolute;
             background: white;
@@ -403,6 +422,9 @@
         .rng-generate-btn:hover {
             background: #45a049;
         }
+        .rng-link-checkbox {
+            margin-left: 8px;
+        }
         /* Map icon (placed on canvas) styles */
         .map-icon {
             position: absolute;
@@ -523,7 +545,8 @@
             <h3>Navigation</h3>
             <div class="tool-section-content">
                 <button id="nav-hexmap" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Hex Map Maker</button>
-                <button id="nav-dungeon" style="width: 100%; padding: 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">Dungeon Maker</button>
+                <button id="nav-dungeon" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">Dungeon Maker</button>
+                <button id="nav-character" style="width: 100%; padding: 10px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">Character Sheet</button>
                 <p>Switch between different map maker systems.</p>
             </div>
         </div>
@@ -624,8 +647,9 @@
                     <input type="color" id="text-color" value="#000000">
                     <input type="text" id="text-color-text" value="#000000" maxlength="7">
                 </div>
+                <label><input type="checkbox" id="text-frame-enabled"> Show text box frame</label><br><br>
                 <button id="toggle-text">Enable Text Tool</button>
-                <p>Click on the canvas to add text.</p>
+                <p>Click on the canvas to add text. Right-click text to edit or delete.</p>
             </div>
         </div>
         <div class="tool-section collapsed">            <h3>Border Tool</h3>
@@ -641,6 +665,18 @@
                 <button id="toggle-remove-border">Enable Remove Border</button><br><br>
                 <button id="clear-all-borders">Clear All Borders</button>
                 <p>Click on hex edges to customize individual borders. Selected borders will use your chosen color and thickness.</p>
+                <div class="palette-section">
+                    <div class="palette-header">
+                        <h4>Border Palette</h4>
+                        <button class="palette-add-btn" id="border-palette-add" title="Add color to border palette">+</button>
+                    </div>
+                    <div class="palette-container" id="border-palette-container"></div>
+                    <div class="palette-actions" style="margin-top: 10px;">
+                        <button id="save-border-palette" style="margin-right: 5px;">Save Palette</button>
+                        <button id="import-border-palette">Import Palette</button>
+                        <input type="file" id="import-border-palette-file" accept=".json" style="display: none;">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="tool-section collapsed">            <h3>Icons</h3>
