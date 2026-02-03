@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hex Map Maker</title>
+    <title>Dungeon Maker</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
         #canvas { display: block; width: 100%; height: 100%; }
@@ -438,7 +438,7 @@
         .map-icon .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
         .map-icon .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
         .map-icon .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
-        .hex-tag {
+        .square-tag {
             position: absolute;
             pointer-events: none;
             text-align: center;
@@ -496,7 +496,7 @@
     <div id="scrollbar-h" class="scrollbar"><div class="scrollbar-thumb" id="scrollbar-h-thumb"></div></div>
     <div id="scrollbar-v" class="scrollbar"><div class="scrollbar-thumb" id="scrollbar-v-thumb"></div></div>
     <div id="context-menu">
-        <div class="context-menu-item" id="ctx-clear-hex">Clear Hex</div>
+        <div class="context-menu-item" id="ctx-clear-square">Clear Square</div>
         <div class="context-menu-item" id="ctx-clear-fill">Clear Fill</div>
         <div class="context-menu-item" id="ctx-add-tag">Add Tag</div>
     </div>
@@ -533,23 +533,15 @@
                 <label>Width (1-300): <input type="number" id="grid-width" min="1" max="300" value="20"></label><br><br>
                 <label>Height (1-300): <input type="number" id="grid-height" min="1" max="300" value="20"></label><br><br>
                 <button id="apply-grid-size">Apply Grid Size</button>
-                <p>Set the number of hexes across and down.</p>
+                <p>Set the number of squares across and down.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
-            <h3>Hex Size</h3>
+            <h3>Square Size</h3>
             <div class="tool-section-content">
-                <label>Size (10-100 px): <input type="number" id="hex-size" min="10" max="100" value="50"></label><br><br>
-                <button id="apply-hex-size">Apply Hex Size</button>
-                <p>Set the visual size of each hex in pixels.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Hex Orientation</h3>
-            <div class="tool-section-content">
-                <label><input type="radio" name="hex-orientation" id="hex-pointy" value="pointy"> Pointy Top</label><br>
-                <label><input type="radio" name="hex-orientation" id="hex-flat" value="flat" checked> Flat Top</label>
-                <p>Choose whether hexes have a point or flat edge at the top.</p>
+                <label>Size (10-100 px): <input type="number" id="square-size" min="10" max="100" value="50"></label><br><br>
+                <button id="apply-square-size">Apply Square Size</button>
+                <p>Set the visual size of each square in pixels.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -565,29 +557,29 @@
                 <button id="import-bg-image">Import Image</button>
                 <input type="file" id="bg-image-file" accept="image/*" style="display: none;"><br>
                 <button id="clear-bg-image">Clear Image</button>
-                <p>Set a background color or image for the map.</p>
+                <p>Set a background color or image for the dungeon.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
             <h3>Save / Load</h3>
             <div class="tool-section-content">
-                <button id="save-map">Save Map</button><br><br>
-                <button id="import-map">Import Map</button>
+                <button id="save-map">Save Dungeon</button><br><br>
+                <button id="import-map">Import Dungeon</button>
                 <input type="file" id="import-file" accept=".json" style="display: none;">
-                <p>Save your map as JSON or import a previously saved map.</p>
+                <p>Save your dungeon as JSON or import a previously saved dungeon.</p>
             </div>
         </div>
     </div>
     <div id="menu">
         <h2>Tools</h2>
         <div class="tool-section collapsed">
-            <h3>Hex Fill Color</h3>
+            <h3>Square Fill Color</h3>
             <div class="tool-section-content">
                 <div class="color-picker">
-                    <input type="color" id="hex-color" value="#888888">
-                    <input type="text" id="hex-color-text" value="#888888" maxlength="7">
+                    <input type="color" id="square-color" value="#888888">
+                    <input type="text" id="square-color-text" value="#888888" maxlength="7">
                 </div>
-                <p>Click on a hex to fill it with the selected color.</p>
+                <p>Click on a square to fill it with the selected color.</p>
                 <div class="palette-section">
                     <div class="palette-header">
                         <h4>Palette</h4>
@@ -613,7 +605,7 @@
                 <button id="toggle-drawing">Enable Drawing</button>
                 <button id="toggle-eraser">Enable Eraser</button><br><br>
                 <button id="clear-all-drawing">Clear All Drawing</button>
-                <p>Click and drag to draw lines on the map. Use eraser to remove drawings.</p>
+                <p>Click and drag to draw lines on the dungeon. Use eraser to remove drawings.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -640,7 +632,7 @@
                 <button id="toggle-border">Enable Border Tool</button><br><br>
                 <button id="toggle-remove-border">Enable Remove Border</button><br><br>
                 <button id="clear-all-borders">Clear All Borders</button>
-                <p>Click on hex edges to customize individual borders. Selected borders will use your chosen color and thickness.</p>
+                <p>Click on square edges to customize individual borders. Selected borders will use your chosen color and thickness.</p>
             </div>
         </div>
         <div class="tool-section collapsed">            <h3>Icons</h3>
@@ -651,7 +643,7 @@
                 </div>
                 <input type="file" id="icon-file" accept="image/*" style="display: none;">
                 <div class="icon-container" id="icon-container"></div>
-                <p style="margin-top: 10px;">Click + to add icons (max 40). Click an icon to place it on the map.</p>
+                <p style="margin-top: 10px;">Click + to add icons (max 40). Click an icon to place it on the dungeon.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -671,6 +663,6 @@
             </div>
         </div>
     </div>
-    <script type="module" src="main.js"></script>
+    <script type="module" src="dungeon-maker.js"></script>
 </body>
 </html>

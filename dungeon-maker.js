@@ -170,12 +170,12 @@ document.getElementById('clear-bg-image').addEventListener('click', () => {
     renderer.setClearColor(bgColor);
 });
 
-document.getElementById('hex-color').addEventListener('input', (e) => {
-    document.getElementById('hex-color-text').value = e.target.value;
+document.getElementById('square-color').addEventListener('input', (e) => {
+    document.getElementById('square-color-text').value = e.target.value;
 });
 
-document.getElementById('hex-color-text').addEventListener('input', (e) => {
-    document.getElementById('hex-color').value = e.target.value;
+document.getElementById('square-color-text').addEventListener('input', (e) => {
+    document.getElementById('square-color').value = e.target.value;
 });
 
 // Palette functionality
@@ -195,9 +195,9 @@ function renderPalette() {
         colorDiv.style.backgroundColor = item.color;
         colorDiv.title = item.name + ' (' + item.color + ')';
         colorDiv.addEventListener('click', () => {
-            // Set the hex fill color to this palette color
-            document.getElementById('hex-color').value = item.color;
-            document.getElementById('hex-color-text').value = item.color;
+            // Set the square fill color to this palette color
+            document.getElementById('square-color').value = item.color;
+            document.getElementById('square-color-text').value = item.color;
             // Update selection visual
             document.querySelectorAll('.palette-color').forEach(el => el.classList.remove('selected'));
             colorDiv.classList.add('selected');
@@ -239,7 +239,7 @@ paletteAddBtn.addEventListener('click', () => {
         alert('Palette is full! Maximum ' + MAX_PALETTE_SIZE + ' colors allowed.');
         return;
     }
-    const currentColor = document.getElementById('hex-color').value;
+    const currentColor = document.getElementById('square-color').value;
     const name = prompt('Enter a name for this color:', 'Color ' + (palette.length + 1));
     if (name !== null) {
         palette.push({ color: currentColor, name: name.trim() || 'Color ' + (palette.length + 1) });
@@ -264,7 +264,7 @@ document.getElementById('save-palette').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'hexmap_palette_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'dungeon_palette_' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -414,30 +414,29 @@ function renderCustomBorders() {
     
     const linePoints = [];
     const colors = [];
-    const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
     
     customBorders.forEach(border => {
         const index = border.row * gridWidth + border.col;
-        if (index >= hexCenters.length) return;
+        if (index >= squareCenters.length) return;
         
-        const center = hexCenters[index];
+        const center = squareCenters[index];
         const cx = center.x;
         const cy = center.y;
+        const halfSize = squareSize / 2;
         
-        // Calculate vertices for this hex
-        const vertices = [];
-        for (let i = 0; i < 6; i++) {
-            const angle = startAngle + (i * Math.PI / 3);
-            vertices.push({
-                x: cx + hexRadius * Math.cos(angle),
-                y: cy + hexRadius * Math.sin(angle)
-            });
-        }
+        // Define square edges: 0=top, 1=right, 2=bottom, 3=left
+        const edges = [
+            [{x: cx - halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy + halfSize}], // top
+            [{x: cx + halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy - halfSize}], // right
+            [{x: cx + halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy - halfSize}], // bottom
+            [{x: cx - halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy + halfSize}]  // left
+        ];
         
-        // Get the edge endpoints
-        const edge = border.edge;
-        const v1 = vertices[edge];
-        const v2 = vertices[(edge + 1) % 6];
+        const edge = edges[border.edge];
+        if (!edge) return;
+        
+        const v1 = edge[0];
+        const v2 = edge[1];
         
         // Calculate perpendicular offset direction for thickness
         const dx = v2.x - v1.x;
@@ -473,184 +472,145 @@ function renderCustomBorders() {
     }
 }
 
-// Create hex grid - configurable orientation
-let hexOrientation = 'flat'; // 'pointy' or 'flat'
-let hexSizePx = 50; // hex size in pixels (10-100)
-let hexRadius = 0.5; // distance from center to vertex (will be recalculated based on hexSizePx)
-let hexWidth = hexRadius * Math.sqrt(3); // flat-to-flat width
-let hexHeight = hexRadius * 2; // point-to-point height
-let horizSpacing = hexWidth; // horizontal spacing between hex centers
-let vertSpacing = hexRadius * 1.5; // vertical spacing (3/4 of height)
 
-function updateHexMetrics() {
-    // Convert pixel size to world units (50px = 0.5 radius as default)
-    hexRadius = hexSizePx / 100;
-    
-    if (hexOrientation === 'pointy') {
-        // Pointy-top: width is flat-to-flat, height is point-to-point
-        hexWidth = hexRadius * Math.sqrt(3);
-        hexHeight = hexRadius * 2;
-        horizSpacing = hexWidth;
-        vertSpacing = hexRadius * 1.5;
-    } else {
-        // Flat-top: width is point-to-point, height is flat-to-flat
-        hexWidth = hexRadius * 2;
-        hexHeight = hexRadius * Math.sqrt(3);
-        horizSpacing = hexRadius * 1.5;
-        vertSpacing = hexHeight;
-    }
+// Create square grid
+let squareSizePx = 50; // square size in pixels (10-100)
+let squareSize = 0.5; // size in world units (will be recalculated based on squareSizePx)
+
+function updateSquareMetrics() {
+    // Convert pixel size to world units (50px = 0.5 as default)
+    squareSize = squareSizePx / 100;
 }
 
-function createHex(x, y, z, color = 0xffffff) {
+function createSquare(x, y, z, color = 0xffffff) {
     const shape = new THREE.Shape();
-    // Starting angle: 90° for pointy-top, 0° for flat-top
-    const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
-    for (let i = 0; i < 6; i++) {
-        const angle = startAngle + (i * Math.PI / 3); // increment by 60°
-        const px = hexRadius * Math.cos(angle);
-        const py = hexRadius * Math.sin(angle);
-        if (i === 0) shape.moveTo(px, py);
-        else shape.lineTo(px, py);
-    }
+    const halfSize = squareSize / 2;
+    
+    // Create square shape
+    shape.moveTo(-halfSize, -halfSize);
+    shape.lineTo(halfSize, -halfSize);
+    shape.lineTo(halfSize, halfSize);
+    shape.lineTo(-halfSize, halfSize);
     shape.closePath();
+    
     const geometry = new THREE.ShapeGeometry(shape);
     const material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0 });
-    const hex = new THREE.Mesh(geometry, material);
-    hex.position.set(x, y, z);
-    hex.userData.originalColor = color;
+    const square = new THREE.Mesh(geometry, material);
+    square.position.set(x, y, z);
+    square.userData.originalColor = color;
 
-    return hex;
+    return square;
 }
 
 let gridWidth = 20;
 let gridHeight = 20;
-let hexes = [];
-let hexCenters = [];
+let squares = [];
+let squareCenters = [];
 let gridLines = null;
 
 function generateGrid() {
-    // Remove existing hexes
-    hexes.forEach(hex => scene.remove(hex));
-    hexes = [];
-    hexCenters = [];
+    // Remove existing squares
+    squares.forEach(square => scene.remove(square));
+    squares = [];
+    squareCenters = [];
     
-    // Remove existing grid lines
+    // Remove existing grid lines and border lines
     if (gridLines) {
+        // Remove border lines if they exist
+        if (gridLines.userData.borderLines) {
+            scene.remove(gridLines.userData.borderLines);
+        }
         scene.remove(gridLines);
         gridLines = null;
     }
     
-    // Create hexes
+    // Create squares
     for (let row = 0; row < gridHeight; row++) {
         for (let col = 0; col < gridWidth; col++) {
-            let x, y;
-            if (hexOrientation === 'pointy') {
-                // Pointy-top: offset odd rows
-                x = (col - gridWidth / 2 + 0.5) * horizSpacing + (row % 2) * (horizSpacing / 2);
-                y = (row - gridHeight / 2 + 0.5) * vertSpacing;
-            } else {
-                // Flat-top: offset odd columns
-                x = (col - gridWidth / 2 + 0.5) * horizSpacing;
-                y = (row - gridHeight / 2 + 0.5) * vertSpacing + (col % 2) * (vertSpacing / 2);
-            }
-            const hex = createHex(x, y, 0);
-            scene.add(hex);
-            hexes.push(hex);
-            hexCenters.push({ row, col, x, y });
+            const x = (col - gridWidth / 2 + 0.5) * squareSize;
+            const y = (row - gridHeight / 2 + 0.5) * squareSize;
+            const square = createSquare(x, y, 0);
+            scene.add(square);
+            squares.push(square);
+            squareCenters.push({ row, col, x, y });
         }
     }
     
-    // Draw grid lines once (no duplicates)
+    // Draw grid lines with darker, thicker borders
     const linePoints = [];
-    const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
+    const borderLinePoints = []; // Separate array for outer borders
+    const halfSize = squareSize / 2;
     
     for (let row = 0; row < gridHeight; row++) {
         for (let col = 0; col < gridWidth; col++) {
-            let cx, cy;
-            if (hexOrientation === 'pointy') {
-                cx = (col - gridWidth / 2 + 0.5) * horizSpacing + (row % 2) * (horizSpacing / 2);
-                cy = (row - gridHeight / 2 + 0.5) * vertSpacing;
+            const cx = (col - gridWidth / 2 + 0.5) * squareSize;
+            const cy = (row - gridHeight / 2 + 0.5) * squareSize;
+            
+            // Define the four corners of the square
+            const topLeft = { x: cx - halfSize, y: cy + halfSize };
+            const topRight = { x: cx + halfSize, y: cy + halfSize };
+            const bottomLeft = { x: cx - halfSize, y: cy - halfSize };
+            const bottomRight = { x: cx + halfSize, y: cy - halfSize };
+            
+            // Check if this square is on the border
+            const isTopEdge = row === gridHeight - 1;
+            const isBottomEdge = row === 0;
+            const isLeftEdge = col === 0;
+            const isRightEdge = col === gridWidth - 1;
+            
+            // Top edge
+            if (isTopEdge) {
+                borderLinePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
+                borderLinePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
             } else {
-                cx = (col - gridWidth / 2 + 0.5) * horizSpacing;
-                cy = (row - gridHeight / 2 + 0.5) * vertSpacing + (col % 2) * (vertSpacing / 2);
+                linePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
+                linePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
             }
             
-            // Get all 6 vertices of this hex
-            const vertices = [];
-            for (let i = 0; i < 6; i++) {
-                const angle = startAngle + (i * Math.PI / 3);
-                vertices.push({
-                    x: cx + hexRadius * Math.cos(angle),
-                    y: cy + hexRadius * Math.sin(angle)
-                });
+            // Right edge
+            if (isRightEdge) {
+                borderLinePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
+                borderLinePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
+            } else {
+                linePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
+                linePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
             }
             
-            if (hexOrientation === 'pointy') {
-                // Pointy-top: Draw top edge (vertex 5 to vertex 0)
-                linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
-                linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
-                
-                // Draw top-right edge (vertex 0 to vertex 1)
-                linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
-                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
-                
-                // Draw right edge (vertex 1 to vertex 2)
-                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
-                linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
-                
-                // Only draw bottom edges for bottom row
-                if (row === 0) {
-                    linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
-                }
-                
-                // Only draw left edge for first column
-                if (col === 0) {
-                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
-                }
+            // Bottom edge
+            if (isBottomEdge) {
+                borderLinePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
+                borderLinePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
             } else {
-                // Flat-top: Draw top-right edge (vertex 0 to vertex 1)
-                linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
-                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
-                
-                // Draw right edge (vertex 1 to vertex 2)
-                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
-                linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
-                
-                // Draw bottom-right edge (vertex 2 to vertex 3)
-                linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
-                linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
-                
-                // Only draw left edges for first column
-                if (col === 0) {
-                    linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
-                }
-                
-                // Only draw top-left edge for top row or even columns at top
-                if (row === gridHeight - 1 || (col % 2 === 1 && row === gridHeight - 1)) {
-                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
-                }
-                // Handle top edge for odd columns
-                if (col % 2 === 0 && row === gridHeight - 1) {
-                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
-                }
+                linePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
+                linePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
+            }
+            
+            // Left edge
+            if (isLeftEdge) {
+                borderLinePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
+                borderLinePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
+            } else {
+                linePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
+                linePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
             }
         }
     }
     
+    // Create regular grid lines (thinner, lighter)
     const gridGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
     const lineColor = isDarkMode ? 0xffffff : 0x000000;
-    const gridMaterial = new THREE.LineBasicMaterial({ color: lineColor });
+    const gridMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: 1 });
     gridLines = new THREE.LineSegments(gridGeometry, gridMaterial);
     scene.add(gridLines);
+    
+    // Create border lines (thicker, darker)
+    const borderGeometry = new THREE.BufferGeometry().setFromPoints(borderLinePoints);
+    const borderMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: 3 });
+    const borderLines = new THREE.LineSegments(borderGeometry, borderMaterial);
+    scene.add(borderLines);
+    
+    // Store reference to border lines for later removal
+    gridLines.userData.borderLines = borderLines;
     
     // Calculate grid bounds for scrolling
     calculateGridBounds();
@@ -659,9 +619,9 @@ function generateGrid() {
 
 // Calculate the bounds of the grid
 function calculateGridBounds() {
-    const totalWidth = gridWidth * horizSpacing;
-    const totalHeight = gridHeight * vertSpacing;
-    const padding = hexRadius * 2; // Add some padding
+    const totalWidth = gridWidth * squareSize;
+    const totalHeight = gridHeight * squareSize;
+    const padding = squareSize * 2; // Add some padding
     
     gridBounds.minX = -totalWidth / 2 - padding;
     gridBounds.maxX = totalWidth / 2 + padding;
@@ -823,7 +783,7 @@ document.getElementById('canvas').addEventListener('wheel', (e) => {
 }, { passive: false });
 
 // Initial grid generation
-updateHexMetrics(); // Initialize metrics for default orientation
+updateSquareMetrics(); // Initialize metrics
 generateGrid();
 
 // Grid size controls
@@ -844,35 +804,19 @@ document.getElementById('apply-grid-size').addEventListener('click', () => {
     generateGrid();
 });
 
-document.getElementById('apply-hex-size').addEventListener('click', () => {
-    const newSize = Math.min(100, Math.max(10, parseInt(document.getElementById('hex-size').value) || 50));
-    document.getElementById('hex-size').value = newSize;
-    hexSizePx = newSize;
-    updateHexMetrics();
+document.getElementById('apply-square-size').addEventListener('click', () => {
+    const newSize = Math.min(100, Math.max(10, parseInt(document.getElementById('square-size').value) || 50));
+    document.getElementById('square-size').value = newSize;
+    squareSizePx = newSize;
+    updateSquareMetrics();
     
-    // Reset camera position when hex size changes
+    // Reset camera position when square size changes
     cameraOffsetX = 0;
     cameraOffsetY = 0;
     camera.position.set(0, 0, 10);
     camera.lookAt(0, 0, 0);
     
     generateGrid();
-});
-
-// Hex orientation controls
-document.querySelectorAll('input[name="hex-orientation"]').forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        hexOrientation = e.target.value;
-        updateHexMetrics();
-        
-        // Reset camera position when orientation changes
-        cameraOffsetX = 0;
-        cameraOffsetY = 0;
-        camera.position.set(0, 0, 10);
-        camera.lookAt(0, 0, 0);
-        
-        generateGrid();
-    });
 });
 
 // Animation loop
@@ -933,41 +877,45 @@ function onMouseClick(event) {
     
     // Handle border mode
     if (isBorderMode || isRemovingBorder) {
-        const intersects = raycaster.intersectObjects(hexes);
+        const intersects = raycaster.intersectObjects(squares);
         if (intersects.length > 0) {
-            const hex = intersects[0].object;
-            const hexIndex = hexes.indexOf(hex);
-            if (hexIndex === -1) return;
+            const square = intersects[0].object;
+            const squareIndex = squares.indexOf(square);
+            if (squareIndex === -1) return;
             
-            const center = hexCenters[hexIndex];
+            const center = squareCenters[squareIndex];
             const cx = center.x;
             const cy = center.y;
+            const halfSize = squareSize / 2;
             
             // Get click position in world coordinates
             const worldPos = screenToWorld(event.clientX, event.clientY);
             const clickX = worldPos.x;
             const clickY = worldPos.y;
             
+            // Define square edges: 0=top, 1=right, 2=bottom, 3=left
+            const edges = [
+                [{x: cx - halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy + halfSize}], // top
+                [{x: cx + halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy - halfSize}], // right
+                [{x: cx + halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy - halfSize}], // bottom
+                [{x: cx - halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy + halfSize}]  // left
+            ];
+            
             // Find closest edge
-            const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
             let closestEdge = 0;
             let minDist = Infinity;
             
-            for (let i = 0; i < 6; i++) {
-                const angle1 = startAngle + (i * Math.PI / 3);
-                const angle2 = startAngle + ((i + 1) * Math.PI / 3);
-                const v1x = cx + hexRadius * Math.cos(angle1);
-                const v1y = cy + hexRadius * Math.sin(angle1);
-                const v2x = cx + hexRadius * Math.cos(angle2);
-                const v2y = cy + hexRadius * Math.sin(angle2);
+            for (let i = 0; i < 4; i++) {
+                const v1 = edges[i][0];
+                const v2 = edges[i][1];
                 
                 // Distance from point to line segment
-                const dx = v2x - v1x;
-                const dy = v2y - v1y;
+                const dx = v2.x - v1.x;
+                const dy = v2.y - v1.y;
                 const len = Math.sqrt(dx * dx + dy * dy);
-                const t = Math.max(0, Math.min(1, ((clickX - v1x) * dx + (clickY - v1y) * dy) / (len * len)));
-                const projX = v1x + t * dx;
-                const projY = v1y + t * dy;
+                const t = Math.max(0, Math.min(1, ((clickX - v1.x) * dx + (clickY - v1.y) * dy) / (len * len)));
+                const projX = v1.x + t * dx;
+                const projY = v1.y + t * dy;
                 const dist = Math.sqrt((clickX - projX) * (clickX - projX) + (clickY - projY) * (clickY - projY));
                 
                 if (dist < minDist) {
@@ -977,7 +925,7 @@ function onMouseClick(event) {
             }
             
             // Only add/remove border if click was close to an edge
-            if (minDist < hexRadius * 0.3) {
+            if (minDist < squareSize * 0.25) {
                 const borderColor = document.getElementById('border-color').value;
                 const borderThickness = parseInt(document.getElementById('border-thickness').value);
                 
@@ -1006,12 +954,12 @@ function onMouseClick(event) {
         return;
     }
     
-    const intersects = raycaster.intersectObjects(hexes);
+    const intersects = raycaster.intersectObjects(squares);
     if (intersects.length > 0) {
-        const hex = intersects[0].object;
-        const color = document.getElementById('hex-color').value;
-        hex.material.color.setStyle(color);
-        hex.material.opacity = 0.8; // slightly transparent so grid lines show through
+        const square = intersects[0].object;
+        const color = document.getElementById('square-color').value;
+        square.material.color.setStyle(color);
+        square.material.opacity = 0.8; // slightly transparent so grid lines show through
     }
 }
 
@@ -1025,15 +973,15 @@ function onContextMenu(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(hexes);
+    const intersects = raycaster.intersectObjects(squares);
     
     if (intersects.length > 0) {
-        const hex = intersects[0].object;
-        selectedHex = hex;
+        const square = intersects[0].object;
+        selectedSquare = square;
         
         // Update Add Tag / Clear Tag option
         const addTagItem = document.getElementById('ctx-add-tag');
-        if (hex.userData.tag) {
+        if (square.userData.tag) {
             addTagItem.textContent = 'Clear Tag';
         } else {
             addTagItem.textContent = 'Add Tag';
@@ -1047,13 +995,13 @@ function onContextMenu(event) {
     }
 }
 
-let selectedHex = null;
+let selectedSquare = null;
 
 function hideContextMenu() {
     const contextMenu = document.getElementById('context-menu');
     if (contextMenu.classList.contains('visible')) {
         contextMenu.classList.remove('visible');
-        contextMenuOpen = true; // Flag to prevent hex fill on next click
+        contextMenuOpen = true; // Flag to prevent square fill on next click
     }
 }
 
@@ -1065,16 +1013,16 @@ window.addEventListener('click', (e) => {
 });
 
 // Context menu actions
-document.getElementById('ctx-clear-hex').addEventListener('click', (e) => {
+document.getElementById('ctx-clear-square').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedHex) {
+    if (selectedSquare) {
         // Clear fill
-        selectedHex.material.opacity = 0;
+        selectedSquare.material.opacity = 0;
         // Clear tag
-        if (selectedHex.userData.tagElement) {
-            selectedHex.userData.tagElement.remove();
-            selectedHex.userData.tagElement = null;
-            selectedHex.userData.tag = null;
+        if (selectedSquare.userData.tagElement) {
+            selectedSquare.userData.tagElement.remove();
+            selectedSquare.userData.tagElement = null;
+            selectedSquare.userData.tag = null;
         }
     }
     hideContextMenu();
@@ -1082,63 +1030,63 @@ document.getElementById('ctx-clear-hex').addEventListener('click', (e) => {
 
 document.getElementById('ctx-clear-fill').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedHex) {
-        selectedHex.material.opacity = 0;
+    if (selectedSquare) {
+        selectedSquare.material.opacity = 0;
     }
     hideContextMenu();
 });
 
 document.getElementById('ctx-add-tag').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedHex) {
-        if (selectedHex.userData.tag) {
+    if (selectedSquare) {
+        if (selectedSquare.userData.tag) {
             // Clear tag
-            if (selectedHex.userData.tagElement) {
-                selectedHex.userData.tagElement.remove();
-                selectedHex.userData.tagElement = null;
-                selectedHex.userData.tag = null;
+            if (selectedSquare.userData.tagElement) {
+                selectedSquare.userData.tagElement.remove();
+                selectedSquare.userData.tagElement = null;
+                selectedSquare.userData.tag = null;
             }
         } else {
             // Add tag - prompt for text
             const tagText = prompt('Enter tag text:');
             if (tagText && tagText.trim()) {
-                addTagToHex(selectedHex, tagText.trim());
+                addTagToSquare(selectedSquare, tagText.trim());
             }
         }
     }
     hideContextMenu();
 });
 
-function addTagToHex(hex, text) {
+function addTagToSquare(square, text) {
     // Remove existing tag if any
-    if (hex.userData.tagElement) {
-        hex.userData.tagElement.remove();
+    if (square.userData.tagElement) {
+        square.userData.tagElement.remove();
     }
     
-    // Get hex screen position
-    const hexPos = new THREE.Vector3(hex.position.x, hex.position.y, hex.position.z);
-    hexPos.project(camera);
-    const screenX = (hexPos.x * 0.5 + 0.5) * window.innerWidth;
-    const screenY = (-hexPos.y * 0.5 + 0.5) * window.innerHeight;
+    // Get square screen position
+    const squarePos = new THREE.Vector3(square.position.x, square.position.y, square.position.z);
+    squarePos.project(camera);
+    const screenX = (squarePos.x * 0.5 + 0.5) * window.innerWidth;
+    const screenY = (-squarePos.y * 0.5 + 0.5) * window.innerHeight;
     
-    // Calculate hex size on screen
-    const hexEdgePos = new THREE.Vector3(hex.position.x + hexRadius * 0.8, hex.position.y, hex.position.z);
-    hexEdgePos.project(camera);
-    const edgeScreenX = (hexEdgePos.x * 0.5 + 0.5) * window.innerWidth;
-    const hexScreenRadius = Math.abs(edgeScreenX - screenX);
+    // Calculate square size on screen
+    const squareEdgePos = new THREE.Vector3(square.position.x + squareSize * 0.4, square.position.y, square.position.z);
+    squareEdgePos.project(camera);
+    const edgeScreenX = (squareEdgePos.x * 0.5 + 0.5) * window.innerWidth;
+    const squareScreenHalfSize = Math.abs(edgeScreenX - screenX);
     
     // Create tag element
     const tagElement = document.createElement('div');
-    tagElement.className = 'hex-tag';
+    tagElement.className = 'square-tag';
     tagElement.textContent = text;
     tagElement.style.left = screenX + 'px';
     tagElement.style.top = screenY + 'px';
     tagElement.style.transform = 'translate(-50%, -50%)';
     
-    // Size font to fit inside hex
-    const maxWidth = hexScreenRadius * 1.6;
+    // Size font to fit inside square
+    const maxWidth = squareScreenHalfSize * 1.8;
     tagElement.style.maxWidth = maxWidth + 'px';
-    tagElement.style.fontSize = Math.max(8, Math.min(16, hexScreenRadius * 0.6)) + 'px';
+    tagElement.style.fontSize = Math.max(8, Math.min(16, squareScreenHalfSize * 0.6)) + 'px';
     tagElement.style.overflow = 'hidden';
     tagElement.style.textOverflow = 'ellipsis';
     tagElement.style.whiteSpace = 'nowrap';
@@ -1146,8 +1094,8 @@ function addTagToHex(hex, text) {
     document.body.appendChild(tagElement);
     
     // Store reference
-    hex.userData.tag = text;
-    hex.userData.tagElement = tagElement;
+    square.userData.tag = text;
+    square.userData.tagElement = tagElement;
 }
 
 // Convert screen coordinates to world coordinates
@@ -1172,23 +1120,23 @@ function worldToScreen(worldX, worldY) {
 
 // Update tag positions on camera change
 function updateTagPositions() {
-    hexes.forEach(hex => {
-        if (hex.userData.tagElement) {
-            const hexPos = new THREE.Vector3(hex.position.x, hex.position.y, hex.position.z);
-            hexPos.project(camera);
-            const screenX = (hexPos.x * 0.5 + 0.5) * window.innerWidth;
-            const screenY = (-hexPos.y * 0.5 + 0.5) * window.innerHeight;
-            hex.userData.tagElement.style.left = screenX + 'px';
-            hex.userData.tagElement.style.top = screenY + 'px';
+    squares.forEach(square => {
+        if (square.userData.tagElement) {
+            const squarePos = new THREE.Vector3(square.position.x, square.position.y, square.position.z);
+            squarePos.project(camera);
+            const screenX = (squarePos.x * 0.5 + 0.5) * window.innerWidth;
+            const screenY = (-squarePos.y * 0.5 + 0.5) * window.innerHeight;
+            square.userData.tagElement.style.left = screenX + 'px';
+            square.userData.tagElement.style.top = screenY + 'px';
             
-            // Update font size based on hex size
-            const hexEdgePos = new THREE.Vector3(hex.position.x + hexRadius * 0.8, hex.position.y, hex.position.z);
-            hexEdgePos.project(camera);
-            const edgeScreenX = (hexEdgePos.x * 0.5 + 0.5) * window.innerWidth;
-            const hexScreenRadius = Math.abs(edgeScreenX - screenX);
-            const maxWidth = hexScreenRadius * 1.6;
-            hex.userData.tagElement.style.maxWidth = maxWidth + 'px';
-            hex.userData.tagElement.style.fontSize = Math.max(8, Math.min(16, hexScreenRadius * 0.6)) + 'px';
+            // Update font size based on square size
+            const squareEdgePos = new THREE.Vector3(square.position.x + squareSize * 0.4, square.position.y, square.position.z);
+            squareEdgePos.project(camera);
+            const edgeScreenX = (squareEdgePos.x * 0.5 + 0.5) * window.innerWidth;
+            const squareScreenHalfSize = Math.abs(edgeScreenX - screenX);
+            const maxWidth = squareScreenHalfSize * 1.8;
+            square.userData.tagElement.style.maxWidth = maxWidth + 'px';
+            square.userData.tagElement.style.fontSize = Math.max(8, Math.min(16, squareScreenHalfSize * 0.6)) + 'px';
         }
     });
 }
@@ -1975,15 +1923,15 @@ document.getElementById('import-rng-file').addEventListener('change', (e) => {
 
 // Save Map functionality
 document.getElementById('save-map').addEventListener('click', () => {
-    // Collect all hex data
-    const hexData = hexes.map((hex, index) => {
-        const center = hexCenters[index];
+    // Collect all square data
+    const squareData = squares.map((square, index) => {
+        const center = squareCenters[index];
         return {
             row: center.row,
             col: center.col,
-            color: '#' + hex.material.color.getHexString(),
-            opacity: hex.material.opacity,
-            tag: hex.userData.tag || null
+            color: '#' + square.material.color.getHexString(),
+            opacity: square.material.opacity,
+            tag: square.userData.tag || null
         };
     });
     
@@ -2020,13 +1968,13 @@ document.getElementById('save-map').addEventListener('click', () => {
     // Build save object
     const saveData = {
         version: 1,
+        type: 'dungeon',
         gridWidth: gridWidth,
         gridHeight: gridHeight,
-        hexSizePx: hexSizePx,
-        hexOrientation: hexOrientation,
+        squareSizePx: squareSizePx,
         bgColor: bgColor,
         bgImageData: bgImageData,
-        hexes: hexData,
+        squares: squareData,
         drawingData: drawingData,
         textLabels: textLabels,
         mapIcons: mapIconsData,
@@ -2040,7 +1988,7 @@ document.getElementById('save-map').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'hexmap_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'dungeon_' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -2061,17 +2009,16 @@ document.getElementById('import-file').addEventListener('change', (e) => {
         try {
             const saveData = JSON.parse(event.target.result);
             
-            // Validate version
-            if (!saveData.version) {
-                alert('Invalid map file format.');
+            // Validate version and type
+            if (!saveData.version || saveData.type !== 'dungeon') {
+                alert('Invalid dungeon file format.');
                 return;
             }
             
             // Restore settings
             gridWidth = saveData.gridWidth || 20;
             gridHeight = saveData.gridHeight || 20;
-            hexSizePx = saveData.hexSizePx || 50;
-            hexOrientation = saveData.hexOrientation || 'flat';
+            squareSizePx = saveData.squareSizePx || 50;
             
             // Restore background
             bgColor = saveData.bgColor || '#ffffff';
@@ -2092,12 +2039,10 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             // Update UI
             document.getElementById('grid-width').value = gridWidth;
             document.getElementById('grid-height').value = gridHeight;
-            document.getElementById('hex-size').value = hexSizePx;
-            document.getElementById('hex-pointy').checked = hexOrientation === 'pointy';
-            document.getElementById('hex-flat').checked = hexOrientation === 'flat';
+            document.getElementById('square-size').value = squareSizePx;
             
             // Update metrics and regenerate grid
-            updateHexMetrics();
+            updateSquareMetrics();
             
             // Reset camera
             cameraOffsetX = 0;
@@ -2107,16 +2052,16 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             
             generateGrid();
             
-            // Restore hex colors and tags
-            if (saveData.hexes) {
-                saveData.hexes.forEach(hexData => {
-                    const index = hexData.row * gridWidth + hexData.col;
-                    if (index < hexes.length) {
-                        const hex = hexes[index];
-                        hex.material.color.setStyle(hexData.color);
-                        hex.material.opacity = hexData.opacity;
-                        if (hexData.tag) {
-                            addTagToHex(hex, hexData.tag);
+            // Restore square colors and tags
+            if (saveData.squares) {
+                saveData.squares.forEach(squareData => {
+                    const index = squareData.row * gridWidth + squareData.col;
+                    if (index < squares.length) {
+                        const square = squares[index];
+                        square.material.color.setStyle(squareData.color);
+                        square.material.opacity = squareData.opacity;
+                        if (squareData.tag) {
+                            addTagToSquare(square, squareData.tag);
                         }
                     }
                 });
@@ -2150,21 +2095,11 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                     label.style.userSelect = 'none';
                     label.style.zIndex = '1001';
                     
-                    // Check if saved with world coordinates (new format) or screen coordinates (old format)
-                    if (labelData.worldX !== undefined && labelData.worldY !== undefined) {
-                        label.dataset.worldX = labelData.worldX;
-                        label.dataset.worldY = labelData.worldY;
-                        const screenPos = worldToScreen(labelData.worldX, labelData.worldY);
-                        label.style.left = screenPos.x + 'px';
-                        label.style.top = screenPos.y + 'px';
-                    } else {
-                        // Legacy format with screen coordinates - convert to world
-                        label.style.left = labelData.left;
-                        label.style.top = labelData.top;
-                        const worldPos = screenToWorld(parseFloat(labelData.left), parseFloat(labelData.top));
-                        label.dataset.worldX = worldPos.x;
-                        label.dataset.worldY = worldPos.y;
-                    }
+                    label.dataset.worldX = labelData.worldX;
+                    label.dataset.worldY = labelData.worldY;
+                    const screenPos = worldToScreen(labelData.worldX, labelData.worldY);
+                    label.style.left = screenPos.x + 'px';
+                    label.style.top = screenPos.y + 'px';
                     
                     document.body.appendChild(label);
                     textElements.push(label);
@@ -2184,7 +2119,6 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                         if (isDragging) {
                             label.style.left = (e.clientX - offsetX) + 'px';
                             label.style.top = (e.clientY - offsetY) + 'px';
-                            // Update world coordinates
                             const worldPos = screenToWorld(e.clientX - offsetX, e.clientY - offsetY);
                             label.dataset.worldX = worldPos.x;
                             label.dataset.worldY = worldPos.y;
@@ -2194,7 +2128,6 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                         isDragging = false;
                     });
                     
-                    // Right-click context menu for text
                     label.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -2221,28 +2154,16 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             mapIcons.length = 0;
             if (saveData.mapIcons) {
                 saveData.mapIcons.forEach(iconData => {
-                    // Check if saved with world coordinates (new format) or screen coordinates (old format)
-                    if (iconData.worldX !== undefined && iconData.worldY !== undefined) {
-                        const screenPos = worldToScreen(iconData.worldX, iconData.worldY);
-                        const icon = placeIconOnMap(
-                            iconData.imageData, 
-                            screenPos.x,
-                            screenPos.y,
-                            parseInt(iconData.width),
-                            parseInt(iconData.height),
-                            iconData.worldX,
-                            iconData.worldY
-                        );
-                    } else {
-                        // Legacy format with screen coordinates
-                        const icon = placeIconOnMap(
-                            iconData.imageData, 
-                            parseInt(iconData.left) + parseInt(iconData.width) / 2,
-                            parseInt(iconData.top) + parseInt(iconData.height) / 2,
-                            parseInt(iconData.width),
-                            parseInt(iconData.height)
-                        );
-                    }
+                    const screenPos = worldToScreen(iconData.worldX, iconData.worldY);
+                    const icon = placeIconOnMap(
+                        iconData.imageData, 
+                        screenPos.x,
+                        screenPos.y,
+                        parseInt(iconData.width),
+                        parseInt(iconData.height),
+                        iconData.worldX,
+                        iconData.worldY
+                    );
                 });
                 setActiveMapIcon(null); // Deselect all after restore
             }
@@ -2253,9 +2174,9 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                 renderCustomBorders();
             }
             
-            alert('Map imported successfully!');
+            alert('Dungeon imported successfully!');
         } catch (err) {
-            alert('Error importing map: ' + err.message);
+            alert('Error importing dungeon: ' + err.message);
         }
     };
     reader.readAsText(file);
