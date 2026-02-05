@@ -5,43 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Character Sheet</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-light: #a5b4fc;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --bg-dark: #1e293b;
+            --bg-panel: #f8fafc;
+            --bg-section: #ffffff;
+            --border: #e2e8f0;
+            --text: #334155;
+            --text-light: #64748b;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+        }
         #canvas { display: block; width: 100%; height: 100%; }
         #menu-toggle {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             z-index: 1000;
-            background: #333;
+            background: var(--bg-dark);
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px 16px;
             cursor: pointer;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+            transition: all 0.2s ease;
+        }
+        #menu-toggle:hover {
+            background: #334155;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
         }
         #system-toggle {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 15px;
+            left: 15px;
             z-index: 1000;
-            background: #333;
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px 16px;
             cursor: pointer;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+            transition: all 0.2s ease;
+        }
+        #system-toggle:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
         }
         #system-menu {
             position: absolute;
             top: 0;
-            left: -300px;
-            width: 300px;
+            left: -320px;
+            width: 320px;
             height: 100%;
-            background: #f0f0f0;
-            border-right: 1px solid #ccc;
-            transition: left 0.3s;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
             padding: 20px;
             box-sizing: border-box;
             overflow-y: auto;
+            box-shadow: var(--shadow-lg);
         }
         #system-menu.open {
             left: 0;
@@ -49,49 +95,79 @@
         #menu {
             position: absolute;
             top: 0;
-            right: -300px;
-            width: 300px;
+            right: -320px;
+            width: 320px;
             height: 100%;
-            background: #f0f0f0;
-            border-left: 1px solid #ccc;
-            transition: right 0.3s;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
             padding: 20px;
             box-sizing: border-box;
             overflow-y: auto;
+            box-shadow: var(--shadow-lg);
         }
         #menu.open {
             right: 0;
         }
+        /* Custom scrollbar */
+        #menu::-webkit-scrollbar,
+        #system-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+        #menu::-webkit-scrollbar-track,
+        #system-menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #menu::-webkit-scrollbar-thumb,
+        #system-menu::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        #menu::-webkit-scrollbar-thumb:hover,
+        #system-menu::-webkit-scrollbar-thumb:hover {
+            background: var(--text-light);
+        }
         .tool-section {
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             overflow: hidden;
+            background: var(--bg-section);
+            box-shadow: var(--shadow-sm);
         }
         .tool-section h3 {
             margin: 0;
-            padding: 10px 15px;
-            background: #e0e0e0;
+            padding: 14px 16px;
+            background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
             user-select: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
         }
         .tool-section h3:hover {
-            background: #d0d0d0;
+            background: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
         }
         .tool-section h3::after {
             content: '▼';
             font-size: 10px;
+            color: var(--text-light);
             transition: transform 0.3s ease;
+        }
+        .tool-section.collapsed h3 {
+            border-bottom: none;
         }
         .tool-section.collapsed h3::after {
             transform: rotate(-90deg);
         }
         .tool-section-content {
-            padding: 15px;
+            padding: 16px;
             max-height: 1000px;
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
@@ -104,18 +180,31 @@
         .color-picker {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .color-picker input[type="color"] {
             margin-right: 10px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            padding: 2px;
+            background: var(--bg-section);
+            transition: border-color 0.2s ease;
+        }
+        .color-picker input[type="color"]:hover {
+            border-color: var(--primary);
         }
         .text-input {
             position: absolute;
             background: white;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border);
             padding: 5px;
             cursor: move;
-            z-index: 1001;
+            z-index: 800;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
         .text-input .resize-handles {
             display: none;
@@ -124,9 +213,10 @@
             position: absolute;
             width: 10px;
             height: 10px;
-            background: #007bff;
-            border: 1px solid white;
-            border-radius: 2px;
+            background: var(--primary);
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
         }
         .text-input .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
         .text-input .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
@@ -136,50 +226,133 @@
         .text-input .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
         .text-input .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
         .text-input .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        .text-input.locked {
+            cursor: default;
+            opacity: 0.9;
+        }
+        .text-input.locked .resize-handles {
+            display: none !important;
+        }
         #text-context-menu {
             position: absolute;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
             z-index: 2000;
             display: none;
-            min-width: 150px;
+            min-width: 160px;
+            overflow: hidden;
         }
         #text-context-menu.visible {
             display: block;
         }
         .context-menu-item {
-            padding: 10px 15px;
+            padding: 10px 16px;
             cursor: pointer;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text);
+            transition: background 0.15s ease;
         }
         .context-menu-item:last-child {
             border-bottom: none;
         }
         .context-menu-item:hover {
-            background: #f0f0f0;
+            background: var(--bg-panel);
+            color: var(--primary);
         }
         #icon-context-menu {
             position: absolute;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
             z-index: 2000;
             display: none;
-            min-width: 150px;
+            min-width: 160px;
+            overflow: hidden;
         }
         #icon-context-menu.visible {
+            display: block;
+        }
+        #frame-context-menu {
+            position: absolute;
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            min-width: 160px;
+            overflow: hidden;
+        }
+        #frame-context-menu.visible {
+            display: block;
+        }
+        #number-entry-context-menu {
+            position: absolute;
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            min-width: 160px;
+            overflow: hidden;
+        }
+        #number-entry-context-menu.visible {
+            display: block;
+        }
+        #label-context-menu {
+            position: absolute;
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            min-width: 160px;
+            overflow: hidden;
+        }
+        #label-context-menu.visible {
+            display: block;
+        }
+        #button-context-menu {
+            position: absolute;
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            min-width: 160px;
+            overflow: hidden;
+        }
+        #button-context-menu.visible {
+            display: block;
+        }
+        #canvas-context-menu {
+            position: fixed;
+            background: var(--panel-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 8px 0;
+            display: none;
+            z-index: 10000;
+            min-width: 140px;
+        }
+        #canvas-context-menu.visible {
             display: block;
         }
         /* Icon list styles */
         .icon-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 8px;
             max-height: 300px;
             overflow-y: auto;
+            padding: 4px;
         }
         .icon-item {
             display: flex;
@@ -190,22 +363,25 @@
         .icon-preview {
             width: 40px;
             height: 40px;
-            border: 2px solid #333;
-            border-radius: 4px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
             cursor: pointer;
             position: relative;
-            background: #f0f0f0;
+            background: var(--bg-panel);
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
         }
         .icon-preview:hover {
-            border-color: #007bff;
+            border-color: var(--primary);
+            transform: scale(1.05);
         }
         .icon-preview.selected {
-            border-color: #007bff;
-            box-shadow: 0 0 5px #007bff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
         .icon-preview img {
             max-width: 100%;
@@ -216,19 +392,25 @@
             position: absolute;
             top: -8px;
             right: -8px;
-            width: 16px;
-            height: 16px;
-            background: #ff4444;
+            width: 18px;
+            height: 18px;
+            background: var(--danger);
             color: white;
-            border: none;
+            border: 2px solid white;
             border-radius: 50%;
             font-size: 10px;
             cursor: pointer;
             display: none;
             line-height: 1;
+            transition: background 0.2s ease;
+        }
+        .icon-preview .delete-btn:hover {
+            background: var(--danger-hover);
         }
         .icon-preview:hover .delete-btn {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .icon-name {
             font-size: 10px;
@@ -238,97 +420,131 @@
             text-overflow: ellipsis;
             white-space: nowrap;
             cursor: pointer;
+            color: var(--text-light);
+            margin-top: 4px;
         }
         .icon-name:hover {
             text-decoration: underline;
+            color: var(--primary);
         }
         /* RNG item styles */
         .rng-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             max-height: 400px;
             overflow-y: auto;
+            overflow-x: hidden;
         }
         .rng-item {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 10px;
-            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            background: var(--bg-section);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s ease;
+        }
+        .rng-item:hover {
+            box-shadow: var(--shadow);
         }
         .rng-item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .rng-name {
-            font-weight: bold;
-            font-size: 14px;
+            font-weight: 600;
+            font-size: 13px;
             flex: 1;
             cursor: pointer;
+            color: var(--text);
         }
         .rng-name:hover {
             text-decoration: underline;
+            color: var(--primary);
         }
         .rng-delete-btn {
-            width: 20px;
-            height: 20px;
-            background: #ff4444;
+            width: 22px;
+            height: 22px;
+            background: var(--danger);
             color: white;
             border: none;
             border-radius: 50%;
             font-size: 12px;
             cursor: pointer;
             line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
         }
         .rng-delete-btn:hover {
-            background: #cc0000;
+            background: var(--danger-hover);
         }
         .rng-inputs {
             display: flex;
-            gap: 5px;
-            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
             align-items: center;
         }
         .rng-inputs label {
             font-size: 11px;
             margin-right: 3px;
+            white-space: nowrap;
+            color: var(--text-light);
+            font-weight: 500;
         }
         .rng-inputs input[type="number"] {
-            width: 60px;
-            padding: 3px;
+            width: 55px;
+            padding: 6px 8px;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 12px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .rng-inputs input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
         .rng-result-row {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             align-items: center;
         }
         .rng-result {
             flex: 1;
-            padding: 8px;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 3px;
+            padding: 10px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-            color: #333;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text);
         }
         .rng-generate-btn {
-            padding: 8px 16px;
-            background: #4CAF50;
+            padding: 10px 18px;
+            background: var(--success);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--radius);
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
         }
         .rng-generate-btn:hover {
-            background: #45a049;
+            background: var(--success-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
         }
         .rng-link-checkbox {
             margin-left: 8px;
+            accent-color: var(--primary);
         }
         /* Map icon (placed on canvas) styles */
         .map-icon {
@@ -349,13 +565,20 @@
         .map-icon.active .resize-handles {
             display: block;
         }
+        .map-icon.locked {
+            cursor: default;
+        }
+        .map-icon.locked .resize-handles {
+            display: none !important;
+        }
         .map-icon .resize-handle {
             position: absolute;
             width: 10px;
             height: 10px;
-            background: #007bff;
-            border: 1px solid white;
-            border-radius: 2px;
+            background: var(--primary);
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
         }
         .map-icon .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
         .map-icon .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
@@ -365,6 +588,683 @@
         .map-icon .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
         .map-icon .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
         .map-icon .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        /* Frame styles */
+        .sheet-frame {
+            position: absolute;
+            z-index: 400;
+            cursor: move;
+            user-select: none;
+            box-sizing: border-box;
+        }
+        .sheet-frame .frame-title {
+            position: absolute;
+            bottom: 100%;
+            padding: 2px 8px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            margin-bottom: 2px;
+        }
+        .sheet-frame .frame-title.left { left: 0; text-align: left; }
+        .sheet-frame .frame-title.center { left: 50%; transform: translateX(-50%); text-align: center; }
+        .sheet-frame .frame-title.right { right: 0; text-align: right; }
+        .sheet-frame .resize-handles {
+            display: none;
+        }
+        .sheet-frame.active .resize-handles {
+            display: block;
+        }
+        .sheet-frame.locked {
+            cursor: default;
+        }
+        .sheet-frame.locked .resize-handles {
+            display: none !important;
+        }
+        .sheet-frame .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
+        }
+        .sheet-frame .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .sheet-frame .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .sheet-frame .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .sheet-frame .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .sheet-frame .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .sheet-frame .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .sheet-frame .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+        .sheet-frame .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        /* Number entry styles */
+        .number-entry {
+            position: absolute;
+            z-index: 600;
+            cursor: move;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            padding: 3px;
+            box-sizing: border-box;
+        }
+        .number-entry input[type="number"] {
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .number-entry input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        .number-entry .resize-handles {
+            display: none;
+        }
+        .number-entry.active .resize-handles {
+            display: block;
+        }
+        .number-entry.locked {
+            cursor: default;
+        }
+        .number-entry.locked .resize-handles {
+            display: none !important;
+        }
+        .number-entry .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--danger);
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
+        }
+        .number-entry .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .number-entry .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .number-entry .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .number-entry .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .number-entry .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .number-entry .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .number-entry .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+        .number-entry .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        /* Label styles */
+        .sheet-label {
+            position: absolute;
+            z-index: 700;
+            cursor: move;
+            user-select: none;
+            padding: 5px;
+            white-space: nowrap;
+        }
+        .sheet-label .resize-handles {
+            display: none;
+        }
+        .sheet-label.active .resize-handles {
+            display: block;
+        }
+        .sheet-label.locked {
+            cursor: default;
+        }
+        .sheet-label.locked .resize-handles {
+            display: none !important;
+        }
+        .sheet-label .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #8b5cf6;
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
+        }
+        .sheet-label .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .sheet-label .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .sheet-label .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .sheet-label .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .sheet-label .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .sheet-label .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .sheet-label .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+        .sheet-label .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        /* Action Button styles */
+        .action-button {
+            position: absolute;
+            z-index: 750;
+            cursor: pointer;
+            user-select: none;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            min-height: 32px;
+        }
+        .action-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        }
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .action-button .resize-handles {
+            display: none;
+        }
+        .action-button.active .resize-handles {
+            display: block;
+        }
+        .action-button.locked {
+            cursor: default;
+        }
+        .action-button.locked .resize-handles {
+            display: none !important;
+        }
+        .action-button .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ec4899;
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
+        }
+        .action-button .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .action-button .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .action-button .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .action-button .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .action-button .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .action-button .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .action-button .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+        .action-button .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        /* List Box styles */
+        .list-box-widget {
+            position: absolute;
+            z-index: 740;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+            min-width: 180px;
+            min-height: 150px;
+        }
+        .list-box-widget .resize-handles {
+            display: none;
+        }
+        .list-box-widget.active .resize-handles {
+            display: block;
+        }
+        .list-box-widget.locked {
+            cursor: default;
+        }
+        .list-box-widget.locked .resize-handles {
+            display: none !important;
+        }
+        .list-box-widget .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+        .list-box-widget .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .list-box-widget .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .list-box-widget .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .list-box-widget .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .list-box-widget .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .list-box-widget .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .list-box-widget .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+        .list-box-widget .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        .list-box-title {
+            padding: 8px 12px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .list-box-input-row {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .list-box-input-row input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: inherit;
+            min-width: 0;
+        }
+        .list-box-input-row input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .list-box-add-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .list-box-add-btn:hover {
+            filter: brightness(1.1);
+        }
+        .list-box-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+        .list-box-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.1s;
+        }
+        .list-box-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .list-box-item.selected {
+            background: rgba(99, 102, 241, 0.15);
+        }
+        .list-box-item-name {
+            flex: 1;
+        }
+        .list-box-item-count {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        #listbox-item-context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10002;
+            display: none;
+            min-width: 140px;
+            padding: 4px 0;
+        }
+        #listbox-item-context-menu.visible {
+            display: block;
+        }
+        #listbox-context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10001;
+            display: none;
+            min-width: 140px;
+            padding: 4px 0;
+        }
+        #listbox-context-menu.visible {
+            display: block;
+        }
+        /* Task Editor Modal styles */
+        .task-editor-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .task-editor-modal {
+            background: white;
+            border-radius: 12px;
+            width: 700px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .task-editor-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-editor-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #1f2937;
+        }
+        .task-editor-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0;
+            line-height: 1;
+        }
+        .task-editor-close:hover {
+            color: #ef4444;
+        }
+        .task-editor-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .task-palette {
+            width: 180px;
+            border-right: 1px solid #e5e7eb;
+            padding: 12px;
+            background: #f9fafb;
+        }
+        .task-palette h4 {
+            margin: 0 0 12px 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+        }
+        .task-block-template {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            cursor: grab;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s;
+        }
+        .task-block-template:hover {
+            border-color: var(--primary);
+            background: #f0f0ff;
+        }
+        .task-block-template .icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+        }
+        .task-block-template.run-rng .icon { background: #8b5cf6; }
+        .task-block-template.add .icon { background: #10b981; }
+        .task-block-template.subtract .icon { background: #ef4444; }
+        .task-block-template.set .icon { background: #3b82f6; }
+        .task-sequence {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+        .task-sequence-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .task-sequence-header h4 {
+            margin: 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+        }
+        .task-sequence-list {
+            min-height: 150px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 8px;
+            background: #fafafa;
+        }
+        .task-sequence-list.drag-over {
+            border-color: var(--primary);
+            background: #f0f0ff;
+        }
+        .task-sequence-list.empty::before {
+            content: 'Drag task blocks here to build your action sequence';
+            display: block;
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        .task-block {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .task-block:last-child {
+            margin-bottom: 0;
+        }
+        .task-block-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .task-block-header .icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+        }
+        .task-block.run-rng .icon { background: #8b5cf6; }
+        .task-block.add .icon { background: #10b981; }
+        .task-block.subtract .icon { background: #ef4444; }
+        .task-block.set .icon { background: #3b82f6; }
+        .task-block-header .title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+        }
+        .task-block-header .delete-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            line-height: 1;
+        }
+        .task-block-header .delete-btn:hover {
+            color: #ef4444;
+        }
+        .task-block-config {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .task-block-config label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .task-block-config select,
+        .task-block-config input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .task-block-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .task-block-row > div {
+            flex: 1;
+        }
+        .task-editor-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .task-editor-footer button {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .task-editor-footer .cancel-btn,
+        .task-editor-footer .btn-cancel {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+        .task-editor-footer .cancel-btn:hover,
+        .task-editor-footer .btn-cancel:hover {
+            background: #f3f4f6;
+        }
+        .task-editor-footer .save-btn,
+        .task-editor-footer .btn-save {
+            background: var(--primary);
+            border: none;
+            color: white;
+        }
+        .task-editor-footer .save-btn:hover,
+        .task-editor-footer .btn-save:hover {
+            background: #4f46e5;
+        }
+        /* Additional task block styles */
+        .task-editor-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .task-sequence-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        .task-sequence-container h4 {
+            margin: 0 0 12px 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+        }
+        .task-sequence {
+            flex: 1;
+            min-height: 200px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 8px;
+            background: #fafafa;
+            overflow-y: auto;
+        }
+        .task-sequence.drag-over {
+            border-color: var(--primary);
+            background: #f0f0ff;
+        }
+        .task-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        .task-block {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        .task-block.run-rng { border-left: 3px solid #8b5cf6; }
+        .task-block.add { border-left: 3px solid #10b981; }
+        .task-block.subtract { border-left: 3px solid #ef4444; }
+        .task-block.set { border-left: 3px solid #3b82f6; }
+        .task-block-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .task-icon {
+            font-size: 16px;
+        }
+        .task-delete {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+            line-height: 1;
+        }
+        .task-delete:hover {
+            color: #ef4444;
+        }
+        .task-block-config {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .task-block-config label {
+            font-size: 12px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .task-block-config select,
+        .task-block-config input[type="number"] {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .task-source-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -387,6 +1287,15 @@
             <div class="tool-section-content">
                 <button id="reset-view">Reset View</button>
                 <p>Use mouse wheel to zoom in/out. Click and drag to pan the view.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Grid</h3>
+            <div class="tool-section-content">
+                <label><input type="checkbox" id="toggle-grid"> Show Grid</label><br><br>
+                <label><input type="checkbox" id="toggle-snap"> Snap to Grid</label><br><br>
+                <label>Grid Size: <input type="number" id="grid-size" value="20" min="5" max="100" style="width: 60px;">px</label>
+                <p>Enable grid overlay and snap elements to grid when placing or moving.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -414,7 +1323,7 @@
     <div id="menu">
         <h2>Tools</h2>
         <div class="tool-section collapsed">
-            <h3>Free Hand Drawing</h3>
+            <h3>Drawing Tool</h3>
             <div class="tool-section-content">
                 <label>Thickness: <input type="range" id="line-thickness" min="1" max="10" value="2"></label>
                 <div class="color-picker">
@@ -443,15 +1352,149 @@
             </div>
         </div>
         <div class="tool-section collapsed">
-            <h3>Icons</h3>
+            <h3>Frame Tool</h3>
+            <div class="tool-section-content">
+                <label>Title: <input type="text" id="frame-title" value="Frame" style="width: 150px;"></label><br><br>
+                <label>Title Size: <input type="number" id="frame-title-size" min="10" max="48" value="16" style="width: 60px;">px</label><br><br>
+                <label>Title Placement:
+                    <select id="frame-title-placement">
+                        <option value="left">Left</option>
+                        <option value="center" selected>Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </label><br><br>
+                <label>Title Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="frame-title-color" value="#333333">
+                    <input type="text" id="frame-title-color-text" value="#333333" maxlength="7">
+                </div>
+                <label>Border Thickness: <input type="number" id="frame-border-thickness" min="1" max="20" value="2" style="width: 60px;">px</label><br><br>
+                <label>Border Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="frame-border-color" value="#333333">
+                    <input type="text" id="frame-border-color-text" value="#333333" maxlength="7">
+                </div>
+                <label>Background Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="frame-bg-color" value="#ffffff">
+                    <input type="text" id="frame-bg-color-text" value="#ffffff" maxlength="7">
+                </div>
+                <label>Background Opacity: <input type="range" id="frame-bg-opacity" min="0" max="100" value="100" style="width: 100px;"></label>
+                <span id="frame-bg-opacity-value">100%</span><br><br>
+                <button id="toggle-frame-tool">Enable Frame Tool</button>
+                <p>Click on the canvas to place a frame. Right-click to access options.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Number Entry Tool</h3>
+            <div class="tool-section-content">
+                <label>Default Value: <input type="number" id="number-entry-default" value="0" style="width: 80px;"></label><br><br>
+                <label>Min Value: <input type="number" id="number-entry-min" value="" placeholder="None" style="width: 80px;"></label><br><br>
+                <label>Max Value: <input type="number" id="number-entry-max" value="" placeholder="None" style="width: 80px;"></label><br><br>
+                <label>Font Size: <input type="number" id="number-entry-font-size" min="10" max="48" value="16" style="width: 60px;">px</label><br><br>
+                <label>Text Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="number-entry-text-color" value="#000000">
+                    <input type="text" id="number-entry-text-color-text" value="#000000" maxlength="7">
+                </div>
+                <label>Background Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="number-entry-bg-color" value="#ffffff">
+                    <input type="text" id="number-entry-bg-color-text" value="#ffffff" maxlength="7">
+                </div>
+                <label><input type="checkbox" id="number-entry-bold"> Bold</label>
+                <label><input type="checkbox" id="number-entry-italic"> Italic</label><br><br>
+                <button id="toggle-number-entry-tool">Enable Number Entry Tool</button>
+                <p>Click on the canvas to place a number input box. These can be linked to RNGs and functions later.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Label Tool</h3>
+            <div class="tool-section-content">
+                <label>Font Size: <input type="number" id="label-font-size" min="10" max="100" value="24" style="width: 60px;">px</label><br><br>
+                <label>Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="label-color" value="#000000">
+                    <input type="text" id="label-color-text" value="#000000" maxlength="7">
+                </div>
+                <label>Letter Spacing: <input type="number" id="label-letter-spacing" min="-5" max="20" value="0" style="width: 60px;">px</label><br><br>
+                <label><input type="checkbox" id="label-bold"> Bold</label>
+                <label><input type="checkbox" id="label-italic"> Italic</label>
+                <label><input type="checkbox" id="label-underline"> Underlined</label><br><br>
+                <button id="toggle-label-tool">Enable Label Tool</button>
+                <p>Click on the canvas to add a label/heading. Right-click to edit or delete.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Button Tool</h3>
+            <div class="tool-section-content">
+                <label>Button Text: <input type="text" id="button-text" value="Click Me" style="width: 120px;"></label><br><br>
+                <label>Font Size: <input type="number" id="button-font-size" min="10" max="48" value="14" style="width: 60px;">px</label><br><br>
+                <label>Text Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="button-text-color" value="#ffffff">
+                    <input type="text" id="button-text-color-text" value="#ffffff" maxlength="7">
+                </div>
+                <label>Button Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="button-bg-color" value="#6366f1">
+                    <input type="text" id="button-bg-color-text" value="#6366f1" maxlength="7">
+                </div>
+                <label><input type="checkbox" id="button-bold"> Bold</label>
+                <label><input type="checkbox" id="button-italic"> Italic</label><br><br>
+                <button id="toggle-button-tool">Enable Button Tool</button>
+                <p>Click on the canvas to place a button. Right-click to edit actions, copy, or delete.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>List Box Tool</h3>
+            <div class="tool-section-content">
+                <label>Title: <input type="text" id="listbox-title" value="Items" style="width: 120px;"></label><br><br>
+                <label>Title Size: <input type="number" id="listbox-title-size" min="10" max="36" value="16" style="width: 60px;">px</label><br><br>
+                <label>Title Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="listbox-title-color" value="#1f2937">
+                    <input type="text" id="listbox-title-color-text" value="#1f2937" maxlength="7">
+                </div>
+                <label>Font Size: <input type="number" id="listbox-font-size" min="10" max="36" value="14" style="width: 60px;">px</label><br><br>
+                <label>Text Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="listbox-text-color" value="#374151">
+                    <input type="text" id="listbox-text-color-text" value="#374151" maxlength="7">
+                </div>
+                <label>Background Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="listbox-bg-color" value="#ffffff">
+                    <input type="text" id="listbox-bg-color-text" value="#ffffff" maxlength="7">
+                </div>
+                <label>Button Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="listbox-button-color" value="#6366f1">
+                    <input type="text" id="listbox-button-color-text" value="#6366f1" maxlength="7">
+                </div>
+                <label>Border Size: <input type="number" id="listbox-border-size" min="0" max="10" value="1" style="width: 60px;">px</label><br><br>
+                <label>Border Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="listbox-border-color" value="#d1d5db">
+                    <input type="text" id="listbox-border-color-text" value="#d1d5db" maxlength="7">
+                </div>
+                <label><input type="checkbox" id="listbox-bold"> Bold</label>
+                <label><input type="checkbox" id="listbox-italic"> Italic</label><br><br>
+                <button id="toggle-listbox-tool">Enable List Box Tool</button>
+                <p>Click on the canvas to place a list box. Type items and click + to add. Right-click items to add count or remove.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Image Tool</h3>
             <div class="tool-section-content">
                 <div class="palette-header">
-                    <h4>Icon Library</h4>
+                    <h4>Image Library</h4>
                     <button class="palette-add-btn" id="icon-add" title="Add icon">+</button>
                 </div>
                 <input type="file" id="icon-file" accept="image/*" style="display: none;">
                 <div class="icon-container" id="icon-container"></div>
-                <p style="margin-top: 10px;">Click + to add icons (max 40). Click an icon to place it on the sheet.</p>
+                <button id="toggle-icon-tool" style="margin-top: 10px;">Enable Image Placement</button>
+                <p style="margin-top: 10px;">Click + to add images (max 40). Enable placement then click an image to select it, then click on the sheet to place.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -467,13 +1510,58 @@
     <!-- Context menus -->
     <div id="text-context-menu">
         <div class="context-menu-item" id="edit-text">Edit Text</div>
-        <div class="context-menu-item" id="toggle-resize">Toggle Resize Handles</div>
+        <div class="context-menu-item" id="toggle-text-lock">Lock</div>
+        <div class="context-menu-item" id="copy-text">Copy</div>
         <div class="context-menu-item" id="delete-text">Delete Text</div>
     </div>
     <div id="icon-context-menu">
-        <div class="context-menu-item" id="delete-icon">Delete Icon</div>
+        <div class="context-menu-item" id="rotate-icon">Rotate 90°</div>
+        <div class="context-menu-item" id="toggle-icon-lock">Lock Image</div>
         <div class="context-menu-item" id="bring-to-front">Bring to Front</div>
         <div class="context-menu-item" id="send-to-back">Send to Back</div>
+        <div class="context-menu-item" id="delete-icon">Delete Image</div>
+    </div>
+    <div id="frame-context-menu">
+        <div class="context-menu-item" id="edit-frame-title">Edit Title</div>
+        <div class="context-menu-item" id="toggle-frame-lock">Lock Frame</div>
+        <div class="context-menu-item" id="frame-bring-to-front">Bring to Front</div>
+        <div class="context-menu-item" id="frame-send-to-back">Send to Back</div>
+        <div class="context-menu-item" id="copy-frame">Copy</div>
+        <div class="context-menu-item" id="delete-frame">Delete Frame</div>
+    </div>
+    <div id="number-entry-context-menu">
+        <div class="context-menu-item" id="rename-number-entry">Rename</div>
+        <div class="context-menu-item" id="edit-number-entry">Edit Value</div>
+        <div class="context-menu-item" id="toggle-number-entry-lock">Lock</div>
+        <div class="context-menu-item" id="copy-number-entry">Copy</div>
+        <div class="context-menu-item" id="delete-number-entry">Delete</div>
+    </div>
+    <div id="label-context-menu">
+        <div class="context-menu-item" id="edit-label">Edit Label</div>
+        <div class="context-menu-item" id="toggle-label-lock">Lock</div>
+        <div class="context-menu-item" id="copy-label">Copy</div>
+        <div class="context-menu-item" id="delete-label">Delete Label</div>
+    </div>
+    <div id="button-context-menu">
+        <div class="context-menu-item" id="edit-button-text">Edit Text</div>
+        <div class="context-menu-item" id="edit-button-actions">Edit Actions</div>
+        <div class="context-menu-item" id="toggle-button-lock">Lock</div>
+        <div class="context-menu-item" id="copy-button">Copy</div>
+        <div class="context-menu-item" id="delete-button">Delete Button</div>
+    </div>
+    <div id="listbox-context-menu">
+        <div class="context-menu-item" id="edit-listbox-title">Edit Title</div>
+        <div class="context-menu-item" id="toggle-listbox-lock">Lock</div>
+        <div class="context-menu-item" id="copy-listbox">Copy</div>
+        <div class="context-menu-item" id="delete-listbox">Delete List Box</div>
+    </div>
+    <div id="listbox-item-context-menu">
+        <div class="context-menu-item" id="listbox-item-add">Add (+1)</div>
+        <div class="context-menu-item" id="listbox-item-remove">Remove (-1)</div>
+        <div class="context-menu-item" id="listbox-item-delete">Delete Item</div>
+    </div>
+    <div id="canvas-context-menu">
+        <div class="context-menu-item" id="paste-element">Paste</div>
     </div>
 
     <script type="module" src="character-sheet.js"></script>
