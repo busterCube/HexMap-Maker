@@ -1300,6 +1300,60 @@
         .task-block.func-max { border-left: 3px solid #06b6d4; }
         .task-block.func-rand { border-left: 3px solid #06b6d4; }
         .task-block.func-print { border-left: 3px solid #06b6d4; }
+        .task-block.func-math { border-left: 3px solid #06b6d4; }
+        .task-block.func-sum { border-left: 3px solid #06b6d4; }
+        .task-block.func-round { border-left: 3px solid #06b6d4; }
+        .task-block.func-checklist { border-left: 3px solid #06b6d4; }
+        .task-block.list-add-item { border-left: 3px solid #22c55e; }
+        .task-block.list-add-amount { border-left: 3px solid #22c55e; }
+        .task-block.list-remove-amount { border-left: 3px solid #22c55e; }
+        .task-block.list-remove-item { border-left: 3px solid #22c55e; }
+        /* Sum value row styling */
+        .sum-values-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .sum-value-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 6px;
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+        .sum-value-row select,
+        .sum-value-row input {
+            padding: 4px 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            flex: 1;
+            min-width: 80px;
+        }
+        .sum-value-remove {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 4px;
+            line-height: 1;
+            flex: 0 0 auto;
+        }
+        .sum-value-remove:hover { color: #dc2626; }
+        .sum-value-add {
+            background: #ecfdf5;
+            border: 1px dashed #22c55e;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: #16a34a;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .sum-value-add:hover { background: #dcfce7; }
         /* Condition row styles */
         .condition-row {
             display: flex;
@@ -1670,6 +1724,7 @@
     <div id="listbox-item-context-menu">
         <div class="context-menu-item" id="listbox-item-add">Add (+1)</div>
         <div class="context-menu-item" id="listbox-item-remove">Remove (-1)</div>
+        <div class="context-menu-item" id="listbox-item-set">Set Amount</div>
         <div class="context-menu-item" id="listbox-item-delete">Delete Item</div>
     </div>
     <div id="canvas-context-menu">

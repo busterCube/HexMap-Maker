@@ -3135,6 +3135,14 @@ function createListBoxElement(listBoxData) {
         e.stopPropagation();
         const text = input.value.trim();
         if (text) {
+            const duplicate = listBoxData.items.some(it => it.name.toLowerCase() === text.toLowerCase());
+            if (duplicate) {
+                input.style.outline = '2px solid #ef4444';
+                input.setAttribute('placeholder', 'Item on list already');
+                input.value = '';
+                setTimeout(() => { input.style.outline = ''; input.setAttribute('placeholder', ''); }, 2000);
+                return;
+            }
             listBoxData.items.push({ name: text, count: 1 });
             input.value = '';
             renderListBoxItems(listBoxData);
@@ -3146,6 +3154,14 @@ function createListBoxElement(listBoxData) {
             e.preventDefault();
             const text = input.value.trim();
             if (text) {
+                const duplicate = listBoxData.items.some(it => it.name.toLowerCase() === text.toLowerCase());
+                if (duplicate) {
+                    input.style.outline = '2px solid #ef4444';
+                    input.setAttribute('placeholder', 'Item on list already');
+                    input.value = '';
+                    setTimeout(() => { input.style.outline = ''; input.setAttribute('placeholder', ''); }, 2000);
+                    return;
+                }
                 listBoxData.items.push({ name: text, count: 1 });
                 input.value = '';
                 renderListBoxItems(listBoxData);
@@ -3435,6 +3451,20 @@ document.getElementById('listbox-item-delete').addEventListener('click', () => {
     listboxItemContextMenu.classList.remove('visible');
 });
 
+document.getElementById('listbox-item-set').addEventListener('click', () => {
+    if (currentListBoxItemData && currentListBoxData) {
+        const newAmount = prompt('Set amount for "' + currentListBoxItemData.item.name + '":', currentListBoxItemData.item.count);
+        if (newAmount !== null) {
+            const parsed = parseInt(newAmount);
+            if (!isNaN(parsed) && parsed >= 1) {
+                currentListBoxItemData.item.count = parsed;
+                renderListBoxItems(currentListBoxData);
+            }
+        }
+    }
+    listboxItemContextMenu.classList.remove('visible');
+});
+
 // ============== TASK EDITOR ==============
 let currentEditingButton = null;
 let tempTasks = [];
@@ -3532,6 +3562,35 @@ function showTaskEditor(buttonData) {
                 </div>
                 <div class="task-block-template" data-type="func-print" draggable="true">
                     <span class="task-icon">🖨️</span> Print
+                </div>
+                <div class="task-block-template" data-type="func-math" draggable="true">
+                    <span class="task-icon">🧮</span> Math
+                </div>
+                <div class="task-block-template" data-type="func-sum" draggable="true">
+                    <span class="task-icon">➕</span> Sum
+                </div>
+                <div class="task-block-template" data-type="func-round" draggable="true">
+                    <span class="task-icon">🔄</span> Round
+                </div>
+                <div class="task-block-template" data-type="func-checklist" draggable="true">
+                    <span class="task-icon">🔍</span> CheckList
+                </div>
+            </div>
+        </div>
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="itemlists">▶ Item Lists</div>
+            <div class="palette-category-items" id="palette-itemlists" style="display:none;">
+                <div class="task-block-template" data-type="list-add-item" draggable="true">
+                    <span class="task-icon">📋</span> Add Item to List
+                </div>
+                <div class="task-block-template" data-type="list-add-amount" draggable="true">
+                    <span class="task-icon">📈</span> Add Amount to Item
+                </div>
+                <div class="task-block-template" data-type="list-remove-amount" draggable="true">
+                    <span class="task-icon">📉</span> Remove Amount from Item
+                </div>
+                <div class="task-block-template" data-type="list-remove-item" draggable="true">
+                    <span class="task-icon">🗑️</span> Remove Item from List
                 </div>
             </div>
         </div>
@@ -3963,6 +4022,260 @@ function createTaskBlock(task, index) {
                 </div>
             `;
             break;
+        case 'func-math':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🧮</span> Math
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Value A:</label>
+                    <select class="task-func-a-type" data-index="${index}">
+                        <option value="static" ${task.inputAType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.inputAType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.inputAType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                        <option value="variable" ${task.inputAType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getFuncValueInput(task, index, 'A')}
+                    <label>Operation:</label>
+                    <select class="task-math-op" data-index="${index}">
+                        <option value="add" ${task.mathOp === 'add' ? 'selected' : ''}>Add (+)</option>
+                        <option value="subtract" ${task.mathOp === 'subtract' ? 'selected' : ''}>Subtract (-)</option>
+                        <option value="multiply" ${task.mathOp === 'multiply' ? 'selected' : ''}>Multiply (×)</option>
+                        <option value="divide" ${task.mathOp === 'divide' ? 'selected' : ''}>Divide (÷)</option>
+                        <option value="modulo" ${task.mathOp === 'modulo' ? 'selected' : ''}>Modulo (%)</option>
+                    </select>
+                    <label>Value B:</label>
+                    <select class="task-func-b-type" data-index="${index}">
+                        <option value="static" ${task.inputBType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.inputBType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.inputBType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                        <option value="variable" ${task.inputBType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getFuncValueInput(task, index, 'B')}
+                    <label>Store result in:</label>
+                    <select class="task-func-output-type" data-index="${index}">
+                        <option value="variable" ${task.outputType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.outputType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${getFuncOutputSelect(task, index)}
+                </div>
+            `;
+            break;
+        case 'func-sum':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">➕</span> Sum
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <div class="sum-values-container">
+                        ${buildSumValuesUI(task, index)}
+                    </div>
+                    <button class="sum-value-add" data-index="${index}">+ Add Value</button>
+                    <label>Store result in:</label>
+                    <select class="task-func-output-type" data-index="${index}">
+                        <option value="variable" ${task.outputType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.outputType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${getFuncOutputSelect(task, index)}
+                </div>
+            `;
+            break;
+        case 'func-round':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🔄</span> Round
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Value:</label>
+                    <select class="task-func-a-type" data-index="${index}">
+                        <option value="static" ${task.inputAType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.inputAType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.inputAType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                        <option value="variable" ${task.inputAType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getFuncValueInput(task, index, 'A')}
+                    <label>Round:</label>
+                    <select class="task-round-dir" data-index="${index}">
+                        <option value="down" ${task.roundDir === 'down' ? 'selected' : ''}>Round Down (Floor)</option>
+                        <option value="up" ${task.roundDir === 'up' ? 'selected' : ''}>Round Up (Ceil)</option>
+                    </select>
+                    <label>Store result in:</label>
+                    <select class="task-func-output-type" data-index="${index}">
+                        <option value="variable" ${task.outputType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.outputType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${getFuncOutputSelect(task, index)}
+                </div>
+            `;
+            break;
+        case 'func-checklist':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🔍</span> CheckList
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>List Box:</label>
+                    <select class="task-listbox-select" data-index="${index}">
+                        <option value="">Select List Box...</option>
+                        ${getListBoxOptions(task.listBoxIndex)}
+                    </select>
+                    <label>Item name to find:</label>
+                    <select class="task-checklist-source" data-index="${index}">
+                        <option value="static" ${task.checkSource === 'static' ? 'selected' : ''}>Text</option>
+                        <option value="variable" ${task.checkSource === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${task.checkSource === 'variable' ?
+                        `<select class="task-checklist-var" data-index="${index}">
+                            <option value="">Select Variable...</option>
+                            ${getVariableOptions(task.checkVarName)}
+                        </select>` :
+                        `<input type="text" class="task-checklist-text" data-index="${index}" value="${task.checkText || ''}" placeholder="Item name">`
+                    }
+                    <label>Store result (True/False) in variable:</label>
+                    <select class="task-func-output-var" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.outputVarName)}
+                    </select>
+                </div>
+            `;
+            break;
+        // ===== ITEM LIST TASKS =====
+        case 'list-add-item':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📋</span> Add Item to List
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>List Box:</label>
+                    <select class="task-listbox-select" data-index="${index}">
+                        <option value="">Select List Box...</option>
+                        ${getListBoxOptions(task.listBoxIndex)}
+                    </select>
+                    <label>Item name:</label>
+                    <select class="task-list-name-source" data-index="${index}">
+                        <option value="static" ${task.nameSource === 'static' ? 'selected' : ''}>Text</option>
+                        <option value="variable" ${task.nameSource === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${task.nameSource === 'variable' ?
+                        `<select class="task-list-name-var" data-index="${index}">
+                            <option value="">Select Variable...</option>
+                            ${getVariableOptions(task.nameVarName)}
+                        </select>` :
+                        `<input type="text" class="task-list-name-text" data-index="${index}" value="${task.itemName || ''}" placeholder="Item name">`
+                    }
+                    <label>Initial amount:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'list-add-amount':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📈</span> Add Amount to Item
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>List Box:</label>
+                    <select class="task-listbox-select" data-index="${index}">
+                        <option value="">Select List Box...</option>
+                        ${getListBoxOptions(task.listBoxIndex)}
+                    </select>
+                    <label>Item name:</label>
+                    <select class="task-list-name-source" data-index="${index}">
+                        <option value="static" ${task.nameSource === 'static' ? 'selected' : ''}>Text</option>
+                        <option value="variable" ${task.nameSource === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${task.nameSource === 'variable' ?
+                        `<select class="task-list-name-var" data-index="${index}">
+                            <option value="">Select Variable...</option>
+                            ${getVariableOptions(task.nameVarName)}
+                        </select>` :
+                        `<input type="text" class="task-list-name-text" data-index="${index}" value="${task.itemName || ''}" placeholder="Item name">`
+                    }
+                    <label>Amount to add:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'list-remove-amount':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📉</span> Remove Amount from Item
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>List Box:</label>
+                    <select class="task-listbox-select" data-index="${index}">
+                        <option value="">Select List Box...</option>
+                        ${getListBoxOptions(task.listBoxIndex)}
+                    </select>
+                    <label>Item name:</label>
+                    <select class="task-list-name-source" data-index="${index}">
+                        <option value="static" ${task.nameSource === 'static' ? 'selected' : ''}>Text</option>
+                        <option value="variable" ${task.nameSource === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${task.nameSource === 'variable' ?
+                        `<select class="task-list-name-var" data-index="${index}">
+                            <option value="">Select Variable...</option>
+                            ${getVariableOptions(task.nameVarName)}
+                        </select>` :
+                        `<input type="text" class="task-list-name-text" data-index="${index}" value="${task.itemName || ''}" placeholder="Item name">`
+                    }
+                    <label>Amount to remove:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'list-remove-item':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🗑️</span> Remove Item from List
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>List Box:</label>
+                    <select class="task-listbox-select" data-index="${index}">
+                        <option value="">Select List Box...</option>
+                        ${getListBoxOptions(task.listBoxIndex)}
+                    </select>
+                    <label>Item name:</label>
+                    <select class="task-list-name-source" data-index="${index}">
+                        <option value="static" ${task.nameSource === 'static' ? 'selected' : ''}>Text</option>
+                        <option value="variable" ${task.nameSource === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${task.nameSource === 'variable' ?
+                        `<select class="task-list-name-var" data-index="${index}">
+                            <option value="">Select Variable...</option>
+                            ${getVariableOptions(task.nameVarName)}
+                        </select>` :
+                        `<input type="text" class="task-list-name-text" data-index="${index}" value="${task.itemName || ''}" placeholder="Item name">`
+                    }
+                </div>
+            `;
+            break;
     }
     
     block.innerHTML = blockContent;
@@ -4214,6 +4527,134 @@ function createTaskBlock(task, index) {
                 tempTasks[idx].printLabel = e.target.value;
             });
         }
+        
+        // Math operation select
+        const mathOp = block.querySelector('.task-math-op');
+        if (mathOp) {
+            mathOp.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].mathOp = e.target.value;
+            });
+        }
+        
+        // Round direction select
+        const roundDir = block.querySelector('.task-round-dir');
+        if (roundDir) {
+            roundDir.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].roundDir = e.target.value;
+            });
+        }
+        
+        // Sum value add button
+        const sumAddBtn = block.querySelector('.sum-value-add');
+        if (sumAddBtn) {
+            sumAddBtn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                if (!tempTasks[idx].sumValues) tempTasks[idx].sumValues = [];
+                tempTasks[idx].sumValues.push({ type: 'static', value: 0, index: null, varName: '' });
+                renderTaskSequence();
+            });
+        }
+        
+        // Sum value remove buttons
+        block.querySelectorAll('.sum-value-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const si = parseInt(e.target.dataset.sumindex);
+                tempTasks[idx].sumValues.splice(si, 1);
+                renderTaskSequence();
+            });
+        });
+        
+        // Sum value type selects
+        block.querySelectorAll('.sum-val-type').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const si = parseInt(e.target.dataset.sumindex);
+                tempTasks[idx].sumValues[si].type = e.target.value;
+                renderTaskSequence();
+            });
+        });
+        
+        // Sum value inputs
+        block.querySelectorAll('.sum-val-input').forEach(el => {
+            const handler = (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const si = parseInt(e.target.dataset.sumindex);
+                const sv = tempTasks[idx].sumValues[si];
+                if (sv.type === 'numberEntry') sv.index = parseInt(e.target.value);
+                else if (sv.type === 'variable') sv.varName = e.target.value;
+                else sv.value = parseFloat(e.target.value) || 0;
+            };
+            el.addEventListener('input', handler);
+            el.addEventListener('change', handler);
+        });
+        
+        // List box select
+        const listBoxSelect = block.querySelector('.task-listbox-select');
+        if (listBoxSelect) {
+            listBoxSelect.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].listBoxIndex = parseInt(e.target.value);
+            });
+        }
+        
+        // List name source select
+        const listNameSource = block.querySelector('.task-list-name-source');
+        if (listNameSource) {
+            listNameSource.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].nameSource = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        
+        // List name text input
+        const listNameText = block.querySelector('.task-list-name-text');
+        if (listNameText) {
+            listNameText.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].itemName = e.target.value;
+            });
+        }
+        
+        // List name variable select
+        const listNameVar = block.querySelector('.task-list-name-var');
+        if (listNameVar) {
+            listNameVar.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].nameVarName = e.target.value;
+            });
+        }
+        
+        // CheckList source select
+        const checkSource = block.querySelector('.task-checklist-source');
+        if (checkSource) {
+            checkSource.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].checkSource = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        
+        // CheckList text input
+        const checkText = block.querySelector('.task-checklist-text');
+        if (checkText) {
+            checkText.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].checkText = e.target.value;
+            });
+        }
+        
+        // CheckList variable select
+        const checkVar = block.querySelector('.task-checklist-var');
+        if (checkVar) {
+            checkVar.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].checkVarName = e.target.value;
+            });
+        }
     }, 0);
     
     return block;
@@ -4260,6 +4701,57 @@ function getVariableOptions(selectedName) {
     return Array.from(varNames).map(name =>
         `<option value="${name}" ${selectedName === name ? 'selected' : ''}>${name}</option>`
     ).join('');
+}
+
+// Helper to get list box options for dropdowns
+function getListBoxOptions(selectedIndex) {
+    return listBoxElements.map((lb, i) =>
+        `<option value="${i}" ${selectedIndex === i ? 'selected' : ''}>${lb.title || 'List Box ' + (i+1)}</option>`
+    ).join('');
+}
+
+// Build the sum values UI rows
+function buildSumValuesUI(task, index) {
+    if (!task.sumValues || task.sumValues.length === 0) {
+        task.sumValues = [
+            { type: 'static', value: 0, index: null, varName: '' },
+            { type: 'static', value: 0, index: null, varName: '' }
+        ];
+    }
+    return task.sumValues.map((sv, si) => `
+        <div class="sum-value-row">
+            <select class="sum-val-type" data-index="${index}" data-sumindex="${si}">
+                <option value="static" ${sv.type === 'static' ? 'selected' : ''}>Static</option>
+                <option value="lastRng" ${sv.type === 'lastRng' ? 'selected' : ''}>Last RNG</option>
+                <option value="numberEntry" ${sv.type === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                <option value="variable" ${sv.type === 'variable' ? 'selected' : ''}>Variable</option>
+            </select>
+            ${getSumValueInput(sv, index, si)}
+            ${si > 1 ? `<button class="sum-value-remove" data-index="${index}" data-sumindex="${si}">×</button>` : ''}
+        </div>
+    `).join('');
+}
+
+// Get input for a single sum value
+function getSumValueInput(sv, index, si) {
+    switch (sv.type) {
+        case 'static':
+            return `<input type="number" class="sum-val-input" data-index="${index}" data-sumindex="${si}" value="${sv.value || 0}">`;
+        case 'lastRng':
+            return `<span class="task-source-label">Last RNG</span>`;
+        case 'numberEntry':
+            return `<select class="sum-val-input" data-index="${index}" data-sumindex="${si}">
+                <option value="">Select...</option>
+                ${numberEntries.map((ne, i) => `<option value="${i}" ${sv.index === i ? 'selected' : ''}>${ne.name || 'Number Entry ' + (i+1)}</option>`).join('')}
+            </select>`;
+        case 'variable':
+            return `<select class="sum-val-input" data-index="${index}" data-sumindex="${si}">
+                <option value="">Select...</option>
+                ${getVariableOptions(sv.varName)}
+            </select>`;
+        default:
+            return `<input type="number" class="sum-val-input" data-index="${index}" data-sumindex="${si}" value="${sv.value || 0}">`;
+    }
 }
 
 // Helper to get initial value input for create-var task
@@ -4332,6 +4824,7 @@ function buildConditionUI(task, index) {
                     <option value="lastRng" ${cond.leftType === 'lastRng' ? 'selected' : ''}>Last RNG</option>
                     <option value="numberEntry" ${cond.leftType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
                     <option value="variable" ${cond.leftType === 'variable' ? 'selected' : ''}>Variable</option>
+                    <option value="boolean" ${cond.leftType === 'boolean' ? 'selected' : ''}>Boolean</option>
                 </select>
                 ${getConditionValueInput(cond, index, ci, 'left')}
                 <select class="task-cond-operator" data-index="${index}" data-cond="${ci}">
@@ -4347,6 +4840,7 @@ function buildConditionUI(task, index) {
                     <option value="lastRng" ${cond.rightType === 'lastRng' ? 'selected' : ''}>Last RNG</option>
                     <option value="numberEntry" ${cond.rightType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
                     <option value="variable" ${cond.rightType === 'variable' ? 'selected' : ''}>Variable</option>
+                    <option value="boolean" ${cond.rightType === 'boolean' ? 'selected' : ''}>Boolean</option>
                 </select>
                 ${getConditionValueInput(cond, index, ci, 'right')}
                 ${ci > 0 ? `<button class="task-cond-remove" data-index="${index}" data-cond="${ci}">×</button>` : ''}
@@ -4379,6 +4873,11 @@ function getConditionValueInput(cond, index, ci, side) {
             return `<select class="${cls}" data-index="${index}" data-cond="${ci}">
                 <option value="">Select...</option>
                 ${getVariableOptions(varName)}
+            </select>`;
+        case 'boolean':
+            return `<select class="${cls}" data-index="${index}" data-cond="${ci}">
+                <option value="true" ${val === true || val === 'true' ? 'selected' : ''}>True</option>
+                <option value="false" ${val === false || val === 'false' || !val ? 'selected' : ''}>False</option>
             </select>`;
         default:
             return `<input type="number" class="${cls}" data-index="${index}" data-cond="${ci}" value="${val || 0}">`;
@@ -4431,6 +4930,8 @@ function setupConditionListeners(block, index) {
                 cond.leftIndex = parseInt(e.target.value);
             } else if (cond.leftType === 'variable') {
                 cond.leftVarName = e.target.value;
+            } else if (cond.leftType === 'boolean') {
+                cond.leftValue = e.target.value === 'true';
             } else {
                 cond.leftValue = parseFloat(e.target.value) || 0;
             }
@@ -4448,6 +4949,8 @@ function setupConditionListeners(block, index) {
                 cond.rightIndex = parseInt(e.target.value);
             } else if (cond.rightType === 'variable') {
                 cond.rightVarName = e.target.value;
+            } else if (cond.rightType === 'boolean') {
+                cond.rightValue = e.target.value === 'true';
             } else {
                 cond.rightValue = parseFloat(e.target.value) || 0;
             }
@@ -4649,6 +5152,79 @@ function setupTaskDragDrop() {
                             sourceVarName: ''
                         };
                         break;
+                    case 'func-math':
+                        newTask = {
+                            type: 'func-math',
+                            inputAType: 'static', inputAValue: 0, inputAIndex: null, inputAVarName: '',
+                            mathOp: 'add',
+                            inputBType: 'static', inputBValue: 0, inputBIndex: null, inputBVarName: '',
+                            outputType: 'variable', outputVarName: '', outputIndex: null
+                        };
+                        break;
+                    case 'func-sum':
+                        newTask = {
+                            type: 'func-sum',
+                            sumValues: [
+                                { type: 'static', value: 0, index: null, varName: '' },
+                                { type: 'static', value: 0, index: null, varName: '' }
+                            ],
+                            outputType: 'variable', outputVarName: '', outputIndex: null
+                        };
+                        break;
+                    case 'func-round':
+                        newTask = {
+                            type: 'func-round',
+                            inputAType: 'static', inputAValue: 0, inputAIndex: null, inputAVarName: '',
+                            roundDir: 'down',
+                            outputType: 'variable', outputVarName: '', outputIndex: null
+                        };
+                        break;
+                    case 'func-checklist':
+                        newTask = {
+                            type: 'func-checklist',
+                            listBoxIndex: null,
+                            checkSource: 'static',
+                            checkText: '',
+                            checkVarName: '',
+                            outputVarName: ''
+                        };
+                        break;
+                    case 'list-add-item':
+                        newTask = {
+                            type: 'list-add-item',
+                            listBoxIndex: null,
+                            nameSource: 'static',
+                            itemName: '',
+                            nameVarName: '',
+                            sourceType: 'static',
+                            staticValue: 1,
+                            sourceIndex: null,
+                            sourceVarName: ''
+                        };
+                        break;
+                    case 'list-add-amount':
+                    case 'list-remove-amount':
+                        newTask = {
+                            type: type,
+                            listBoxIndex: null,
+                            nameSource: 'static',
+                            itemName: '',
+                            nameVarName: '',
+                            sourceType: 'static',
+                            staticValue: 1,
+                            sourceIndex: null,
+                            sourceVarName: ''
+                        };
+                        break;
+                    case 'list-remove-item':
+                        newTask = {
+                            type: 'list-remove-item',
+                            listBoxIndex: null,
+                            nameSource: 'static',
+                            itemName: '',
+                            nameVarName: ''
+                        };
+                        break;
                     default:
                         newTask = {
                             type: type,
@@ -4817,6 +5393,8 @@ function getConditionValue(type, value, index, varName) {
             return 0;
         case 'variable':
             return getVariableValue(varName);
+        case 'boolean':
+            return (value === true || value === 'true') ? true : false;
         default:
             return parseFloat(value) || 0;
     }
@@ -4923,6 +5501,115 @@ function executeTask(task) {
             eventPrintResults.push({ label: task.printLabel || '', value: val });
             break;
         }
+        // ===== NEW FUNCTIONS =====
+        case 'func-math': {
+            const a = getFuncInputValue(task, 'A');
+            const b = getFuncInputValue(task, 'B');
+            let result = 0;
+            switch (task.mathOp) {
+                case 'add':      result = a + b; break;
+                case 'subtract': result = a - b; break;
+                case 'multiply': result = a * b; break;
+                case 'divide':   result = b !== 0 ? a / b : 0; break;
+                case 'modulo':   result = b !== 0 ? a % b : 0; break;
+                default:         result = a + b;
+            }
+            storeFuncOutput(task, result);
+            break;
+        }
+        case 'func-sum': {
+            let total = 0;
+            if (task.sumValues) {
+                task.sumValues.forEach(sv => {
+                    total += getSumInputValue(sv);
+                });
+            }
+            storeFuncOutput(task, total);
+            break;
+        }
+        case 'func-round': {
+            const val = getFuncInputValue(task, 'A');
+            const result = task.roundDir === 'up' ? Math.ceil(val) : Math.floor(val);
+            storeFuncOutput(task, result);
+            break;
+        }
+        case 'func-checklist': {
+            if (task.listBoxIndex !== null && listBoxElements[task.listBoxIndex]) {
+                const lb = listBoxElements[task.listBoxIndex];
+                let searchName = '';
+                if (task.checkSource === 'variable') {
+                    searchName = String(getVariableValue(task.checkVarName));
+                } else {
+                    searchName = task.checkText || '';
+                }
+                const found = lb.items.some(item => item.name.toLowerCase() === searchName.toLowerCase());
+                if (task.outputVarName) {
+                    setVariableValue(task.outputVarName, found);
+                }
+            }
+            break;
+        }
+        // ===== ITEM LIST TASKS =====
+        case 'list-add-item': {
+            if (task.listBoxIndex !== null && listBoxElements[task.listBoxIndex]) {
+                const lb = listBoxElements[task.listBoxIndex];
+                const itemName = getListItemName(task);
+                if (itemName) {
+                    const existing = lb.items.find(it => it.name.toLowerCase() === itemName.toLowerCase());
+                    if (existing) {
+                        existing.count += Math.max(1, getTaskSourceValue(task));
+                    } else {
+                        lb.items.push({ name: itemName, count: Math.max(1, getTaskSourceValue(task)) });
+                    }
+                    renderListBoxItems(lb);
+                }
+            }
+            break;
+        }
+        case 'list-add-amount': {
+            if (task.listBoxIndex !== null && listBoxElements[task.listBoxIndex]) {
+                const lb = listBoxElements[task.listBoxIndex];
+                const itemName = getListItemName(task);
+                if (itemName) {
+                    const existing = lb.items.find(it => it.name.toLowerCase() === itemName.toLowerCase());
+                    if (existing) {
+                        existing.count += getTaskSourceValue(task);
+                        if (existing.count < 1) existing.count = 1;
+                        renderListBoxItems(lb);
+                    }
+                }
+            }
+            break;
+        }
+        case 'list-remove-amount': {
+            if (task.listBoxIndex !== null && listBoxElements[task.listBoxIndex]) {
+                const lb = listBoxElements[task.listBoxIndex];
+                const itemName = getListItemName(task);
+                if (itemName) {
+                    const existing = lb.items.find(it => it.name.toLowerCase() === itemName.toLowerCase());
+                    if (existing) {
+                        existing.count -= getTaskSourceValue(task);
+                        if (existing.count < 1) existing.count = 1;
+                        renderListBoxItems(lb);
+                    }
+                }
+            }
+            break;
+        }
+        case 'list-remove-item': {
+            if (task.listBoxIndex !== null && listBoxElements[task.listBoxIndex]) {
+                const lb = listBoxElements[task.listBoxIndex];
+                const itemName = getListItemName(task);
+                if (itemName) {
+                    const idx = lb.items.findIndex(it => it.name.toLowerCase() === itemName.toLowerCase());
+                    if (idx !== -1) {
+                        lb.items.splice(idx, 1);
+                        renderListBoxItems(lb);
+                    }
+                }
+            }
+            break;
+        }
     }
 }
 
@@ -4960,6 +5647,25 @@ function storeFuncOutput(task, value) {
         const max = target.max !== null ? target.max : Infinity;
         updateNumberEntry(target, Math.min(Math.max(value, min), max));
     }
+}
+
+// Get the resolved value of a sum input entry
+function getSumInputValue(sv) {
+    switch (sv.type) {
+        case 'static':      return parseFloat(sv.value) || 0;
+        case 'lastRng':     return lastRngResult;
+        case 'numberEntry': return (sv.index !== null && numberEntries[sv.index]) ? numberEntries[sv.index].value : 0;
+        case 'variable':    return getVariableValue(sv.varName);
+        default:            return parseFloat(sv.value) || 0;
+    }
+}
+
+// Get the resolved item name for list tasks
+function getListItemName(task) {
+    if (task.nameSource === 'variable') {
+        return String(getVariableValue(task.nameVarName) || '');
+    }
+    return task.itemName || '';
 }
 
 // ===== VARIABLE MANAGEMENT =====
