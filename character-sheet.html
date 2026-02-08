@@ -940,9 +940,9 @@
         .task-editor-modal {
             background: white;
             border-radius: 12px;
-            width: 700px;
-            max-width: 90vw;
-            max-height: 80vh;
+            width: 840px;
+            max-width: 92vw;
+            max-height: 90vh;
             display: flex;
             flex-direction: column;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
@@ -1264,6 +1264,118 @@
             font-size: 12px;
             color: #6b7280;
             font-style: italic;
+        }
+        /* Palette category styles */
+        .palette-category {
+            margin-bottom: 4px;
+        }
+        .palette-category-header {
+            padding: 8px 10px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .palette-category-header:hover {
+            background: #d1d5db;
+        }
+        .palette-category-items {
+            padding-left: 4px;
+        }
+        /* New task block type colors */
+        .task-block.create-var { border-left: 3px solid #f59e0b; }
+        .task-block.set-var { border-left: 3px solid #f59e0b; }
+        .task-block.add-var { border-left: 3px solid #f59e0b; }
+        .task-block.subtract-var { border-left: 3px solid #f59e0b; }
+        .task-block.if { border-left: 3px solid #8b5cf6; background: #faf5ff; }
+        .task-block.elseif { border-left: 3px solid #a78bfa; background: #faf5ff; }
+        .task-block.else { border-left: 3px solid #a78bfa; background: #f5f3ff; }
+        .task-block.endif { border-left: 3px solid #6d28d9; background: #f5f3ff; }
+        .task-block.func-min { border-left: 3px solid #06b6d4; }
+        .task-block.func-max { border-left: 3px solid #06b6d4; }
+        .task-block.func-rand { border-left: 3px solid #06b6d4; }
+        .task-block.func-print { border-left: 3px solid #06b6d4; }
+        /* Condition row styles */
+        .condition-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            padding: 6px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        .condition-row select,
+        .condition-row input {
+            padding: 4px 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            flex: 1;
+            min-width: 80px;
+        }
+        .condition-connector {
+            text-align: center;
+            margin: 2px 0;
+        }
+        .condition-connector select {
+            padding: 3px 8px;
+            border: 1px solid #a78bfa;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6d28d9;
+            background: #ede9fe;
+        }
+        .task-cond-add {
+            background: #ede9fe;
+            border: 1px dashed #a78bfa;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: #6d28d9;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .task-cond-add:hover {
+            background: #ddd6fe;
+        }
+        .task-cond-remove {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 4px;
+            line-height: 1;
+            flex: 0 0 auto;
+        }
+        .task-cond-remove:hover {
+            color: #dc2626;
+        }
+        /* Task palette wider for new categories */
+        .task-palette {
+            width: 200px;
+            min-width: 200px;
+            overflow-y: auto;
+        }
+        .task-editor-modal {
+            width: 960px;
+        }
+        /* String input styling */
+        .task-block-config input[type="text"] {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
         }
     </style>
 </head>

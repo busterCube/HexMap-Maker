@@ -754,59 +754,92 @@ function generateGrid() {
             }
             
             if (hexOrientation === 'pointy') {
-                // Pointy-top: Draw top edge (vertex 5 to vertex 0)
+                // Pointy-top hex vertices:
+                // 0=TOP, 1=TOP-LEFT, 2=BOTTOM-LEFT, 3=BOTTOM, 4=BOTTOM-RIGHT, 5=TOP-RIGHT
+                //
+                // Each hex always draws its upper-right (5→0), upper-left (0→1), and left (1→2) edges.
+                // The lower-left (2→3), lower-right (3→4), and right (4→5) edges are normally
+                // covered by the corresponding neighbor's always-drawn edges:
+                //   2→3 ← lower-left neighbor's 5→0
+                //   3→4 ← lower-right neighbor's 0→1
+                //   4→5 ← right neighbor's 1→2
+                // Boundary hexes with missing neighbors must draw those edges explicitly.
+                
+                // Always draw upper-right edge (vertex 5 to vertex 0)
                 linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
                 linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
                 
-                // Draw top-right edge (vertex 0 to vertex 1)
+                // Always draw upper-left edge (vertex 0 to vertex 1)
                 linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
                 linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
                 
-                // Draw right edge (vertex 1 to vertex 2)
+                // Always draw left edge (vertex 1 to vertex 2)
                 linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
                 linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
                 
-                // Only draw bottom edges for bottom row
-                if (row === 0) {
+                // Draw lower-left edge (2→3) when no lower-left neighbor:
+                //   Even rows: neighbor at (row-1, col-1) — missing when row=0 or col=0
+                //   Odd rows:  neighbor at (row-1, col)   — missing when row=0
+                if (row === 0 || (row % 2 === 0 && col === 0)) {
                     linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
                     linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
+                }
+                
+                // Draw lower-right edge (3→4) when no lower-right neighbor:
+                //   Even rows: neighbor at (row-1, col)   — missing when row=0
+                //   Odd rows:  neighbor at (row-1, col+1) — missing when row=0 or col=last
+                if (row === 0 || (row % 2 === 1 && col === gridWidth - 1)) {
                     linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
                     linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
                 }
                 
-                // Only draw left edge for first column
-                if (col === 0) {
+                // Draw right edge (4→5) when no right neighbor at (row, col+1)
+                if (col === gridWidth - 1) {
                     linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
                     linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
                 }
             } else {
-                // Flat-top: Draw top-right edge (vertex 0 to vertex 1)
+                // Flat-top hex vertices:
+                // 0=RIGHT, 1=UPPER-RIGHT, 2=UPPER-LEFT, 3=LEFT, 4=LOWER-LEFT, 5=LOWER-RIGHT
+                //
+                // Each hex always draws its right-upper (0→1), top (1→2), and left-upper (2→3) edges.
+                // The left-lower (3→4), bottom (4→5), and right-lower (5→0) edges are normally
+                // covered by the corresponding neighbor's always-drawn edges:
+                //   3→4 ← lower-left neighbor's 0→1
+                //   4→5 ← bottom neighbor's 1→2
+                //   5→0 ← lower-right neighbor's 2→3
+                // Boundary hexes with missing neighbors must draw those edges explicitly.
+                
+                // Always draw right-upper edge (vertex 0 to vertex 1)
                 linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
                 linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
                 
-                // Draw right edge (vertex 1 to vertex 2)
+                // Always draw top edge (vertex 1 to vertex 2)
                 linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
                 linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
                 
-                // Draw bottom-right edge (vertex 2 to vertex 3)
+                // Always draw left-upper edge (vertex 2 to vertex 3)
                 linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
                 linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
                 
-                // Only draw left edges for first column
-                if (col === 0) {
+                // Draw left-lower edge (3→4) when no lower-left neighbor:
+                //   Even cols: neighbor at (row-1, col-1) — missing when row=0 or col=0
+                //   Odd cols:  neighbor at (row, col-1)   — missing when col=0
+                if (col === 0 || (col % 2 === 0 && row === 0)) {
                     linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
                     linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
+                }
+                
+                // Draw bottom edge (4→5) when no bottom neighbor at (row-1, col)
+                if (row === 0) {
                     linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
                     linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
                 }
                 
-                // Only draw top-left edge for top row or even columns at top
-                if (row === gridHeight - 1 || (col % 2 === 1 && row === gridHeight - 1)) {
-                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
-                    linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
-                }
-                // Handle top edge for odd columns
-                if (col % 2 === 0 && row === gridHeight - 1) {
+                // Draw right-lower edge (5→0) when no lower-right neighbor:
+                //   Even cols: neighbor at (row-1, col+1) — missing when row=0 or col=last
+                //   Odd cols:  neighbor at (row, col+1)   — missing when col=last
+                if (col === gridWidth - 1 || (col % 2 === 0 && row === 0)) {
                     linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
                     linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
                 }

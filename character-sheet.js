@@ -103,6 +103,10 @@ let nextListBoxId = 1;
 // Clipboard for copy/paste
 let clipboard = null; // {type: 'frame'|'text'|'numberEntry'|'label', data: {...}}
 
+// Variable state for button event system
+let eventVariables = []; // Array of {name, value, varType: 'integer'|'float'|'string'|'boolean'}
+let nextVariableId = 1;
+
 // Grid state
 let showGrid = false;
 let snapToGrid = false;
@@ -3463,20 +3467,91 @@ function showTaskEditor(buttonData) {
     palette.className = 'task-palette';
     palette.innerHTML = `
         <h4>Available Actions</h4>
-        <div class="task-block-template" data-type="run-rng" draggable="true">
-            <span class="task-icon">🎲</span> Run RNG
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="basic">▶ Basic Actions</div>
+            <div class="palette-category-items" id="palette-basic" style="display:none;">
+                <div class="task-block-template" data-type="run-rng" draggable="true">
+                    <span class="task-icon">🎲</span> Run RNG
+                </div>
+                <div class="task-block-template" data-type="add" draggable="true">
+                    <span class="task-icon">➕</span> Add to Number
+                </div>
+                <div class="task-block-template" data-type="subtract" draggable="true">
+                    <span class="task-icon">➖</span> Subtract from Number
+                </div>
+                <div class="task-block-template" data-type="set" draggable="true">
+                    <span class="task-icon">✏️</span> Set Number
+                </div>
+            </div>
         </div>
-        <div class="task-block-template" data-type="add" draggable="true">
-            <span class="task-icon">➕</span> Add to Number
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="variables">▶ Variables</div>
+            <div class="palette-category-items" id="palette-variables" style="display:none;">
+                <div class="task-block-template" data-type="create-var" draggable="true">
+                    <span class="task-icon">📦</span> Create Variable
+                </div>
+                <div class="task-block-template" data-type="set-var" draggable="true">
+                    <span class="task-icon">📝</span> Set Variable
+                </div>
+                <div class="task-block-template" data-type="add-var" draggable="true">
+                    <span class="task-icon">📈</span> Add to Variable
+                </div>
+                <div class="task-block-template" data-type="subtract-var" draggable="true">
+                    <span class="task-icon">📉</span> Subtract from Variable
+                </div>
+            </div>
         </div>
-        <div class="task-block-template" data-type="subtract" draggable="true">
-            <span class="task-icon">➖</span> Subtract from Number
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="compare">▶ Compare (IF)</div>
+            <div class="palette-category-items" id="palette-compare" style="display:none;">
+                <div class="task-block-template" data-type="if" draggable="true">
+                    <span class="task-icon">❓</span> IF
+                </div>
+                <div class="task-block-template" data-type="elseif" draggable="true">
+                    <span class="task-icon">🔀</span> ELSE IF
+                </div>
+                <div class="task-block-template" data-type="else" draggable="true">
+                    <span class="task-icon">↩️</span> ELSE
+                </div>
+                <div class="task-block-template" data-type="endif" draggable="true">
+                    <span class="task-icon">🔚</span> END IF
+                </div>
+            </div>
         </div>
-        <div class="task-block-template" data-type="set" draggable="true">
-            <span class="task-icon">✏️</span> Set Number
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="functions">▶ Functions</div>
+            <div class="palette-category-items" id="palette-functions" style="display:none;">
+                <div class="task-block-template" data-type="func-min" draggable="true">
+                    <span class="task-icon">⬇️</span> Min
+                </div>
+                <div class="task-block-template" data-type="func-max" draggable="true">
+                    <span class="task-icon">⬆️</span> Max
+                </div>
+                <div class="task-block-template" data-type="func-rand" draggable="true">
+                    <span class="task-icon">🔢</span> Rand
+                </div>
+                <div class="task-block-template" data-type="func-print" draggable="true">
+                    <span class="task-icon">🖨️</span> Print
+                </div>
+            </div>
         </div>
     `;
     content.appendChild(palette);
+    
+    // Setup palette category toggles
+    setTimeout(() => {
+        palette.querySelectorAll('.palette-category-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const cat = header.dataset.category;
+                const items = document.getElementById('palette-' + cat);
+                if (items) {
+                    const isOpen = items.style.display !== 'none';
+                    items.style.display = isOpen ? 'none' : 'block';
+                    header.textContent = (isOpen ? '▶ ' : '▼ ') + header.textContent.substring(2);
+                }
+            });
+        });
+    }, 0);
     
     // Right side - sequence
     const sequenceContainer = document.createElement('div');
@@ -3557,6 +3632,13 @@ function createTaskBlock(task, index) {
     block.dataset.index = index;
     block.draggable = true;
     
+    // Apply indentation for tasks inside IF blocks
+    const indentLevel = getTaskIndentLevel(index);
+    if (indentLevel > 0) {
+        block.style.marginLeft = (indentLevel * 24) + 'px';
+        block.style.borderLeft = '3px solid #f59e0b';
+    }
+    
     let blockContent = '';
     
     switch (task.type) {
@@ -3592,6 +3674,7 @@ function createTaskBlock(task, index) {
                         <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
                         <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
                         <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
                     </select>
                     ${getSourceInput(task, index)}
                 </div>
@@ -3614,6 +3697,7 @@ function createTaskBlock(task, index) {
                         <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
                         <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
                         <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
                     </select>
                     ${getSourceInput(task, index)}
                 </div>
@@ -3636,6 +3720,244 @@ function createTaskBlock(task, index) {
                         <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
                         <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
                         <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        // ===== VARIABLE TASKS =====
+        case 'create-var':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📦</span> Create Variable
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Name:</label>
+                    <input type="text" class="task-var-name" data-index="${index}" value="${task.varName || ''}" placeholder="Variable name">
+                    <label>Type:</label>
+                    <select class="task-var-type" data-index="${index}">
+                        <option value="integer" ${task.varType === 'integer' ? 'selected' : ''}>Integer</option>
+                        <option value="float" ${task.varType === 'float' ? 'selected' : ''}>Float</option>
+                        <option value="string" ${task.varType === 'string' ? 'selected' : ''}>String</option>
+                        <option value="boolean" ${task.varType === 'boolean' ? 'selected' : ''}>Boolean</option>
+                    </select>
+                    <label>Initial Value:</label>
+                    ${getVarInitialValueInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'set-var':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📝</span> Set Variable
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Variable:</label>
+                    <select class="task-var-select" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.varName)}
+                    </select>
+                    <label>Set to:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'add-var':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📈</span> Add to Variable
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Variable:</label>
+                    <select class="task-var-select" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.varName)}
+                    </select>
+                    <label>Add:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'subtract-var':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📉</span> Subtract from Variable
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Variable:</label>
+                    <select class="task-var-select" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.varName)}
+                    </select>
+                    <label>Subtract:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        // ===== IF / ELSE / ELSEIF / END =====
+        case 'if':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">❓</span> IF
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    ${buildConditionUI(task, index)}
+                </div>
+            `;
+            break;
+        case 'elseif':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🔀</span> ELSE IF
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    ${buildConditionUI(task, index)}
+                </div>
+            `;
+            break;
+        case 'else':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">↩️</span> ELSE
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+            `;
+            break;
+        case 'endif':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🔚</span> END IF
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+            `;
+            break;
+        // ===== FUNCTIONS =====
+        case 'func-min':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">⬇️</span> Min
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Value A:</label>
+                    <select class="task-func-a-type" data-index="${index}">
+                        <option value="static" ${task.inputAType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.inputAType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.inputAType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                        <option value="variable" ${task.inputAType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getFuncValueInput(task, index, 'A')}
+                    <label>Value B:</label>
+                    <select class="task-func-b-type" data-index="${index}">
+                        <option value="static" ${task.inputBType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.inputBType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.inputBType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                        <option value="variable" ${task.inputBType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getFuncValueInput(task, index, 'B')}
+                    <label>Store result in:</label>
+                    <select class="task-func-output-type" data-index="${index}">
+                        <option value="variable" ${task.outputType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.outputType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${getFuncOutputSelect(task, index)}
+                </div>
+            `;
+            break;
+        case 'func-max':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">⬆️</span> Max
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Value A:</label>
+                    <select class="task-func-a-type" data-index="${index}">
+                        <option value="static" ${task.inputAType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.inputAType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.inputAType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                        <option value="variable" ${task.inputAType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getFuncValueInput(task, index, 'A')}
+                    <label>Value B:</label>
+                    <select class="task-func-b-type" data-index="${index}">
+                        <option value="static" ${task.inputBType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.inputBType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.inputBType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                        <option value="variable" ${task.inputBType === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${getFuncValueInput(task, index, 'B')}
+                    <label>Store result in:</label>
+                    <select class="task-func-output-type" data-index="${index}">
+                        <option value="variable" ${task.outputType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.outputType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${getFuncOutputSelect(task, index)}
+                </div>
+            `;
+            break;
+        case 'func-rand':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🔢</span> Rand
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Minimum:</label>
+                    <input type="number" class="task-rand-min" data-index="${index}" value="${task.randMin ?? 1}">
+                    <label>Maximum:</label>
+                    <input type="number" class="task-rand-max" data-index="${index}" value="${task.randMax ?? 100}">
+                    <label><input type="checkbox" class="task-store-result" data-index="${index}" ${task.storeResult ? 'checked' : ''}> Store as Last RNG result</label>
+                    <label>Also store in:</label>
+                    <select class="task-func-output-type" data-index="${index}">
+                        <option value="none" ${task.outputType === 'none' || !task.outputType ? 'selected' : ''}>None</option>
+                        <option value="variable" ${task.outputType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.outputType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${task.outputType && task.outputType !== 'none' ? getFuncOutputSelect(task, index) : ''}
+                </div>
+            `;
+            break;
+        case 'func-print':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🖨️</span> Print
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Label (optional):</label>
+                    <input type="text" class="task-print-label" data-index="${index}" value="${task.printLabel || ''}" placeholder="Display label">
+                    <label>Value from:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
                     </select>
                     ${getSourceInput(task, index)}
                 </div>
@@ -3712,6 +4034,186 @@ function createTaskBlock(task, index) {
                 tempTasks[idx].sourceIndex = parseInt(e.target.value);
             });
         }
+        
+        // Source variable select
+        const sourceVar = block.querySelector('.task-source-var-select');
+        if (sourceVar) {
+            sourceVar.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].sourceVarName = e.target.value;
+            });
+        }
+        
+        // Variable name input (create-var)
+        const varName = block.querySelector('.task-var-name');
+        if (varName) {
+            varName.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].varName = e.target.value;
+            });
+        }
+        
+        // Variable type select (create-var)
+        const varType = block.querySelector('.task-var-type');
+        if (varType) {
+            varType.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].varType = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        
+        // Variable initial value
+        const varInitVal = block.querySelector('.task-var-init-value');
+        if (varInitVal) {
+            varInitVal.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const t = tempTasks[idx];
+                if (t.varType === 'boolean') {
+                    t.varInitValue = e.target.value === 'true';
+                } else if (t.varType === 'integer') {
+                    t.varInitValue = parseInt(e.target.value) || 0;
+                } else if (t.varType === 'float') {
+                    t.varInitValue = parseFloat(e.target.value) || 0;
+                } else {
+                    t.varInitValue = e.target.value;
+                }
+            });
+            // Handle select (boolean type)
+            varInitVal.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const t = tempTasks[idx];
+                if (t.varType === 'boolean') {
+                    t.varInitValue = e.target.value === 'true';
+                }
+            });
+        }
+        
+        // Variable select (for set-var, add-var, subtract-var)
+        const varSelect = block.querySelector('.task-var-select');
+        if (varSelect) {
+            varSelect.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].varName = e.target.value;
+            });
+        }
+        
+        // Static value for string type
+        const staticStr = block.querySelector('.task-static-string');
+        if (staticStr) {
+            staticStr.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].staticValue = e.target.value;
+            });
+        }
+        
+        // IF condition selects
+        setupConditionListeners(block, index);
+        
+        // Function input type selects
+        const funcAType = block.querySelector('.task-func-a-type');
+        if (funcAType) {
+            funcAType.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].inputAType = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        const funcBType = block.querySelector('.task-func-b-type');
+        if (funcBType) {
+            funcBType.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].inputBType = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        
+        // Function value inputs
+        const funcAVal = block.querySelector('.task-func-a-value');
+        if (funcAVal) {
+            funcAVal.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].inputAValue = parseFloat(e.target.value) || 0;
+            });
+            funcAVal.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                if (tempTasks[idx].inputAType === 'numberEntry') {
+                    tempTasks[idx].inputAIndex = parseInt(e.target.value);
+                } else if (tempTasks[idx].inputAType === 'variable') {
+                    tempTasks[idx].inputAVarName = e.target.value;
+                } else {
+                    tempTasks[idx].inputAValue = parseFloat(e.target.value) || 0;
+                }
+            });
+        }
+        const funcBVal = block.querySelector('.task-func-b-value');
+        if (funcBVal) {
+            funcBVal.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].inputBValue = parseFloat(e.target.value) || 0;
+            });
+            funcBVal.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                if (tempTasks[idx].inputBType === 'numberEntry') {
+                    tempTasks[idx].inputBIndex = parseInt(e.target.value);
+                } else if (tempTasks[idx].inputBType === 'variable') {
+                    tempTasks[idx].inputBVarName = e.target.value;
+                } else {
+                    tempTasks[idx].inputBValue = parseFloat(e.target.value) || 0;
+                }
+            });
+        }
+        
+        // Function output type
+        const funcOutType = block.querySelector('.task-func-output-type');
+        if (funcOutType) {
+            funcOutType.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].outputType = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        
+        // Function output select
+        const funcOutVar = block.querySelector('.task-func-output-var');
+        if (funcOutVar) {
+            funcOutVar.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].outputVarName = e.target.value;
+            });
+        }
+        const funcOutNe = block.querySelector('.task-func-output-ne');
+        if (funcOutNe) {
+            funcOutNe.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].outputIndex = parseInt(e.target.value);
+            });
+        }
+        
+        // Rand min/max
+        const randMin = block.querySelector('.task-rand-min');
+        if (randMin) {
+            randMin.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].randMin = parseInt(e.target.value) || 1;
+            });
+        }
+        const randMax = block.querySelector('.task-rand-max');
+        if (randMax) {
+            randMax.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].randMax = parseInt(e.target.value) || 100;
+            });
+        }
+        
+        // Print label
+        const printLabel = block.querySelector('.task-print-label');
+        if (printLabel) {
+            printLabel.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].printLabel = e.target.value;
+            });
+        }
     }, 0);
     
     return block;
@@ -3730,9 +4232,296 @@ function getSourceInput(task, index) {
                     ${numberEntries.map((ne, i) => `<option value="${i}" ${task.sourceIndex === i ? 'selected' : ''}>${ne.name || 'Number Entry ' + (i+1)} (${ne.value})</option>`).join('')}
                 </select>
             `;
+        case 'variable':
+            return `
+                <select class="task-source-var-select" data-index="${index}">
+                    <option value="">Select Variable...</option>
+                    ${getVariableOptions(task.sourceVarName)}
+                </select>
+            `;
         default:
             return `<input type="number" class="task-static-value" data-index="${index}" value="${task.staticValue || 0}">`;
     }
+}
+
+// Helper to get variable options from both eventVariables and create-var tasks in the current sequence
+function getVariableOptions(selectedName) {
+    const varNames = new Set();
+    // From global eventVariables
+    eventVariables.forEach(v => varNames.add(v.name));
+    // From create-var tasks in tempTasks
+    if (tempTasks) {
+        tempTasks.forEach(t => {
+            if (t.type === 'create-var' && t.varName) {
+                varNames.add(t.varName);
+            }
+        });
+    }
+    return Array.from(varNames).map(name =>
+        `<option value="${name}" ${selectedName === name ? 'selected' : ''}>${name}</option>`
+    ).join('');
+}
+
+// Helper to get initial value input for create-var task
+function getVarInitialValueInput(task, index) {
+    switch (task.varType) {
+        case 'boolean':
+            return `<select class="task-var-init-value" data-index="${index}">
+                <option value="false" ${!task.varInitValue ? 'selected' : ''}>false</option>
+                <option value="true" ${task.varInitValue ? 'selected' : ''}>true</option>
+            </select>`;
+        case 'string':
+            return `<input type="text" class="task-var-init-value" data-index="${index}" value="${task.varInitValue || ''}" placeholder="Initial text">`;
+        case 'float':
+            return `<input type="number" step="0.01" class="task-var-init-value" data-index="${index}" value="${task.varInitValue || 0}">`;
+        case 'integer':
+        default:
+            return `<input type="number" class="task-var-init-value" data-index="${index}" value="${task.varInitValue || 0}">`;
+    }
+}
+
+// Helper to calculate indent level for IF blocks
+function getTaskIndentLevel(index) {
+    let level = 0;
+    for (let i = 0; i < index; i++) {
+        const t = tempTasks[i];
+        if (t.type === 'if' || t.type === 'elseif' || t.type === 'else') {
+            level++;
+        }
+        if (t.type === 'endif' || t.type === 'elseif' || t.type === 'else') {
+            level--;
+        }
+    }
+    // Current task: if it's elseif, else, or endif, it should be at the outer level
+    const current = tempTasks[index];
+    if (current.type === 'elseif' || current.type === 'else' || current.type === 'endif') {
+        // These are at the same level as 'if', not indented
+        return Math.max(0, level);
+    }
+    return Math.max(0, level);
+}
+
+// Build the condition UI for IF/ELSEIF blocks
+function buildConditionUI(task, index) {
+    // Initialize conditions array if not present
+    if (!task.conditions) {
+        task.conditions = [{
+            leftType: 'lastRng', leftValue: '', leftIndex: null, leftVarName: '',
+            operator: '==',
+            rightType: 'static', rightValue: 0, rightIndex: null, rightVarName: ''
+        }];
+    }
+    
+    let html = '';
+    task.conditions.forEach((cond, ci) => {
+        if (ci > 0) {
+            // AND/OR connector
+            html += `
+                <div class="condition-connector">
+                    <select class="task-cond-logic" data-index="${index}" data-cond="${ci}">
+                        <option value="and" ${cond.logic === 'and' ? 'selected' : ''}>AND</option>
+                        <option value="or" ${cond.logic === 'or' ? 'selected' : ''}>OR</option>
+                    </select>
+                </div>
+            `;
+        }
+        html += `
+            <div class="condition-row" data-cond="${ci}">
+                <select class="task-cond-left-type" data-index="${index}" data-cond="${ci}">
+                    <option value="static" ${cond.leftType === 'static' ? 'selected' : ''}>Static</option>
+                    <option value="lastRng" ${cond.leftType === 'lastRng' ? 'selected' : ''}>Last RNG</option>
+                    <option value="numberEntry" ${cond.leftType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    <option value="variable" ${cond.leftType === 'variable' ? 'selected' : ''}>Variable</option>
+                </select>
+                ${getConditionValueInput(cond, index, ci, 'left')}
+                <select class="task-cond-operator" data-index="${index}" data-cond="${ci}">
+                    <option value=">" ${cond.operator === '>' ? 'selected' : ''}>Greater Than</option>
+                    <option value=">=" ${cond.operator === '>=' ? 'selected' : ''}>Greater/Equal</option>
+                    <option value="<" ${cond.operator === '<' ? 'selected' : ''}>Less Than</option>
+                    <option value="<=" ${cond.operator === '<=' ? 'selected' : ''}>Less/Equal</option>
+                    <option value="==" ${cond.operator === '==' ? 'selected' : ''}>Equal</option>
+                    <option value="!=" ${cond.operator === '!=' ? 'selected' : ''}>Not Equal</option>
+                </select>
+                <select class="task-cond-right-type" data-index="${index}" data-cond="${ci}">
+                    <option value="static" ${cond.rightType === 'static' ? 'selected' : ''}>Static</option>
+                    <option value="lastRng" ${cond.rightType === 'lastRng' ? 'selected' : ''}>Last RNG</option>
+                    <option value="numberEntry" ${cond.rightType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    <option value="variable" ${cond.rightType === 'variable' ? 'selected' : ''}>Variable</option>
+                </select>
+                ${getConditionValueInput(cond, index, ci, 'right')}
+                ${ci > 0 ? `<button class="task-cond-remove" data-index="${index}" data-cond="${ci}">×</button>` : ''}
+            </div>
+        `;
+    });
+    html += `<button class="task-cond-add" data-index="${index}">+ Add Condition</button>`;
+    return html;
+}
+
+// Get value input for a condition side (left or right)
+function getConditionValueInput(cond, index, ci, side) {
+    const type = side === 'left' ? cond.leftType : cond.rightType;
+    const val = side === 'left' ? cond.leftValue : cond.rightValue;
+    const neIdx = side === 'left' ? cond.leftIndex : cond.rightIndex;
+    const varName = side === 'left' ? cond.leftVarName : cond.rightVarName;
+    const cls = `task-cond-${side}-value`;
+    
+    switch (type) {
+        case 'static':
+            return `<input type="number" class="${cls}" data-index="${index}" data-cond="${ci}" value="${val || 0}">`;
+        case 'lastRng':
+            return `<span class="task-source-label">Last RNG</span>`;
+        case 'numberEntry':
+            return `<select class="${cls}" data-index="${index}" data-cond="${ci}">
+                <option value="">Select...</option>
+                ${numberEntries.map((ne, i) => `<option value="${i}" ${neIdx === i ? 'selected' : ''}>${ne.name || 'Number Entry ' + (i+1)}</option>`).join('')}
+            </select>`;
+        case 'variable':
+            return `<select class="${cls}" data-index="${index}" data-cond="${ci}">
+                <option value="">Select...</option>
+                ${getVariableOptions(varName)}
+            </select>`;
+        default:
+            return `<input type="number" class="${cls}" data-index="${index}" data-cond="${ci}" value="${val || 0}">`;
+    }
+}
+
+// Setup event listeners for condition UI elements
+function setupConditionListeners(block, index) {
+    // Left type selects
+    block.querySelectorAll('.task-cond-left-type').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const ci = parseInt(e.target.dataset.cond);
+            tempTasks[idx].conditions[ci].leftType = e.target.value;
+            renderTaskSequence();
+        });
+    });
+    // Right type selects
+    block.querySelectorAll('.task-cond-right-type').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const ci = parseInt(e.target.dataset.cond);
+            tempTasks[idx].conditions[ci].rightType = e.target.value;
+            renderTaskSequence();
+        });
+    });
+    // Operator selects
+    block.querySelectorAll('.task-cond-operator').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const ci = parseInt(e.target.dataset.cond);
+            tempTasks[idx].conditions[ci].operator = e.target.value;
+        });
+    });
+    // Logic (AND/OR) selects
+    block.querySelectorAll('.task-cond-logic').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const ci = parseInt(e.target.dataset.cond);
+            tempTasks[idx].conditions[ci].logic = e.target.value;
+        });
+    });
+    // Left value inputs
+    block.querySelectorAll('.task-cond-left-value').forEach(el => {
+        const handler = (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const ci = parseInt(e.target.dataset.cond);
+            const cond = tempTasks[idx].conditions[ci];
+            if (cond.leftType === 'numberEntry') {
+                cond.leftIndex = parseInt(e.target.value);
+            } else if (cond.leftType === 'variable') {
+                cond.leftVarName = e.target.value;
+            } else {
+                cond.leftValue = parseFloat(e.target.value) || 0;
+            }
+        };
+        el.addEventListener('input', handler);
+        el.addEventListener('change', handler);
+    });
+    // Right value inputs
+    block.querySelectorAll('.task-cond-right-value').forEach(el => {
+        const handler = (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const ci = parseInt(e.target.dataset.cond);
+            const cond = tempTasks[idx].conditions[ci];
+            if (cond.rightType === 'numberEntry') {
+                cond.rightIndex = parseInt(e.target.value);
+            } else if (cond.rightType === 'variable') {
+                cond.rightVarName = e.target.value;
+            } else {
+                cond.rightValue = parseFloat(e.target.value) || 0;
+            }
+        };
+        el.addEventListener('input', handler);
+        el.addEventListener('change', handler);
+    });
+    // Add condition button
+    const addCondBtn = block.querySelector('.task-cond-add');
+    if (addCondBtn) {
+        addCondBtn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            tempTasks[idx].conditions.push({
+                logic: 'and',
+                leftType: 'lastRng', leftValue: '', leftIndex: null, leftVarName: '',
+                operator: '==',
+                rightType: 'static', rightValue: 0, rightIndex: null, rightVarName: ''
+            });
+            renderTaskSequence();
+        });
+    }
+    // Remove condition buttons
+    block.querySelectorAll('.task-cond-remove').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const ci = parseInt(e.target.dataset.cond);
+            tempTasks[idx].conditions.splice(ci, 1);
+            renderTaskSequence();
+        });
+    });
+}
+
+// Get value input for function inputs (A or B)
+function getFuncValueInput(task, index, side) {
+    const type = side === 'A' ? task.inputAType : task.inputBType;
+    const val = side === 'A' ? task.inputAValue : task.inputBValue;
+    const neIdx = side === 'A' ? task.inputAIndex : task.inputBIndex;
+    const varName = side === 'A' ? task.inputAVarName : task.inputBVarName;
+    const cls = `task-func-${side.toLowerCase()}-value`;
+    
+    switch (type) {
+        case 'static':
+            return `<input type="number" class="${cls}" data-index="${index}" value="${val || 0}">`;
+        case 'lastRng':
+            return `<span class="task-source-label">Last RNG result</span>`;
+        case 'numberEntry':
+            return `<select class="${cls}" data-index="${index}">
+                <option value="">Select...</option>
+                ${numberEntries.map((ne, i) => `<option value="${i}" ${neIdx === i ? 'selected' : ''}>${ne.name || 'Number Entry ' + (i+1)}</option>`).join('')}
+            </select>`;
+        case 'variable':
+            return `<select class="${cls}" data-index="${index}">
+                <option value="">Select...</option>
+                ${getVariableOptions(varName)}
+            </select>`;
+        default:
+            return `<input type="number" class="${cls}" data-index="${index}" value="${val || 0}">`;
+    }
+}
+
+// Get output select for function results
+function getFuncOutputSelect(task, index) {
+    if (task.outputType === 'variable') {
+        return `<select class="task-func-output-var" data-index="${index}">
+            <option value="">Select Variable...</option>
+            ${getVariableOptions(task.outputVarName)}
+        </select>`;
+    } else if (task.outputType === 'numberEntry') {
+        return `<select class="task-func-output-ne" data-index="${index}">
+            <option value="">Select Number Entry...</option>
+            ${numberEntries.map((ne, i) => `<option value="${i}" ${task.outputIndex === i ? 'selected' : ''}>${ne.name || 'Number Entry ' + (i+1)}</option>`).join('')}
+        </select>`;
+    }
+    return '';
 }
 
 function setupTaskDragDrop() {
@@ -3765,15 +4554,113 @@ function setupTaskDragDrop() {
             
             if (isNew) {
                 const type = e.dataTransfer.getData('taskType');
-                const newTask = {
-                    type: type,
-                    rngIndex: null,
-                    storeResult: true,
-                    targetIndex: null,
-                    sourceType: 'static',
-                    staticValue: 0,
-                    sourceIndex: null
-                };
+                let newTask = null;
+                
+                switch (type) {
+                    case 'run-rng':
+                        newTask = {
+                            type: 'run-rng',
+                            rngIndex: null,
+                            storeResult: true,
+                            targetIndex: null,
+                            sourceType: 'static',
+                            staticValue: 0,
+                            sourceIndex: null
+                        };
+                        break;
+                    case 'add':
+                    case 'subtract':
+                    case 'set':
+                        newTask = {
+                            type: type,
+                            rngIndex: null,
+                            storeResult: true,
+                            targetIndex: null,
+                            sourceType: 'static',
+                            staticValue: 0,
+                            sourceIndex: null,
+                            sourceVarName: ''
+                        };
+                        break;
+                    case 'create-var':
+                        newTask = {
+                            type: 'create-var',
+                            varName: 'myVar',
+                            varType: 'integer',
+                            varInitValue: 0
+                        };
+                        break;
+                    case 'set-var':
+                    case 'add-var':
+                    case 'subtract-var':
+                        newTask = {
+                            type: type,
+                            varName: '',
+                            sourceType: 'static',
+                            staticValue: 0,
+                            sourceIndex: null,
+                            sourceVarName: ''
+                        };
+                        break;
+                    case 'if':
+                    case 'elseif':
+                        newTask = {
+                            type: type,
+                            conditions: [{
+                                leftType: 'lastRng', leftValue: '', leftIndex: null, leftVarName: '',
+                                operator: '==',
+                                rightType: 'static', rightValue: 0, rightIndex: null, rightVarName: ''
+                            }]
+                        };
+                        break;
+                    case 'else':
+                        newTask = { type: 'else' };
+                        break;
+                    case 'endif':
+                        newTask = { type: 'endif' };
+                        break;
+                    case 'func-min':
+                    case 'func-max':
+                        newTask = {
+                            type: type,
+                            inputAType: 'static', inputAValue: 0, inputAIndex: null, inputAVarName: '',
+                            inputBType: 'static', inputBValue: 0, inputBIndex: null, inputBVarName: '',
+                            outputType: 'variable', outputVarName: '', outputIndex: null
+                        };
+                        break;
+                    case 'func-rand':
+                        newTask = {
+                            type: 'func-rand',
+                            randMin: 1,
+                            randMax: 100,
+                            storeResult: true,
+                            outputType: 'none',
+                            outputVarName: '',
+                            outputIndex: null
+                        };
+                        break;
+                    case 'func-print':
+                        newTask = {
+                            type: 'func-print',
+                            printLabel: '',
+                            sourceType: 'lastRng',
+                            staticValue: 0,
+                            sourceIndex: null,
+                            sourceVarName: ''
+                        };
+                        break;
+                    default:
+                        newTask = {
+                            type: type,
+                            rngIndex: null,
+                            storeResult: true,
+                            targetIndex: null,
+                            sourceType: 'static',
+                            staticValue: 0,
+                            sourceIndex: null
+                        };
+                }
+                
                 tempTasks.push(newTask);
                 renderTaskSequence();
             }
@@ -3784,6 +4671,7 @@ function setupTaskDragDrop() {
 // ============== TASK EXECUTION ==============
 let lastRngResult = 0;
 let eventRngResults = []; // Collect all RNG results during an event
+let eventPrintResults = []; // Collect print outputs during an event
 
 function executeButtonTasks(buttonData) {
     if (!buttonData.tasks || buttonData.tasks.length === 0) {
@@ -3792,14 +4680,145 @@ function executeButtonTasks(buttonData) {
     
     lastRngResult = 0;
     eventRngResults = []; // Reset results collection
+    eventPrintResults = []; // Reset print collection
     
-    for (const task of buttonData.tasks) {
-        executeTask(task);
+    // Execute tasks with IF/ELSE control flow
+    let i = 0;
+    while (i < buttonData.tasks.length) {
+        const task = buttonData.tasks[i];
+        
+        if (task.type === 'if') {
+            i = executeIfBlock(buttonData.tasks, i);
+        } else if (task.type === 'elseif' || task.type === 'else' || task.type === 'endif') {
+            // These are handled by executeIfBlock, skip if encountered at top level
+            i++;
+        } else {
+            executeTask(task);
+            i++;
+        }
     }
     
-    // Show all RNG results at the end
-    if (eventRngResults.length > 0) {
-        showAllRngResults(eventRngResults);
+    // Show all results
+    const allResults = [];
+    eventRngResults.forEach(r => allResults.push(`${r.name}: ${r.result}`));
+    eventPrintResults.forEach(r => allResults.push(`${r.label ? r.label + ': ' : ''}${r.value}`));
+    
+    if (allResults.length > 0) {
+        showAllEventResults(allResults);
+    }
+}
+
+// Execute an IF block and return the index after the matching END IF
+function executeIfBlock(tasks, startIndex) {
+    const conditionResult = evaluateConditions(tasks[startIndex]);
+    let i = startIndex + 1;
+    let depth = 0;
+    let executed = conditionResult;
+    let shouldExecute = conditionResult;
+    
+    while (i < tasks.length) {
+        const task = tasks[i];
+        
+        if (task.type === 'if') {
+            if (shouldExecute) {
+                // Nested IF block
+                i = executeIfBlock(tasks, i);
+                continue;
+            } else {
+                // Skip nested IF block entirely
+                depth = 1;
+                i++;
+                while (i < tasks.length && depth > 0) {
+                    if (tasks[i].type === 'if') depth++;
+                    if (tasks[i].type === 'endif') depth--;
+                    i++;
+                }
+                continue;
+            }
+        }
+        
+        if (task.type === 'elseif') {
+            if (executed) {
+                // Already executed a branch, skip the rest
+                shouldExecute = false;
+            } else {
+                shouldExecute = evaluateConditions(task);
+                if (shouldExecute) executed = true;
+            }
+            i++;
+            continue;
+        }
+        
+        if (task.type === 'else') {
+            shouldExecute = !executed;
+            i++;
+            continue;
+        }
+        
+        if (task.type === 'endif') {
+            return i + 1; // Return index past END IF
+        }
+        
+        if (shouldExecute) {
+            executeTask(task);
+        }
+        i++;
+    }
+    
+    return i; // Reached end without finding endif
+}
+
+// Evaluate conditions for IF/ELSEIF tasks
+function evaluateConditions(task) {
+    if (!task.conditions || task.conditions.length === 0) return false;
+    
+    let result = evaluateSingleCondition(task.conditions[0]);
+    
+    for (let i = 1; i < task.conditions.length; i++) {
+        const cond = task.conditions[i];
+        const condResult = evaluateSingleCondition(cond);
+        
+        if (cond.logic === 'or') {
+            result = result || condResult;
+        } else {
+            // AND (default)
+            result = result && condResult;
+        }
+    }
+    
+    return result;
+}
+
+function evaluateSingleCondition(cond) {
+    const leftVal = getConditionValue(cond.leftType, cond.leftValue, cond.leftIndex, cond.leftVarName);
+    const rightVal = getConditionValue(cond.rightType, cond.rightValue, cond.rightIndex, cond.rightVarName);
+    
+    switch (cond.operator) {
+        case '>':  return leftVal > rightVal;
+        case '>=': return leftVal >= rightVal;
+        case '<':  return leftVal < rightVal;
+        case '<=': return leftVal <= rightVal;
+        case '==': return leftVal == rightVal;
+        case '!=': return leftVal != rightVal;
+        default:   return false;
+    }
+}
+
+function getConditionValue(type, value, index, varName) {
+    switch (type) {
+        case 'static':
+            return parseFloat(value) || 0;
+        case 'lastRng':
+            return lastRngResult;
+        case 'numberEntry':
+            if (index !== null && numberEntries[index]) {
+                return numberEntries[index].value;
+            }
+            return 0;
+        case 'variable':
+            return getVariableValue(varName);
+        default:
+            return parseFloat(value) || 0;
     }
 }
 
@@ -3847,6 +4866,139 @@ function executeTask(task) {
                 updateNumberEntry(target, newValue);
             }
             break;
+        // ===== VARIABLE TASKS =====
+        case 'create-var':
+            createOrResetVariable(task.varName, task.varType, task.varInitValue);
+            break;
+        case 'set-var':
+            if (task.varName) {
+                const val = getTaskSourceValue(task);
+                setVariableValue(task.varName, val);
+            }
+            break;
+        case 'add-var':
+            if (task.varName) {
+                const currentVal = getVariableValue(task.varName);
+                const addVal = getTaskSourceValue(task);
+                setVariableValue(task.varName, currentVal + addVal);
+            }
+            break;
+        case 'subtract-var':
+            if (task.varName) {
+                const currentVal2 = getVariableValue(task.varName);
+                const subVal = getTaskSourceValue(task);
+                setVariableValue(task.varName, currentVal2 - subVal);
+            }
+            break;
+        // ===== FUNCTIONS =====
+        case 'func-min': {
+            const a = getFuncInputValue(task, 'A');
+            const b = getFuncInputValue(task, 'B');
+            const result = Math.min(a, b);
+            storeFuncOutput(task, result);
+            break;
+        }
+        case 'func-max': {
+            const a = getFuncInputValue(task, 'A');
+            const b = getFuncInputValue(task, 'B');
+            const result = Math.max(a, b);
+            storeFuncOutput(task, result);
+            break;
+        }
+        case 'func-rand': {
+            const min = parseInt(task.randMin) || 1;
+            const max = parseInt(task.randMax) || 100;
+            const result = Math.floor(Math.random() * (max - min + 1)) + min;
+            if (task.storeResult) {
+                lastRngResult = result;
+            }
+            eventRngResults.push({ name: 'Rand', result: result });
+            if (task.outputType && task.outputType !== 'none') {
+                storeFuncOutput(task, result);
+            }
+            break;
+        }
+        case 'func-print': {
+            const val = getTaskSourceValue(task);
+            eventPrintResults.push({ label: task.printLabel || '', value: val });
+            break;
+        }
+    }
+}
+
+// Get the value of a function input (A or B side)
+function getFuncInputValue(task, side) {
+    const type = side === 'A' ? task.inputAType : task.inputBType;
+    const val = side === 'A' ? task.inputAValue : task.inputBValue;
+    const neIdx = side === 'A' ? task.inputAIndex : task.inputBIndex;
+    const varName = side === 'A' ? task.inputAVarName : task.inputBVarName;
+    
+    switch (type) {
+        case 'static':
+            return parseFloat(val) || 0;
+        case 'lastRng':
+            return lastRngResult;
+        case 'numberEntry':
+            if (neIdx !== null && numberEntries[neIdx]) {
+                return numberEntries[neIdx].value;
+            }
+            return 0;
+        case 'variable':
+            return getVariableValue(varName);
+        default:
+            return parseFloat(val) || 0;
+    }
+}
+
+// Store a function output in a variable or number entry
+function storeFuncOutput(task, value) {
+    if (task.outputType === 'variable' && task.outputVarName) {
+        setVariableValue(task.outputVarName, value);
+    } else if (task.outputType === 'numberEntry' && task.outputIndex !== null && numberEntries[task.outputIndex]) {
+        const target = numberEntries[task.outputIndex];
+        const min = target.min !== null ? target.min : -Infinity;
+        const max = target.max !== null ? target.max : Infinity;
+        updateNumberEntry(target, Math.min(Math.max(value, min), max));
+    }
+}
+
+// ===== VARIABLE MANAGEMENT =====
+function createOrResetVariable(name, varType, initValue) {
+    if (!name) return;
+    const existing = eventVariables.find(v => v.name === name);
+    if (existing) {
+        existing.varType = varType || 'integer';
+        existing.value = castVariableValue(initValue, varType);
+    } else {
+        eventVariables.push({
+            id: nextVariableId++,
+            name: name,
+            varType: varType || 'integer',
+            value: castVariableValue(initValue, varType)
+        });
+    }
+}
+
+function castVariableValue(value, varType) {
+    switch (varType) {
+        case 'integer':  return parseInt(value) || 0;
+        case 'float':    return parseFloat(value) || 0;
+        case 'string':   return String(value ?? '');
+        case 'boolean':  return Boolean(value);
+        default:         return value;
+    }
+}
+
+function getVariableValue(name) {
+    if (!name) return 0;
+    const v = eventVariables.find(v => v.name === name);
+    return v ? v.value : 0;
+}
+
+function setVariableValue(name, value) {
+    const v = eventVariables.find(v => v.name === name);
+    if (v) {
+        v.value = castVariableValue(value, v.varType);
     }
 }
 
@@ -3861,6 +5013,8 @@ function getTaskSourceValue(task) {
                 return numberEntries[task.sourceIndex].value;
             }
             return 0;
+        case 'variable':
+            return getVariableValue(task.sourceVarName);
         default:
             return task.staticValue || 0;
     }
@@ -3875,12 +5029,11 @@ function generateRngResult(rng) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function showAllRngResults(results) {
+function showAllEventResults(results) {
     const notification = document.createElement('div');
     notification.className = 'rng-result-notification';
     
-    // Build content showing all RNG results
-    let content = results.map(r => `${r.name}: ${r.result}`).join('<br>');
+    let content = results.join('<br>');
     notification.innerHTML = content;
     
     notification.style.cssText = `
@@ -4086,6 +5239,12 @@ document.getElementById('save-map').addEventListener('click', () => {
             height: lb.height,
             locked: lb.locked || false,
             items: lb.items || []
+        })),
+        eventVariables: eventVariables.map(v => ({
+            id: v.id,
+            name: v.name,
+            varType: v.varType,
+            value: v.value
         }))
     };
     
@@ -4135,6 +5294,8 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
             listBoxElements.forEach(lb => lb.element.remove());
             listBoxElements = [];
             nextListBoxId = 1;
+            eventVariables = [];
+            nextVariableId = 1;
             if (drawingCtx) {
                 drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
             }
@@ -4601,6 +5762,20 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
                 });
             }
             
+            // Load event variables
+            if (data.eventVariables) {
+                eventVariables = data.eventVariables.map(v => ({
+                    id: v.id,
+                    name: v.name,
+                    varType: v.varType || 'integer',
+                    value: v.value
+                }));
+                nextVariableId = Math.max(...eventVariables.map(v => v.id), 0) + 1;
+            }
+            
+            // Check if any elements exceed the current viewport and enable scrollbars if needed
+            adjustOverflowForImport();
+            
             alert('Character sheet loaded successfully!');
         } catch (err) {
             alert('Error loading character sheet: ' + err.message);
@@ -4608,6 +5783,78 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
     };
     reader.readAsText(file);
     e.target.value = '';
+});
+
+// Check if imported content exceeds the current viewport and enable scrollbars
+function adjustOverflowForImport() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let maxRight = 0;
+    let maxBottom = 0;
+    
+    // Collect max extents from all positioned element arrays
+    const allElements = [
+        ...textElements,
+        ...mapIcons,
+        ...frameElements,
+        ...numberEntries,
+        ...labelElements,
+        ...buttonElements,
+        ...listBoxElements
+    ];
+    
+    allElements.forEach(el => {
+        const right = (el.x || 0) + (el.width || 120);
+        const bottom = (el.y || 0) + (el.height || 40);
+        if (right > maxRight) maxRight = right;
+        if (bottom > maxBottom) maxBottom = bottom;
+    });
+    
+    // If any content extends beyond the viewport, enable scrolling
+    if (maxRight > vw || maxBottom > vh) {
+        document.body.style.overflow = 'auto';
+        // Ensure the body is tall/wide enough to scroll to all content
+        // Use a spacer div so the body has scrollable area
+        let spacer = document.getElementById('import-spacer');
+        if (!spacer) {
+            spacer = document.createElement('div');
+            spacer.id = 'import-spacer';
+            spacer.style.position = 'absolute';
+            spacer.style.pointerEvents = 'none';
+            spacer.style.zIndex = '-1';
+            document.body.appendChild(spacer);
+        }
+        spacer.style.left = '0px';
+        spacer.style.top = '0px';
+        spacer.style.width = Math.max(maxRight + 40, vw) + 'px';
+        spacer.style.height = Math.max(maxBottom + 40, vh) + 'px';
+        
+        // Resize the drawing and grid canvases to cover the full scrollable area
+        const fullW = Math.max(maxRight + 40, vw);
+        const fullH = Math.max(maxBottom + 40, vh);
+        if (drawingCanvas) {
+            drawingCanvas.width = fullW;
+            drawingCanvas.height = fullH;
+            drawingCanvas.style.width = fullW + 'px';
+            drawingCanvas.style.height = fullH + 'px';
+        }
+        if (gridCanvas) {
+            gridCanvas.width = fullW;
+            gridCanvas.height = fullH;
+            gridCanvas.style.width = fullW + 'px';
+            gridCanvas.style.height = fullH + 'px';
+        }
+    } else {
+        // Content fits — keep overflow hidden
+        document.body.style.overflow = 'hidden';
+        const spacer = document.getElementById('import-spacer');
+        if (spacer) spacer.remove();
+    }
+}
+
+// Re-check overflow on window resize (user might resize to accommodate)
+window.addEventListener('resize', () => {
+    adjustOverflowForImport();
 });
 
 // Animation loop
