@@ -35,6 +35,13 @@ A WebGL application for creating and editing hexagonal maps using Three.js. Perf
 - **Draggable Labels** - Move text labels by dragging them
 - **Edit/Delete** - Right-click labels to edit or remove them
 
+### Border Tool
+- **Individual Borders** — Click on square edges to add borders
+- **Customizable Borders** — Choose border color and thickness (1–10px)
+- **Remove Borders** — Toggle removal mode to click and remove individual borders
+- **Clear All Borders** — Remove every border at once
+- **Border Palette** — Maintain a separate palette for border colors with save/import
+
 ### Icon System
 - **Icon Library** - Import up to 40 custom icons (PNG, JPG, GIF, SVG)
 - **Place Icons** - Select an icon and click on the map to place it
@@ -88,20 +95,6 @@ This is useful when you want to maintain consistent colors across multiple map p
 ### Run Via Webpage
 
 1. Open Webpage: https://bustercube.github.io/HexMap-Maker/
-
-### Installation
-
-1. Install dependencies:
-   ```
-   npm install
-   ```
-
-2. Start the development server:
-   ```
-   npm start
-   ```
-
-3. Open your browser and navigate to `http://localhost:3000`
 
 ---
 
@@ -190,6 +183,188 @@ This is useful when you want to maintain consistent colors across multiple map p
 
 ---
 
-## License
+# Dungeon Maker
 
-MIT License - Feel free to use and modify for your projects!
+A square-grid map editor for creating dungeon layouts, battle maps, and interior spaces. Accessible from the Hex Map Maker's System menu or directly via `dungeon-maker.html`.
+
+## Features
+
+### Grid & Display
+- **Customizable Grid Size** — Create grids from 1×1 up to 300×300 squares
+- **Adjustable Square Size** — Scale squares from 10px to 100px
+- **Background Options** — Set a solid background color or import a background image
+- **Dark Mode** — Toggle between light and dark appearance
+
+### Square Editing
+- **Color Fill** — Click any square to fill it with the selected color
+- **Color Picker** — Use the color picker or enter hex codes directly
+- **Clear Square** — Right-click a square to reset it
+
+### Color Palette
+- **Save Colors** — Add frequently used colors to your palette
+- **Named Colors** — Give each palette color a custom name
+- **Quick Select** — Click any palette color to use it for filling
+- **Save / Import Palette** — Export or import palettes for reuse across projects
+
+### Border Tool
+- **Individual Borders** — Click on square edges to add borders
+- **Customizable Borders** — Choose border color and thickness (1–10px)
+- **Remove Borders** — Toggle removal mode to click and remove individual borders
+- **Clear All Borders** — Remove every border at once
+- **Border Palette** — Maintain a separate palette for border colors with save/import
+
+### Drawing Tools
+- **Freehand Drawing** — Draw lines and shapes directly on the map
+- **Customizable Lines** — Adjust line color and thickness (1–10px)
+- **Eraser Tool** — Erase parts of your drawings
+- **Clear All Drawings** — Remove all freehand drawings at once
+
+### Text Tool
+- **Add Text Labels** — Click anywhere to add text to your map
+- **Customizable Text** — Adjust font size (10–50px) and color
+- **Text Box Frame** — Optionally show a frame around text
+- **Draggable Labels** — Move text labels by dragging them
+- **Edit/Delete** — Right-click labels to edit or remove them
+
+### Icon System
+- **Icon Library** — Import up to 40 custom icons
+- **Place Icons** — Select an icon and click on the map to place it
+- **Resize & Move** — Drag handles to resize, drag center to move
+- **Delete Icons** — Right-click an icon to remove it
+
+### RNG (Random Number Generators)
+- **Add RNGs** — Create random number generators with custom min/max ranges
+- **Roll** — Generate random results on demand
+- **Save / Import RNGs** — Export and import RNG configurations
+
+### Save & Export
+- **Save Dungeon** — Export the entire dungeon as a JSON file
+- **Import Dungeon** — Load a previously saved dungeon
+
+## Dungeon Saving System
+
+| Data | Description |
+|------|-------------|
+| Grid Settings | Width, height, square size |
+| Background | Background color and/or background image |
+| Square Data | Color of every filled square |
+| Borders | All individual border customizations (color, thickness, position) |
+| Drawings | All freehand drawings (as image data) |
+| Text Labels | All text labels with position, size, and color |
+| Icons | All placed icons with position and size |
+| Icon Library | Imported icon images |
+| Color Palette | Saved fill palette colors with names |
+| Border Palette | Saved border palette colors with names |
+| RNG List | All random number generator configurations |
+
+**File format:** `dungeon_YYYY-MM-DD.json`
+
+### Navigation
+The System menu includes navigation buttons to switch between the Hex Map Maker, Dungeon Maker, and Character Sheet.
+
+---
+
+# Character Sheet Maker
+
+A freeform canvas editor for building interactive character sheets, inventory trackers, and custom game forms. Accessible from the System menu navigation or directly via `character-sheet.html`.
+
+## Features
+
+### Canvas & Layout
+- **Adjustable Canvas Size** — Set width and height from 500px to 10,000px to create sheets larger than the viewport
+- **Scrollable Workspace** — Automatically enables scrollbars when content exceeds the viewport
+- **Grid Overlay** — Toggle a pixel grid with adjustable size (5–100px)
+- **Snap to Grid** — Snap placed elements to the grid for precise alignment
+- **Background Options** — Set a solid background color or upload a background image
+
+### Drawing Tool
+- **Freehand Drawing** — Draw directly on the canvas
+- **Customizable Lines** — Adjust line color and thickness (1–10px)
+- **Eraser Tool** — Erase parts of your drawings
+- **Clear All Drawings** — Remove all freehand drawings at once
+
+### Text Tool
+- **Add Text Labels** — Click anywhere to place editable text
+- **Customizable Text** — Adjust font size (10–100px) and color
+- **Text Box Frame** — Optionally show a frame around text with adjustable opacity
+- **Draggable & Resizable** — Move and resize text boxes
+- **Lockable** — Lock text in place to prevent accidental moves
+- **Copy & Paste** — Right-click to copy, right-click canvas to paste
+
+### Frame Tool
+- **Titled Frames** — Place bordered frames with customizable titles
+- **Title Options** — Set title text, font size, placement (left/center/right), and color
+- **Border Customization** — Adjust border color and thickness (1–20px)
+- **Background** — Set frame background color and opacity
+- **Lockable** — Lock frames to prevent accidental moves
+- **Copy & Paste** — Duplicate frames via right-click
+
+### Number Entry Tool
+- **Numeric Inputs** — Place number input boxes on the sheet
+- **Range Limits** — Set optional min and max values
+- **Customizable Appearance** — Adjust font size, text color, background color, bold, and italic
+- **Lockable** — Lock entries to prevent accidental moves
+- **Copy & Paste** — Duplicate number entries via right-click
+
+### Label Tool
+- **Heading Labels** — Place styled text labels for section headers
+- **Customizable Appearance** — Adjust font size (10–100px), color, letter spacing, bold, italic, and underline
+- **Lockable** — Lock labels in place
+- **Copy & Paste** — Duplicate labels via right-click
+
+### Button Tool
+- **Interactive Buttons** — Place clickable buttons on the sheet
+- **Customizable Appearance** — Set button text, font size, text color, button color, bold, and italic
+- **Programmable Actions** — Right-click to edit button actions via an event/task system
+- **Lockable** — Lock buttons in place
+- **Copy & Paste** — Duplicate buttons via right-click
+
+### List Box Tool
+- **Item Lists** — Place list boxes for inventory, equipment, or any collection
+- **Titled Lists** — Set a title with customizable font size and color
+- **Item Management** — Type items to add; right-click items to adjust count, set amount, or delete
+- **Customizable Appearance** — Adjust text size, text color, background color, button color, border size, and border color
+- **Lockable** — Lock list boxes in place
+- **Copy & Paste** — Duplicate list boxes via right-click
+
+### Image Tool
+- **Image Library** — Import up to 40 custom images (PNG, JPG, GIF, SVG)
+- **Place Images** — Enable placement mode, select an image, then click the canvas
+- **Resize & Move** — Drag handles to resize, drag center to reposition
+- **Rotate** — Right-click to rotate 90°
+- **Layer Order** — Bring to front or send to back
+- **Lockable** — Lock images in place
+
+### RNG (Random Number Generators)
+- **Add RNGs** — Create random number generators with custom min/max ranges
+- **Linked RNGs** — Link multiple RNGs to roll them together
+- **Roll Results** — Results display on-screen with animated notifications
+
+### Event System (Button Actions)
+Buttons can be programmed with a visual task editor to create interactive character sheets:
+- **RNG Roll** — Roll a specific RNG and optionally display the result
+- **Set Number Entry** — Update a number entry to a fixed or calculated value
+- **Print** — Display a labeled value on screen
+- **And More** - Find many more features in the Even System to customize your sheet!
+
+## Character Sheet Saving System
+
+| Data | Description |
+|------|-------------|
+| Canvas Settings | Canvas width and height |
+| Background | Background color and/or background image |
+| Drawings | All freehand drawings (as image data) |
+| Text Elements | All text labels with position, size, color, lock state |
+| Frames | All frames with title, border, background, and lock state |
+| Number Entries | All number inputs with value, range, styling, and lock state |
+| Labels | All labels with text, styling, and lock state |
+| Buttons | All buttons with text, styling, actions, and lock state |
+| List Boxes | All list boxes with items, counts, styling, and lock state |
+| Icons / Images | All placed images with position, size, rotation, and lock state |
+| Icon Library | Imported image files |
+| RNG List | All random number generator configurations and links |
+| Event Variables | Variables used by the button event system |
+
+**File format:** `character_sheet_YYYY-MM-DD.json`
+
+---

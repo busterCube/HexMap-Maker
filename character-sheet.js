@@ -130,15 +130,74 @@ document.querySelectorAll('.tool-section h3').forEach(header => {
 
 // Canvas size controls
 document.getElementById('apply-canvas-size').addEventListener('click', () => {
-    canvasWidth = parseInt(document.getElementById('canvas-width').value);
-    canvasHeight = parseInt(document.getElementById('canvas-height').value);
+    canvasWidth = parseInt(document.getElementById('canvas-width').value) || 2000;
+    canvasHeight = parseInt(document.getElementById('canvas-height').value) || 2000;
+    applyCanvasSize();
 });
 
-document.getElementById('reset-view').addEventListener('click', () => {
-    cameraOffsetX = 0;
-    cameraOffsetY = 0;
+function applyCanvasSize() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const needsScroll = canvasWidth > vw || canvasHeight > vh;
+
+    if (needsScroll) {
+        document.body.style.overflow = 'auto';
+        let spacer = document.getElementById('import-spacer');
+        if (!spacer) {
+            spacer = document.createElement('div');
+            spacer.id = 'import-spacer';
+            spacer.style.position = 'absolute';
+            spacer.style.pointerEvents = 'none';
+            spacer.style.zIndex = '-1';
+            document.body.appendChild(spacer);
+        }
+        spacer.style.left = '0px';
+        spacer.style.top = '0px';
+        spacer.style.width = canvasWidth + 'px';
+        spacer.style.height = canvasHeight + 'px';
+    } else {
+        document.body.style.overflow = 'hidden';
+        const spacer = document.getElementById('import-spacer');
+        if (spacer) spacer.remove();
+    }
+
+    // Resize drawing and grid canvases to cover the full canvas area
+    const fullW = Math.max(canvasWidth, vw);
+    const fullH = Math.max(canvasHeight, vh);
+    if (drawingCanvas) {
+        // Preserve existing drawing content
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = drawingCanvas.width;
+        tempCanvas.height = drawingCanvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(drawingCanvas, 0, 0);
+
+        drawingCanvas.width = fullW;
+        drawingCanvas.height = fullH;
+        drawingCanvas.style.width = fullW + 'px';
+        drawingCanvas.style.height = fullH + 'px';
+        drawingCtx.drawImage(tempCanvas, 0, 0);
+    }
+    if (gridCanvas) {
+        gridCanvas.width = fullW;
+        gridCanvas.height = fullH;
+        gridCanvas.style.width = fullW + 'px';
+        gridCanvas.style.height = fullH + 'px';
+        drawGrid();
+    }
+
+    // Resize renderer and background image to match
+    renderer.setSize(fullW, fullH);
+    renderer.domElement.style.width = fullW + 'px';
+    renderer.domElement.style.height = fullH + 'px';
     updateCamera();
-});
+
+    const bgImg = document.getElementById('bg-image-element');
+    if (bgImg) {
+        bgImg.style.width = fullW + 'px';
+        bgImg.style.height = fullH + 'px';
+    }
+}
 
 // Background controls
 document.getElementById('bg-color').addEventListener('input', (e) => {
@@ -663,13 +722,22 @@ document.getElementById('grid-size').addEventListener('change', (e) => {
 });
 
 window.addEventListener('resize', () => {
-    drawingCanvas.width = window.innerWidth;
-    drawingCanvas.height = window.innerHeight;
-    gridCanvas.width = window.innerWidth;
-    gridCanvas.height = window.innerHeight;
+    const fullW = Math.max(canvasWidth, window.innerWidth);
+    const fullH = Math.max(canvasHeight, window.innerHeight);
+    drawingCanvas.width = fullW;
+    drawingCanvas.height = fullH;
+    drawingCanvas.style.width = fullW + 'px';
+    drawingCanvas.style.height = fullH + 'px';
+    gridCanvas.width = fullW;
+    gridCanvas.height = fullH;
+    gridCanvas.style.width = fullW + 'px';
+    gridCanvas.style.height = fullH + 'px';
     drawGrid();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(fullW, fullH);
+    renderer.domElement.style.width = fullW + 'px';
+    renderer.domElement.style.height = fullH + 'px';
     updateCamera();
+    adjustOverflowForImport();
 });
 
 // Icon functionality
@@ -1238,11 +1306,6 @@ canvas.addEventListener('mouseup', (e) => {
         drawingPoints = [];
     }
 });
-
-canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    // Zoom not implemented for character sheet
-}, { passive: false });
 
 canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
@@ -6480,6 +6543,7 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
             }
             
             // Check if any elements exceed the current viewport and enable scrollbars if needed
+            applyCanvasSize();
             adjustOverflowForImport();
             
             alert('Character sheet loaded successfully!');
@@ -6495,8 +6559,8 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
 function adjustOverflowForImport() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    let maxRight = 0;
-    let maxBottom = 0;
+    let maxRight = canvasWidth;
+    let maxBottom = canvasHeight;
     
     // Collect max extents from all positioned element arrays
     const allElements = [
@@ -6519,8 +6583,6 @@ function adjustOverflowForImport() {
     // If any content extends beyond the viewport, enable scrolling
     if (maxRight > vw || maxBottom > vh) {
         document.body.style.overflow = 'auto';
-        // Ensure the body is tall/wide enough to scroll to all content
-        // Use a spacer div so the body has scrollable area
         let spacer = document.getElementById('import-spacer');
         if (!spacer) {
             spacer = document.createElement('div');

@@ -33,7 +33,7 @@
         }
         #canvas { display: block; width: 100%; height: 100%; }
         #menu-toggle {
-            position: absolute;
+            position: fixed;
             top: 15px;
             right: 15px;
             z-index: 1000;
@@ -54,7 +54,7 @@
             box-shadow: var(--shadow-lg);
         }
         #system-toggle {
-            position: absolute;
+            position: fixed;
             top: 15px;
             left: 15px;
             z-index: 1000;
@@ -75,40 +75,40 @@
             box-shadow: var(--shadow-lg);
         }
         #system-menu {
-            position: absolute;
+            position: fixed;
             top: 0;
-            left: -320px;
+            left: 0;
             width: 320px;
             height: 100%;
             background: var(--bg-panel);
             border-right: 1px solid var(--border);
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
             padding: 20px;
             box-sizing: border-box;
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
+            display: none;
         }
         #system-menu.open {
-            left: 0;
+            display: block;
         }
         #menu {
-            position: absolute;
+            position: fixed;
             top: 0;
-            right: -320px;
+            right: 0;
             width: 320px;
             height: 100%;
             background: var(--bg-panel);
             border-left: 1px solid var(--border);
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
             padding: 20px;
             box-sizing: border-box;
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
+            display: none;
         }
         #menu.open {
-            right: 0;
+            display: block;
         }
         /* Custom scrollbar */
         #menu::-webkit-scrollbar,
@@ -1446,13 +1446,6 @@
                 <label>Canvas Width: <input type="number" id="canvas-width" value="2000" min="500" max="10000"></label><br><br>
                 <label>Canvas Height: <input type="number" id="canvas-height" value="2000" min="500" max="10000"></label><br><br>
                 <button id="apply-canvas-size">Apply Size</button>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Navigation</h3>
-            <div class="tool-section-content">
-                <button id="reset-view">Reset View</button>
-                <p>Use mouse wheel to zoom in/out. Click and drag to pan the view.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
