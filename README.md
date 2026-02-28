@@ -5,55 +5,73 @@ A WebGL application for creating and editing hexagonal maps using Three.js. Perf
 ## Features
 
 ### Grid & Display
-- **Customizable Grid Size** - Create grids from 1x1 up to 300x300 hexes
-- **Hex Orientation** - Choose between pointy-top or flat-top hexagons
-- **Adjustable Hex Size** - Scale hexes from 10px to 200px
-- **Background Options** - Set a solid background color or import a background image
-- **Scrolling & Navigation** - Scroll large maps using mouse wheel, shift+wheel for horizontal, or drag scrollbars
+- **Customizable Grid Size** — Create grids from 1×1 up to 300×300 hexes
+- **Hex Orientation** — Choose between pointy-top or flat-top hexagons
+- **Adjustable Hex Size** — Scale hexes from 10px to 200px
+- **Background Options** — Set a solid background color or import a background image
+- **Scrolling & Navigation** — Scroll large maps using mouse wheel, Shift+wheel for horizontal, or drag scrollbars
+- **Dark Mode** — Toggle between light and dark appearance
 
 ### Hex Editing
-- **Color Fill** - Click any hex to fill it with the selected color
-- **Color Picker** - Use the color picker or enter hex codes directly
-- **Hex Tags** - Right-click a hex to add a text tag (displayed on the hex)
-- **Clear Hex** - Right-click to reset a hex to default or clear its tag
+- **Color Fill (Drag)** — Left-click and drag across hexes to paint them with the selected color
+- **Color Picker** — Use the color picker or enter hex codes directly
+- **Clear Hex** — Right-click a hex to clear its fill
+- **Clear Fill** — Right-click context menu option to clear only the fill color
+
+### Tag System
+- **Add Tags** — Right-click a hex and select "Add Tag" to open the tag dialog
+- **Tag Fields** — Each tag has a Short Display Text, Name, Meta Tags (key;value pairs), and Notes
+- **Edit Tags** — Right-click a tagged hex and select "Edit Tag" to modify it, pre-filling all fields
+- **Clear Tags** — Right-click a tagged hex to clear its tag via the "Clear Tag" option
+- **Tag Display** — Tags appear on hexes and automatically reposition when scrolling or resizing
+
+### Tag Catalog
+- **Catalog Window** — View all tags in a searchable, scrollable catalog
+- **Search** — Filter by display text, name, meta keys/values, or notes
+- **Meta Filter Syntax** — Search `Key +Value` (e.g., `Unique +no`) to filter by a specific meta tag key and value
+- **Edit from Catalog** — Click the ✎ button on any catalog entry to edit it
+- **Delete from Catalog** — Click the ✕ button to remove a tag
+- **Export Catalog** — Export the tag catalog as a standalone JSON file
+- **Import Catalog** — Import a previously exported tag catalog
 
 ### Color Palette
-- **Save Colors** - Add frequently used colors to your palette (up to 30 colors)
-- **Named Colors** - Give each palette color a custom name
-- **Quick Select** - Click any palette color to use it for filling
-- **Palette Management** - Remove colors or rename them as needed
+- **Save Colors** — Add frequently used colors to your palette (up to 30 colors)
+- **Named Colors** — Give each palette color a custom name
+- **Quick Select** — Click any palette color to use it for filling
+- **Palette Management** — Remove colors or rename them as needed
+- **Save / Import Palette** — Export or import palettes for reuse across projects
 
 ### Drawing Tools
-- **Freehand Drawing** - Draw lines and shapes directly on the map
-- **Customizable Lines** - Adjust line color and thickness (1-20px)
-- **Eraser Tool** - Erase parts of your drawings
-- **Clear All Drawings** - Remove all freehand drawings at once
+- **Freehand Drawing** — Draw lines and shapes directly on the map
+- **Customizable Lines** — Adjust line color and thickness (1–20px)
+- **Eraser Tool** — Erase parts of your drawings
+- **Clear All Drawings** — Remove all freehand drawings at once
 
 ### Text Tool
-- **Add Text Labels** - Click anywhere to add text to your map
-- **Customizable Text** - Adjust font size (8-72px) and color
-- **Draggable Labels** - Move text labels by dragging them
-- **Edit/Delete** - Right-click labels to edit or remove them
+- **Add Text Labels** — Click anywhere to add text to your map
+- **Customizable Text** — Adjust font size (8–72px) and color
+- **Draggable Labels** — Move text labels by dragging them
+- **Edit/Delete** — Right-click labels to edit or remove them
 
 ### Border Tool
-- **Individual Borders** — Click on square edges to add borders
+- **Individual Borders** — Click on hex edges to add borders
 - **Customizable Borders** — Choose border color and thickness (1–10px)
 - **Remove Borders** — Toggle removal mode to click and remove individual borders
 - **Clear All Borders** — Remove every border at once
 - **Border Palette** — Maintain a separate palette for border colors with save/import
 
 ### Icon System
-- **Icon Library** - Import up to 40 custom icons (PNG, JPG, GIF, SVG)
-- **Place Icons** - Select an icon and click on the map to place it
-- **Resize Icons** - Drag corner/edge handles to resize placed icons
-- **Move Icons** - Drag icons to reposition them
-- **Delete Icons** - Right-click an icon to remove it
+- **Icon Library** — Import up to 40 custom icons (PNG, JPG, GIF, SVG)
+- **Place Icons** — Select an icon and click on the map to place it
+- **Resize Icons** — Drag corner/edge handles to resize placed icons
+- **Move Icons** — Drag icons to reposition them
+- **Delete Icons** — Right-click an icon to remove it
 
 ### Save & Export
-- **Save Map** - Export your entire map as a JSON file
-- **Load Map** - Import previously saved maps
-- **Save Palette** - Export just your color palette
-- **Load Palette** - Import a saved palette into any map
+- **Save Map** — Export your entire map as a JSON file
+- **Import Map** — Load a previously saved map
+- **Save Palette** — Export just your color palette
+- **Import Palette** — Import a saved palette into any map
 
 ---
 
@@ -67,12 +85,14 @@ Saves **everything** about your map project to a JSON file:
 | Grid Settings | Width, height, hex size, orientation |
 | Background | Background color and/or background image |
 | Hex Data | Color and opacity of every hex |
-| Hex Tags | All text tags attached to hexes |
+| Tag Catalog | All tags with display text, name, meta tags, notes, and tile location |
 | Drawings | All freehand drawings (as image data) |
 | Text Labels | All text labels with position, size, and color |
+| Custom Borders | All individual border customizations (color, thickness, position) |
 | Map Icons | All placed icons with position and size |
 | Icon Library | Your imported icon images |
 | Color Palette | All saved palette colors with names |
+| Border Palette | Saved border palette colors with names |
 
 **File format:** `hexmap_YYYY-MM-DD.json`
 
@@ -101,8 +121,8 @@ This is useful when you want to maintain consistent colors across multiple map p
 ## Walkthrough: Creating Your First Hex Map
 
 ### Step 1: Set Up Your Grid
-1. Open the **Tools Menu** (☰ button, top-left)
-2. Under **Grid Settings**, set your desired width and height (e.g., 20x15)
+1. Open the **System Menu** (☰ button, top-left)
+2. Under **Grid Settings**, set your desired width and height (e.g., 20×15)
 3. Choose hex orientation: **Pointy Top** or **Flat Top**
 4. Adjust **Hex Size** if needed (default 50px works well)
 5. Click **Apply Grid Size**
@@ -120,14 +140,14 @@ This is useful when you want to maintain consistent colors across multiple map p
 
 ### Step 4: Paint Your Terrain
 1. Select a color from your palette or the color picker
-2. **Left-click** on hexes to fill them with that color
-3. Work through your map, filling in terrain regions
+2. **Left-click and drag** across hexes to fill them with color
+3. Work through your map, painting terrain regions
 
 ### Step 5: Add Tags to Important Hexes
 1. **Right-click** on a hex you want to label
 2. Select **Add Tag**
-3. Enter a short name (e.g., "Town", "River", "Castle")
-4. The tag appears on the hex
+3. Fill in the Short Display Text (appears on the hex), Name, Meta Tags, and Notes
+4. The tag appears on the hex; open the **Tag Catalog** to search and manage all tags
 
 ### Step 6: Add Text Labels
 1. Under **Text Tool**, click **Enable Text Tool**
@@ -168,6 +188,7 @@ This is useful when you want to maintain consistent colors across multiple map p
 
 - **Large Maps**: For maps larger than your screen, use mouse wheel to scroll vertically, or hold Shift + wheel to scroll horizontally
 - **Consistent Colors**: Create and save a palette early, then load it into new maps for consistent terrain colors
+- **Tag Catalog Search**: Use `Key +Value` syntax to filter tags by a specific meta tag key and value pair
 - **Icons**: Prepare your icons as transparent PNGs for best results
 - **Backup**: Save your map frequently, especially before major changes
 - **Background Images**: Use a background image as a reference, then trace over it with hex colors
@@ -179,7 +200,6 @@ This is useful when you want to maintain consistent colors across multiple map p
 - Three.js for WebGL rendering
 - Vanilla JavaScript (no frameworks)
 - HTML5 Canvas for drawing tools
-- HTTP Server for local development
 
 ---
 
@@ -193,12 +213,30 @@ A square-grid map editor for creating dungeon layouts, battle maps, and interior
 - **Customizable Grid Size** — Create grids from 1×1 up to 300×300 squares
 - **Adjustable Square Size** — Scale squares from 10px to 100px
 - **Background Options** — Set a solid background color or import a background image
+- **Scrolling & Navigation** — Scroll large maps using mouse wheel, Shift+wheel for horizontal, or drag scrollbars
 - **Dark Mode** — Toggle between light and dark appearance
 
 ### Square Editing
-- **Color Fill** — Click any square to fill it with the selected color
+- **Color Fill (Drag)** — Left-click and drag across squares to paint them with the selected color
 - **Color Picker** — Use the color picker or enter hex codes directly
-- **Clear Square** — Right-click a square to reset it
+- **Clear Square** — Right-click a square to clear its fill
+- **Clear Fill** — Right-click context menu option to clear only the fill color
+
+### Tag System
+- **Add Tags** — Right-click a square and select "Add Tag" to open the tag dialog
+- **Tag Fields** — Each tag has a Short Display Text, Name, Meta Tags (key;value pairs), and Notes
+- **Edit Tags** — Right-click a tagged square and select "Edit Tag" to modify it, pre-filling all fields
+- **Clear Tags** — Right-click a tagged square to clear its tag via the "Clear Tag" option
+- **Tag Display** — Tags appear on squares and automatically reposition when scrolling or resizing
+
+### Tag Catalog
+- **Catalog Window** — View all tags in a searchable, scrollable catalog
+- **Search** — Filter by display text, name, meta keys/values, or notes
+- **Meta Filter Syntax** — Search `Key +Value` (e.g., `Unique +no`) to filter by a specific meta tag key and value
+- **Edit from Catalog** — Click the ✎ button on any catalog entry to edit it
+- **Delete from Catalog** — Click the ✕ button to remove a tag
+- **Export Catalog** — Export the tag catalog as a standalone JSON file
+- **Import Catalog** — Import a previously exported tag catalog
 
 ### Color Palette
 - **Save Colors** — Add frequently used colors to your palette
@@ -248,6 +286,7 @@ A square-grid map editor for creating dungeon layouts, battle maps, and interior
 | Grid Settings | Width, height, square size |
 | Background | Background color and/or background image |
 | Square Data | Color of every filled square |
+| Tag Catalog | All tags with display text, name, meta tags, notes, and tile location |
 | Borders | All individual border customizations (color, thickness, position) |
 | Drawings | All freehand drawings (as image data) |
 | Text Labels | All text labels with position, size, and color |
@@ -259,14 +298,11 @@ A square-grid map editor for creating dungeon layouts, battle maps, and interior
 
 **File format:** `dungeon_YYYY-MM-DD.json`
 
-### Navigation
-The System menu includes navigation buttons to switch between the Hex Map Maker, Dungeon Maker, and Character Sheet.
-
 ---
 
-# Character Sheet Maker
+# Dashboard
 
-A freeform canvas editor for building interactive character sheets, inventory trackers, and custom game forms. Accessible from the System menu navigation or directly via `character-sheet.html`.
+A freeform canvas editor for building interactive dashboards, character sheets, inventory trackers, and custom game forms. Accessible from the System menu navigation or directly via `dashboard.html`.
 
 ## Features
 
@@ -341,13 +377,13 @@ A freeform canvas editor for building interactive character sheets, inventory tr
 - **Roll Results** — Results display on-screen with animated notifications
 
 ### Event System (Button Actions)
-Buttons can be programmed with a visual task editor to create interactive character sheets:
+Buttons can be programmed with a visual task editor to create interactive dashboards:
 - **RNG Roll** — Roll a specific RNG and optionally display the result
 - **Set Number Entry** — Update a number entry to a fixed or calculated value
 - **Print** — Display a labeled value on screen
-- **And More** - Find many more features in the Even System to customize your sheet!
+- **And More** — Find many more features in the Event System to customize your sheet!
 
-## Character Sheet Saving System
+## Dashboard Saving System
 
 | Data | Description |
 |------|-------------|
@@ -365,6 +401,12 @@ Buttons can be programmed with a visual task editor to create interactive charac
 | RNG List | All random number generator configurations and links |
 | Event Variables | Variables used by the button event system |
 
-**File format:** `character_sheet_YYYY-MM-DD.json`
+**File format:** `dashboard_YYYY-MM-DD.json`
+
+---
+
+## Navigation
+
+The System menu in each application includes navigation buttons to switch between the Hex Map Maker, Dungeon Maker, and Dashboard.
 
 ---

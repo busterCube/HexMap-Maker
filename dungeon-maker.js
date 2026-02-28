@@ -71,6 +71,10 @@ let selectedIconIndex = -1; // Currently selected icon from library
 let activeMapIcon = null; // Currently active (selected) map icon
 const MAX_ICONS = 40;
 
+// Tag Catalog state
+let tagCatalog = []; // Array of {id, displayText, name, meta: [{key, value}], row, col}
+let nextTagId = 1;
+
 menuToggle.addEventListener('click', () => {
     menu.classList.toggle('open');
 });
@@ -120,6 +124,7 @@ function updateDarkMode() {
     
     // Regenerate grid with new line colors
     generateGrid();
+    reapplyTagsFromCatalog();
 }
 
 // Collapsible tool sections
@@ -652,6 +657,14 @@ let squareCenters = [];
 let gridLines = null;
 
 function generateGrid() {
+    // Remove existing tag DOM elements (they reference old square objects)
+    document.querySelectorAll('.square-tag').forEach(el => el.remove());
+    squares.forEach(square => {
+        square.userData.tagElement = null;
+        square.userData.tag = null;
+        square.userData.tagData = null;
+    });
+
     // Remove existing squares
     squares.forEach(square => scene.remove(square));
     squares = [];
@@ -925,6 +938,7 @@ document.getElementById('canvas').addEventListener('wheel', (e) => {
 // Initial grid generation
 updateSquareMetrics(); // Initialize metrics
 generateGrid();
+reapplyTagsFromCatalog();
 
 // Grid size controls
 document.getElementById('apply-grid-size').addEventListener('click', () => {
@@ -942,6 +956,7 @@ document.getElementById('apply-grid-size').addEventListener('click', () => {
     camera.lookAt(0, 0, 0);
     
     generateGrid();
+    reapplyTagsFromCatalog();
 });
 
 document.getElementById('apply-square-size').addEventListener('click', () => {
@@ -957,6 +972,7 @@ document.getElementById('apply-square-size').addEventListener('click', () => {
     camera.lookAt(0, 0, 0);
     
     generateGrid();
+    reapplyTagsFromCatalog();
 });
 
 // Animation loop
@@ -1007,7 +1023,7 @@ function onMouseClick(event) {
     if (isDrawing || isErasing) return; // don't fill when drawing or erasing
     if (selectedIconIndex >= 0) return; // don't fill when placing icons
     if (event.button !== 0) return; // only left click
-    if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon')) return; // ignore menu, scrollbar, and map icon clicks
+    if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon') || event.target.closest('.tag-dialog-overlay') || event.target.closest('.tag-catalog-overlay')) return; // ignore menu, scrollbar, map icon, and dialog clicks
     
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -1103,23 +1119,12 @@ function onMouseClick(event) {
         return;
     }
     
-    const intersects = raycaster.intersectObjects(squares);
-    if (intersects.length > 0) {
-        const square = intersects[0].object;
-        const color = document.getElementById('square-color').value;
-        square.material.color.setStyle(color);
-        square.material.opacity = 0.8; // slightly transparent so grid lines show through
-    }
+    // Color fill is handled by left-click drag — single click no longer fills
 }
 
 function onContextMenu(event) {
     event.preventDefault();
     if (isDrawing || isErasing) return;
-    // Skip context menu if user was drag-filling
-    if (didRightDrag) {
-        didRightDrag = false;
-        return;
-    }
     
     // Hide any existing context menu
     hideContextMenu();
@@ -1135,10 +1140,13 @@ function onContextMenu(event) {
         
         // Update Add Tag / Clear Tag option
         const addTagItem = document.getElementById('ctx-add-tag');
+        const editTagItem = document.getElementById('ctx-edit-tag');
         if (square.userData.tag) {
             addTagItem.textContent = 'Clear Tag';
+            editTagItem.style.display = '';
         } else {
             addTagItem.textContent = 'Add Tag';
+            editTagItem.style.display = 'none';
         }
         
         // Show context menu at mouse position
@@ -1172,11 +1180,18 @@ document.getElementById('ctx-clear-square').addEventListener('click', (e) => {
     if (selectedSquare) {
         // Clear fill
         selectedSquare.material.opacity = 0;
-        // Clear tag
+        // Clear tag and remove from catalog
         if (selectedSquare.userData.tagElement) {
+            const sqIndex = squares.indexOf(selectedSquare);
+            if (sqIndex >= 0) {
+                const center = squareCenters[sqIndex];
+                const catIdx = tagCatalog.findIndex(t => t.row === center.row && t.col === center.col);
+                if (catIdx >= 0) tagCatalog.splice(catIdx, 1);
+            }
             selectedSquare.userData.tagElement.remove();
             selectedSquare.userData.tagElement = null;
             selectedSquare.userData.tag = null;
+            selectedSquare.userData.tagData = null;
         }
     }
     hideContextMenu();
@@ -1194,24 +1209,157 @@ document.getElementById('ctx-add-tag').addEventListener('click', (e) => {
     e.stopPropagation();
     if (selectedSquare) {
         if (selectedSquare.userData.tag) {
-            // Clear tag
+            // Clear tag - remove from catalog and tile
+            const sqIndex = squares.indexOf(selectedSquare);
+            if (sqIndex >= 0) {
+                const center = squareCenters[sqIndex];
+                const catIdx = tagCatalog.findIndex(t => t.row === center.row && t.col === center.col);
+                if (catIdx >= 0) tagCatalog.splice(catIdx, 1);
+            }
             if (selectedSquare.userData.tagElement) {
                 selectedSquare.userData.tagElement.remove();
                 selectedSquare.userData.tagElement = null;
                 selectedSquare.userData.tag = null;
+                selectedSquare.userData.tagData = null;
             }
         } else {
-            // Add tag - prompt for text
-            const tagText = prompt('Enter tag text:');
-            if (tagText && tagText.trim()) {
-                addTagToSquare(selectedSquare, tagText.trim());
-            }
+            // Open Add Tag dialog
+            openTagDialog(selectedSquare);
         }
     }
     hideContextMenu();
 });
 
-function addTagToSquare(square, text) {
+document.getElementById('ctx-edit-tag').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (selectedSquare && selectedSquare.userData.tagData) {
+        openTagDialog(selectedSquare, selectedSquare.userData.tagData);
+    }
+    hideContextMenu();
+});
+
+// Parse meta string like "Floor;1,Type;Normal" into [{key, value}]
+function parseMetaString(metaStr) {
+    if (!metaStr || !metaStr.trim()) return [];
+    return metaStr.split(',').map(pair => {
+        const parts = pair.trim().split(';');
+        return { key: parts[0] ? parts[0].trim() : '', value: parts[1] ? parts[1].trim() : '' };
+    }).filter(m => m.key);
+}
+
+// Format meta array back to string
+function formatMetaString(metaArr) {
+    if (!metaArr || metaArr.length === 0) return '';
+    return metaArr.map(m => m.key + ';' + m.value).join(', ');
+}
+
+// Open tag entry dialog for a square (optionally pre-fill for editing)
+function openTagDialog(square, existingEntry) {
+    const overlay = document.getElementById('tag-dialog-overlay');
+    const titleEl = document.getElementById('tag-dialog-title');
+    const confirmBtn = document.getElementById('tag-dialog-confirm');
+
+    if (existingEntry) {
+        // Edit mode — pre-fill fields
+        titleEl.textContent = 'Edit Tag';
+        confirmBtn.textContent = 'Save Tag';
+        document.getElementById('tag-display-text').value = existingEntry.displayText || '';
+        document.getElementById('tag-name').value = existingEntry.name || '';
+        document.getElementById('tag-meta').value = formatMetaString(existingEntry.meta);
+        document.getElementById('tag-notes').value = existingEntry.notes || '';
+        overlay._editingEntry = existingEntry;
+    } else {
+        // Add mode
+        titleEl.textContent = 'Add Tag';
+        confirmBtn.textContent = 'Add Tag';
+        document.getElementById('tag-display-text').value = '';
+        document.getElementById('tag-name').value = '';
+        document.getElementById('tag-meta').value = '';
+        document.getElementById('tag-notes').value = '';
+        overlay._editingEntry = null;
+    }
+
+    overlay.classList.add('visible');
+
+    // Store reference to target square
+    overlay._targetSquare = square;
+}
+
+// Tag dialog confirm
+document.getElementById('tag-dialog-confirm').addEventListener('click', () => {
+    const overlay = document.getElementById('tag-dialog-overlay');
+    const square = overlay._targetSquare;
+    if (!square) return;
+
+    const displayText = document.getElementById('tag-display-text').value.trim();
+    const name = document.getElementById('tag-name').value.trim();
+    const metaStr = document.getElementById('tag-meta').value.trim();
+    const notes = document.getElementById('tag-notes').value.trim();
+
+    if (!displayText) {
+        alert('Short Display Text is required.');
+        return;
+    }
+
+    const meta = parseMetaString(metaStr);
+    const sqIndex = squares.indexOf(square);
+    const center = sqIndex >= 0 ? squareCenters[sqIndex] : { row: -1, col: -1 };
+
+    const editingEntry = overlay._editingEntry;
+
+    if (editingEntry) {
+        // Update existing catalog entry in-place
+        editingEntry.displayText = displayText;
+        editingEntry.name = name || displayText;
+        editingEntry.meta = meta;
+        editingEntry.notes = notes;
+    } else {
+        // Create new catalog entry
+        const entry = {
+            id: nextTagId++,
+            displayText: displayText,
+            name: name || displayText,
+            meta: meta,
+            notes: notes,
+            row: center.row,
+            col: center.col
+        };
+
+        // Remove existing catalog entry for this tile if any
+        const existingIdx = tagCatalog.findIndex(t => t.row === center.row && t.col === center.col);
+        if (existingIdx >= 0) tagCatalog.splice(existingIdx, 1);
+
+        tagCatalog.push(entry);
+        square.userData.tagData = entry;
+    }
+
+    // Apply tag to square (updates display text on tile)
+    addTagToSquare(square, displayText, editingEntry || square.userData.tagData);
+
+    // Close dialog
+    overlay.classList.remove('visible');
+    overlay._targetSquare = null;
+    overlay._editingEntry = null;
+});
+
+// Tag dialog cancel
+document.getElementById('tag-dialog-cancel').addEventListener('click', () => {
+    const overlay = document.getElementById('tag-dialog-overlay');
+    overlay.classList.remove('visible');
+    overlay._targetSquare = null;
+    overlay._editingEntry = null;
+});
+
+// Close tag dialog on overlay click
+document.getElementById('tag-dialog-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove('visible');
+        e.currentTarget._targetSquare = null;
+        e.currentTarget._editingEntry = null;
+    }
+});
+
+function addTagToSquare(square, text, tagData) {
     // Remove existing tag if any
     if (square.userData.tagElement) {
         square.userData.tagElement.remove();
@@ -1250,6 +1398,232 @@ function addTagToSquare(square, text) {
     // Store reference
     square.userData.tag = text;
     square.userData.tagElement = tagElement;
+    square.userData.tagData = tagData || null;
+}
+
+// Re-apply all tags from catalog to current square meshes (after grid regeneration)
+function reapplyTagsFromCatalog() {
+    tagCatalog.forEach(entry => {
+        const tileIndex = entry.row * gridWidth + entry.col;
+        if (tileIndex >= 0 && tileIndex < squares.length) {
+            const square = squares[tileIndex];
+            addTagToSquare(square, entry.displayText, entry);
+        }
+    });
+}
+
+// ====== TAG CATALOG ======
+
+// Open Tag Catalog
+document.getElementById('open-tag-catalog').addEventListener('click', () => {
+    document.getElementById('tag-catalog-search').value = '';
+    renderTagCatalog();
+    document.getElementById('tag-catalog-overlay').classList.add('visible');
+});
+
+// Close Tag Catalog
+document.getElementById('tag-catalog-close').addEventListener('click', () => {
+    document.getElementById('tag-catalog-overlay').classList.remove('visible');
+});
+
+// Close on overlay click
+document.getElementById('tag-catalog-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove('visible');
+    }
+});
+
+// Search tag catalog
+document.getElementById('tag-catalog-search').addEventListener('input', () => {
+    renderTagCatalog();
+});
+
+function renderTagCatalog() {
+    const list = document.getElementById('tag-catalog-list');
+    const searchTerm = document.getElementById('tag-catalog-search').value.trim().toLowerCase();
+
+    // Filter catalog
+    let filtered = tagCatalog;
+    if (searchTerm) {
+        // Support MetaKey +Value syntax (e.g. "Unique +no")
+        const plusIdx = searchTerm.indexOf(' +');
+        if (plusIdx >= 0) {
+            const metaKey = searchTerm.substring(0, plusIdx).trim();
+            const metaVal = searchTerm.substring(plusIdx + 2).trim();
+            filtered = tagCatalog.filter(entry => {
+                if (!entry.meta || entry.meta.length === 0) return false;
+                return entry.meta.some(m =>
+                    m.key.toLowerCase().includes(metaKey) &&
+                    m.value.toLowerCase().includes(metaVal)
+                );
+            });
+        } else {
+            filtered = tagCatalog.filter(entry => {
+                if (entry.displayText.toLowerCase().includes(searchTerm)) return true;
+                if (entry.name.toLowerCase().includes(searchTerm)) return true;
+                if (entry.notes && entry.notes.toLowerCase().includes(searchTerm)) return true;
+                if (entry.meta && entry.meta.some(m =>
+                    m.key.toLowerCase().includes(searchTerm) ||
+                    m.value.toLowerCase().includes(searchTerm)
+                )) return true;
+                return false;
+            });
+        }
+    }
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="tag-catalog-empty">No tags found.' +
+            (tagCatalog.length === 0 ? ' Right-click a square and select "Add Tag" to create one.' : '') +
+            '</div>';
+        return;
+    }
+
+    list.innerHTML = '';
+    filtered.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'tag-catalog-entry';
+
+        const metaStr = entry.meta && entry.meta.length > 0
+            ? entry.meta.map(m => m.key + ': ' + m.value).join(' | ')
+            : '<em>None</em>';
+
+        const notesHtml = entry.notes
+            ? '<div class="tag-notes">' + escapeHtml(entry.notes) + '</div>'
+            : '';
+
+        div.innerHTML =
+            '<div class="tag-info">' +
+                '<div class="tag-display">' + escapeHtml(entry.displayText) + '</div>' +
+                '<div class="tag-name">' + escapeHtml(entry.name) + '</div>' +
+                '<div class="tag-meta">Meta: ' + metaStr + '</div>' +
+                notesHtml +
+                '<div class="tag-location">Tile: Row ' + entry.row + ', Col ' + entry.col + '</div>' +
+            '</div>' +
+            '<div class="tag-actions">' +
+                '<button class="btn-edit" data-tag-id="' + entry.id + '" title="Edit tag">✎</button>' +
+                '<button class="btn-delete" data-tag-id="' + entry.id + '" title="Delete tag">✕</button>' +
+            '</div>';
+
+        // Edit button handler
+        div.querySelector('.btn-edit').addEventListener('click', () => {
+            editTagFromCatalog(entry.id);
+        });
+
+        // Delete button handler
+        div.querySelector('.btn-delete').addEventListener('click', () => {
+            deleteTagById(entry.id);
+            renderTagCatalog();
+        });
+
+        list.appendChild(div);
+    });
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function deleteTagById(tagId) {
+    const idx = tagCatalog.findIndex(t => t.id === tagId);
+    if (idx < 0) return;
+    const entry = tagCatalog[idx];
+
+    // Remove tag from the tile
+    const tileIndex = entry.row * gridWidth + entry.col;
+    if (tileIndex >= 0 && tileIndex < squares.length) {
+        const square = squares[tileIndex];
+        if (square.userData.tagElement) {
+            square.userData.tagElement.remove();
+            square.userData.tagElement = null;
+            square.userData.tag = null;
+            square.userData.tagData = null;
+        }
+    }
+
+    tagCatalog.splice(idx, 1);
+}
+
+function editTagFromCatalog(tagId) {
+    const entry = tagCatalog.find(t => t.id === tagId);
+    if (!entry) return;
+
+    // Find the square for this entry
+    const tileIndex = entry.row * gridWidth + entry.col;
+    if (tileIndex >= 0 && tileIndex < squares.length) {
+        const square = squares[tileIndex];
+        // Close catalog then open edit dialog
+        document.getElementById('tag-catalog-overlay').classList.remove('visible');
+        openTagDialog(square, entry);
+    }
+}
+
+// Export Tag Catalog
+document.getElementById('tag-catalog-export').addEventListener('click', () => {
+    if (tagCatalog.length === 0) {
+        alert('Tag catalog is empty.');
+        return;
+    }
+    const data = JSON.stringify({ version: 1, type: 'tag-catalog', tags: tagCatalog }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tag_catalog_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+// Import Tag Catalog
+document.getElementById('tag-catalog-import').addEventListener('click', () => {
+    document.getElementById('tag-catalog-import-file').click();
+});
+
+document.getElementById('tag-catalog-import-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (!data.tags || !Array.isArray(data.tags)) {
+                alert('Invalid tag catalog file.');
+                return;
+            }
+            importTagCatalog(data.tags);
+            renderTagCatalog();
+            alert('Tag catalog imported successfully! (' + data.tags.length + ' tags)');
+        } catch (err) {
+            alert('Error importing tag catalog: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
+
+function importTagCatalog(tags) {
+    tags.forEach(imported => {
+        // Assign new IDs to avoid conflicts
+        imported.id = nextTagId++;
+
+        // Check if a tag already exists at this tile position
+        const existingIdx = tagCatalog.findIndex(t => t.row === imported.row && t.col === imported.col);
+        if (existingIdx >= 0) {
+            // Remove old tag from tile first
+            deleteTagById(tagCatalog[existingIdx].id);
+        }
+
+        tagCatalog.push(imported);
+
+        // Apply to tile if it exists
+        const tileIndex = imported.row * gridWidth + imported.col;
+        if (tileIndex >= 0 && tileIndex < squares.length) {
+            addTagToSquare(squares[tileIndex], imported.displayText, imported);
+        }
+    });
 }
 
 // Convert screen coordinates to world coordinates
@@ -1325,8 +1699,7 @@ window.addEventListener('click', onMouseClick);
 window.addEventListener('contextmenu', onContextMenu);
 
 let isMouseDown = false;
-let isRightFilling = false;
-let didRightDrag = false;
+let isLeftFilling = false;
 let drawingCanvas = null;
 let drawingCtx = null;
 
@@ -1354,10 +1727,11 @@ function initDrawingCanvas() {
 }
 
 function onMouseDown(event) {
-    // Right-click drag fill
-    if (event.button === 2 && !isDrawing && !isErasing && !isBorderMode && !isRemovingBorder && selectedIconIndex < 0) {
-        isRightFilling = true;
-        didRightDrag = false;
+    // Left-click drag fill
+    if (event.button === 0 && !isDrawing && !isErasing && !isBorderMode && !isRemovingBorder && selectedIconIndex < 0) {
+        if (contextMenuOpen) return; // don't fill right after closing context menu
+        if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon') || event.target.closest('.tag-dialog-overlay') || event.target.closest('.tag-catalog-overlay')) return;
+        isLeftFilling = true;
         // Fill square under cursor immediately
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -1396,9 +1770,8 @@ function onMouseDown(event) {
 }
 
 function onMouseMove(event) {
-    // Right-click drag fill
-    if (isRightFilling) {
-        didRightDrag = true;
+    // Left-click drag fill
+    if (isLeftFilling) {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
@@ -1422,8 +1795,8 @@ function onMouseMove(event) {
 }
 
 function onMouseUp(event) {
-    if (event.button === 2 && isRightFilling) {
-        isRightFilling = false;
+    if (event.button === 0 && isLeftFilling) {
+        isLeftFilling = false;
         return;
     }
     if (!isDrawing && !isErasing) return;
@@ -2181,7 +2554,8 @@ document.getElementById('save-map').addEventListener('click', () => {
         mapIcons: mapIconsData,
         iconLibrary: iconLibrary,
         palette: palette,
-        customBorders: customBorders
+        customBorders: customBorders,
+        tagCatalog: tagCatalog
     };
     
     // Create and download JSON file
@@ -2317,6 +2691,42 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             if (saveData.customBorders) {
                 customBorders = saveData.customBorders;
                 renderCustomBorders();
+            }
+            
+            // Restore tag catalog
+            if (saveData.tagCatalog && Array.isArray(saveData.tagCatalog)) {
+                tagCatalog = saveData.tagCatalog;
+                // Update nextTagId to avoid conflicts
+                const maxId = tagCatalog.reduce((max, t) => Math.max(max, t.id || 0), 0);
+                nextTagId = maxId + 1;
+
+                // Re-apply tags to tiles from catalog (they may have richer data than the simple tag string)
+                tagCatalog.forEach(entry => {
+                    const tileIndex = entry.row * gridWidth + entry.col;
+                    if (tileIndex >= 0 && tileIndex < squares.length) {
+                        const square = squares[tileIndex];
+                        if (!square.userData.tagData) {
+                            square.userData.tagData = entry;
+                        }
+                    }
+                });
+            } else {
+                // Build catalog from square tags for legacy maps that don't have a catalog
+                tagCatalog = [];
+                nextTagId = 1;
+                squares.forEach((square, index) => {
+                    if (square.userData.tag) {
+                        const center = squareCenters[index];
+                        tagCatalog.push({
+                            id: nextTagId++,
+                            displayText: square.userData.tag,
+                            name: square.userData.tag,
+                            meta: [],
+                            row: center.row,
+                            col: center.col
+                        });
+                    }
+                });
             }
             
             alert('Dungeon imported successfully!');

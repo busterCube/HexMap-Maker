@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hex Map Maker</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         :root {
             --primary: #6366f1;
@@ -618,6 +619,237 @@
             font-weight: bold;
             z-index: 50;
         }
+        /* Tag Dialog */
+        .tag-dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .tag-dialog-overlay.visible {
+            display: flex;
+        }
+        .tag-dialog {
+            background: var(--bg-section);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 420px;
+            max-width: 90vw;
+            box-shadow: var(--shadow-lg);
+        }
+        .tag-dialog h3 {
+            margin: 0 0 16px 0;
+            color: var(--text);
+        }
+        .tag-dialog label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 13px;
+        }
+        .tag-dialog input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        .tag-dialog textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .tag-dialog .hint {
+            font-size: 11px;
+            color: var(--text-light);
+            margin: -8px 0 12px 0;
+        }
+        .tag-dialog .btn-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .tag-dialog .btn-row button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .tag-dialog .btn-confirm {
+            background: var(--primary);
+            color: white;
+        }
+        .tag-dialog .btn-confirm:hover {
+            background: var(--primary-hover);
+        }
+        .tag-dialog .btn-cancel {
+            background: var(--border);
+            color: var(--text);
+        }
+        /* Tag Catalog Window */
+        .tag-catalog-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .tag-catalog-overlay.visible {
+            display: flex;
+        }
+        .tag-catalog {
+            background: var(--bg-section);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 580px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+        }
+        .tag-catalog h3 {
+            margin: 0 0 12px 0;
+            color: var(--text);
+        }
+        .tag-catalog-search {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        .tag-catalog-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .tag-catalog-entry {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .tag-catalog-entry:last-child {
+            border-bottom: none;
+        }
+        .tag-catalog-entry .tag-info {
+            flex: 1;
+        }
+        .tag-catalog-entry .tag-display {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        .tag-catalog-entry .tag-name {
+            font-weight: 500;
+            margin-top: 2px;
+            font-size: 13px;
+        }
+        .tag-catalog-entry .tag-meta {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .tag-catalog-entry .tag-location {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .tag-catalog-entry .tag-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: 8px;
+        }
+        .tag-catalog-entry .tag-actions button {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .tag-catalog-entry .tag-actions .btn-edit {
+            background: var(--primary);
+            color: white;
+        }
+        .tag-catalog-entry .tag-actions .btn-edit:hover {
+            background: var(--primary-hover);
+        }
+        .tag-catalog-entry .tag-actions .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+        .tag-catalog-entry .tag-actions .btn-delete:hover {
+            background: var(--danger-hover);
+        }
+        .tag-catalog-entry .tag-notes {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 2px;
+            font-style: italic;
+        }
+        .tag-catalog .catalog-btn-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .tag-catalog .catalog-btn-row button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .tag-catalog .btn-close {
+            background: var(--border);
+            color: var(--text);
+        }
+        .tag-catalog .btn-export {
+            background: var(--success);
+            color: white;
+        }
+        .tag-catalog .btn-export:hover {
+            background: var(--success-hover);
+        }
+        .tag-catalog .btn-import {
+            background: var(--primary);
+            color: white;
+        }
+        .tag-catalog .btn-import:hover {
+            background: var(--primary-hover);
+        }
+        .tag-catalog-empty {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 13px;
+        }
         /* Scrollbars */
         .scrollbar {
             position: absolute;
@@ -672,10 +904,48 @@
         <div class="context-menu-item" id="ctx-clear-hex">Clear Hex</div>
         <div class="context-menu-item" id="ctx-clear-fill">Clear Fill</div>
         <div class="context-menu-item" id="ctx-add-tag">Add Tag</div>
+        <div class="context-menu-item" id="ctx-edit-tag" style="display:none;">Edit Tag</div>
     </div>
 
     <div id="icon-context-menu">
         <div class="context-menu-item" id="ctx-remove-icon">Remove Icon</div>
+    </div>
+
+    <!-- Tag Entry Dialog -->
+    <div class="tag-dialog-overlay" id="tag-dialog-overlay">
+        <div class="tag-dialog">
+            <h3 id="tag-dialog-title">Add Tag</h3>
+            <label for="tag-display-text">Short Display Text</label>
+            <input type="text" id="tag-display-text" placeholder="e.g. A1">
+            <label for="tag-name">Name</label>
+            <input type="text" id="tag-name" placeholder="e.g. Kitchen Room">
+            <label for="tag-meta">Meta Tags</label>
+            <input type="text" id="tag-meta" placeholder="e.g. Floor;1,Type;Normal">
+            <p class="hint">Format: TagName;TagValue separated by commas</p>
+            <label for="tag-notes">Notes</label>
+            <textarea id="tag-notes" placeholder="Add any notes about this tag..." rows="3"></textarea>
+            <div class="btn-row">
+                <button class="btn-cancel" id="tag-dialog-cancel">Cancel</button>
+                <button class="btn-confirm" id="tag-dialog-confirm">Add Tag</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tag Catalog Window -->
+    <div class="tag-catalog-overlay" id="tag-catalog-overlay">
+        <div class="tag-catalog">
+            <h3>Tag Catalog</h3>
+            <input type="text" class="tag-catalog-search" id="tag-catalog-search" placeholder="Search tags... (use Key +Value for meta filter)">
+            <div class="tag-catalog-list" id="tag-catalog-list"></div>
+            <div class="catalog-btn-row">
+                <div>
+                    <button class="btn-export" id="tag-catalog-export">Export Catalog</button>
+                    <button class="btn-import" id="tag-catalog-import">Import Catalog</button>
+                    <input type="file" id="tag-catalog-import-file" accept=".json" style="display: none;">
+                </div>
+                <button class="btn-close" id="tag-catalog-close">Close</button>
+            </div>
+        </div>
     </div>
     <button id="menu-toggle">☰ Tools</button>
     <button id="system-toggle">☰ System</button>
@@ -840,6 +1110,13 @@
                     <input type="file" id="import-rng-file" accept=".json" style="display: none;">
                 </div>
                 <p style="margin-top: 10px;">Click + to add random number generators (max 20).</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Tag Catalog</h3>
+            <div class="tool-section-content">
+                <button id="open-tag-catalog" style="width: 100%;">Open Tag Catalog</button>
+                <p style="margin-top: 10px;">View, search, and manage all tags placed on the map. Right-click a hex and select "Add Tag" to create entries.</p>
             </div>
         </div>
     </div>
