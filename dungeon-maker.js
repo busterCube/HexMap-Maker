@@ -63,9 +63,6 @@ let isDrawing = false;
 let isErasing = false;
 let drawingPoints = [];
 let currentLine = null;
-let textElements = [];
-let isTextMode = false;
-let textFrameEnabled = false;
 
 // Icons state
 let iconLibrary = []; // Array of {data: base64, name: string}
@@ -92,7 +89,7 @@ document.getElementById('nav-dungeon').addEventListener('click', () => {
 });
 
 document.getElementById('nav-character').addEventListener('click', () => {
-    window.open('character-sheet.html', '_blank');
+    window.open('dashboard.html', '_blank');
 });
 
 // Dark mode toggle
@@ -469,14 +466,6 @@ document.getElementById('line-color-text').addEventListener('input', (e) => {
     document.getElementById('line-color').value = e.target.value;
 });
 
-document.getElementById('text-color').addEventListener('input', (e) => {
-    document.getElementById('text-color-text').value = e.target.value;
-});
-
-document.getElementById('text-color-text').addEventListener('input', (e) => {
-    document.getElementById('text-color').value = e.target.value;
-});
-
 document.getElementById('toggle-drawing').addEventListener('click', () => {
     isDrawing = !isDrawing;
     if (isDrawing) {
@@ -499,35 +488,6 @@ document.getElementById('clear-all-drawing').addEventListener('click', () => {
     if (drawingCanvas && drawingCtx) {
         drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     }
-});
-
-document.getElementById('toggle-text').addEventListener('click', () => {
-    isTextMode = !isTextMode;
-    document.getElementById('toggle-text').textContent = isTextMode ? 'Disable Text Tool' : 'Enable Text Tool';
-});
-
-document.getElementById('text-frame-enabled').addEventListener('change', (e) => {
-    textFrameEnabled = e.target.checked;
-    // Update all existing text elements
-    textElements.forEach(textEl => {
-        if (textFrameEnabled) {
-            textEl.element.style.border = '1px solid #ccc';
-            textEl.element.style.background = 'white';
-            textEl.element.setAttribute('contenteditable', 'true');
-            textEl.element.style.minWidth = '100px';
-            textEl.element.style.minHeight = '30px';
-            // Show resize handles
-            const handles = textEl.element.querySelector('.resize-handles');
-            if (handles) handles.style.display = 'block';
-        } else {
-            textEl.element.style.border = 'none';
-            textEl.element.style.background = 'transparent';
-            textEl.element.setAttribute('contenteditable', 'false');
-            // Hide resize handles
-            const handles = textEl.element.querySelector('.resize-handles');
-            if (handles) handles.style.display = 'none';
-        }
-    });
 });
 
 // Border Tool
@@ -570,6 +530,21 @@ document.getElementById('clear-all-borders').addEventListener('click', () => {
     customBorders = [];
     renderCustomBorders();
 });
+
+// Helper to get world-space vertices of a border edge (for duplicate detection)
+function getBorderEdgeVertices(row, col, edge) {
+    const index = row * gridWidth + col;
+    if (index < 0 || index >= squareCenters.length) return null;
+    const center = squareCenters[index];
+    const hs = squareSize / 2;
+    const edgeVerts = [
+        {x1: center.x - hs, y1: center.y + hs, x2: center.x + hs, y2: center.y + hs},
+        {x1: center.x + hs, y1: center.y + hs, x2: center.x + hs, y2: center.y - hs},
+        {x1: center.x + hs, y1: center.y - hs, x2: center.x - hs, y2: center.y - hs},
+        {x1: center.x - hs, y1: center.y - hs, x2: center.x - hs, y2: center.y + hs}
+    ];
+    return edgeVerts[edge] || null;
+}
 
 function renderCustomBorders() {
     // Remove existing custom border lines
@@ -887,7 +862,6 @@ document.addEventListener('mousemove', (e) => {
         updateScrollbars();
         updateTagPositions();
         updateIconPositions();
-        updateTextPositions();
         updateDrawingCanvasPosition();
     }
     
@@ -910,7 +884,6 @@ document.addEventListener('mousemove', (e) => {
         updateScrollbars();
         updateTagPositions();
         updateIconPositions();
-        updateTextPositions();
         updateDrawingCanvasPosition();
     }
 });
@@ -945,7 +918,6 @@ document.getElementById('canvas').addEventListener('wheel', (e) => {
     updateScrollbars();
     updateTagPositions();
     updateIconPositions();
-    updateTextPositions();
     updateDrawingCanvasPosition();
     e.preventDefault();
 }, { passive: false });
@@ -1017,8 +989,6 @@ window.addEventListener('resize', () => {
     updateTagPositions();
     // Update icon positions
     updateIconPositions();
-    // Update text positions
-    updateTextPositions();
     // Update drawing canvas position
     updateDrawingCanvasPosition();
 });
@@ -1034,7 +1004,7 @@ function onMouseClick(event) {
         contextMenuOpen = false;
         return;
     }
-    if (isDrawing || isErasing || isTextMode) return; // don't fill when drawing, erasing, or adding text
+    if (isDrawing || isErasing) return; // don't fill when drawing or erasing
     if (selectedIconIndex >= 0) return; // don't fill when placing icons
     if (event.button !== 0) return; // only left click
     if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon')) return; // ignore menu, scrollbar, and map icon clicks
@@ -1097,10 +1067,21 @@ function onMouseClick(event) {
                 const borderColor = document.getElementById('border-color').value;
                 const borderThickness = parseInt(document.getElementById('border-thickness').value);
                 
-                // Check if this border already exists
-                const existingIndex = customBorders.findIndex(b => 
-                    b.row === center.row && b.col === center.col && b.edge === closestEdge
-                );
+                // Check if this border already exists (including on neighboring cell's shared edge)
+                const newEdge = getBorderEdgeVertices(center.row, center.col, closestEdge);
+                const existingIndex = customBorders.findIndex(b => {
+                    if (b.row === center.row && b.col === center.col && b.edge === closestEdge) return true;
+                    // Check if another cell's border occupies the same physical edge
+                    const existingEdge = getBorderEdgeVertices(b.row, b.col, b.edge);
+                    if (!existingEdge || !newEdge) return false;
+                    const eps = 0.001;
+                    return (
+                        (Math.abs(existingEdge.x1 - newEdge.x1) < eps && Math.abs(existingEdge.y1 - newEdge.y1) < eps &&
+                         Math.abs(existingEdge.x2 - newEdge.x2) < eps && Math.abs(existingEdge.y2 - newEdge.y2) < eps) ||
+                        (Math.abs(existingEdge.x1 - newEdge.x2) < eps && Math.abs(existingEdge.y1 - newEdge.y2) < eps &&
+                         Math.abs(existingEdge.x2 - newEdge.x1) < eps && Math.abs(existingEdge.y2 - newEdge.y1) < eps)
+                    );
+                });
                 
                 if (existingIndex >= 0) {
                     // Border exists - remove it
@@ -1133,7 +1114,12 @@ function onMouseClick(event) {
 
 function onContextMenu(event) {
     event.preventDefault();
-    if (isDrawing || isErasing || isTextMode) return;
+    if (isDrawing || isErasing) return;
+    // Skip context menu if user was drag-filling
+    if (didRightDrag) {
+        didRightDrag = false;
+        return;
+    }
     
     // Hide any existing context menu
     hideContextMenu();
@@ -1324,19 +1310,6 @@ function updateIconPositions() {
     });
 }
 
-// Update text label positions on camera change
-function updateTextPositions() {
-    textElements.forEach(label => {
-        if (label.dataset.worldX !== undefined && label.dataset.worldY !== undefined) {
-            const worldX = parseFloat(label.dataset.worldX);
-            const worldY = parseFloat(label.dataset.worldY);
-            const screenPos = worldToScreen(worldX, worldY);
-            label.style.left = screenPos.x + 'px';
-            label.style.top = screenPos.y + 'px';
-        }
-    });
-}
-
 // Update drawing canvas position on camera change
 function updateDrawingCanvasPosition() {
     if (drawingCanvas && drawingCanvas.dataset.worldX !== undefined) {
@@ -1352,6 +1325,8 @@ window.addEventListener('click', onMouseClick);
 window.addEventListener('contextmenu', onContextMenu);
 
 let isMouseDown = false;
+let isRightFilling = false;
+let didRightDrag = false;
 let drawingCanvas = null;
 let drawingCtx = null;
 
@@ -1379,6 +1354,23 @@ function initDrawingCanvas() {
 }
 
 function onMouseDown(event) {
+    // Right-click drag fill
+    if (event.button === 2 && !isDrawing && !isErasing && !isBorderMode && !isRemovingBorder && selectedIconIndex < 0) {
+        isRightFilling = true;
+        didRightDrag = false;
+        // Fill square under cursor immediately
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(squares);
+        if (intersects.length > 0) {
+            const square = intersects[0].object;
+            const color = document.getElementById('square-color').value;
+            square.material.color.setStyle(color);
+            square.material.opacity = 0.8;
+        }
+        return;
+    }
     if (!isDrawing && !isErasing) return;
     isMouseDown = true;
     initDrawingCanvas();
@@ -1404,6 +1396,21 @@ function onMouseDown(event) {
 }
 
 function onMouseMove(event) {
+    // Right-click drag fill
+    if (isRightFilling) {
+        didRightDrag = true;
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(squares);
+        if (intersects.length > 0) {
+            const square = intersects[0].object;
+            const color = document.getElementById('square-color').value;
+            square.material.color.setStyle(color);
+            square.material.opacity = 0.8;
+        }
+        return;
+    }
     if (!isMouseDown || (!isDrawing && !isErasing)) return;
     // Convert to canvas-local coordinates
     const canvasX = event.clientX - drawingCanvas.offsetLeft;
@@ -1415,6 +1422,10 @@ function onMouseMove(event) {
 }
 
 function onMouseUp(event) {
+    if (event.button === 2 && isRightFilling) {
+        isRightFilling = false;
+        return;
+    }
     if (!isDrawing && !isErasing) return;
     isMouseDown = false;
     // Reset composite operation
@@ -1426,295 +1437,6 @@ function onMouseUp(event) {
 window.addEventListener('mousedown', onMouseDown);
 window.addEventListener('mousemove', onMouseMove);
 window.addEventListener('mouseup', onMouseUp);
-
-// Text tool
-function onCanvasClick(event) {
-    if (!isTextMode || event.target !== document.getElementById('canvas')) return;
-    const textSize = parseInt(document.getElementById('text-size').value) || 20;
-    const textColor = document.getElementById('text-color').value;
-    
-    const text = prompt('Enter text:');
-    if (text !== null && text.trim() !== '') {
-        const label = document.createElement('div');
-        label.className = 'text-label';
-        label.textContent = text;
-        label.style.position = 'absolute';
-        label.style.left = event.clientX + 'px';
-        label.style.top = event.clientY + 'px';
-        label.style.fontSize = textSize + 'px';
-        label.style.color = textColor;
-        label.style.cursor = 'move';
-        label.style.userSelect = 'none';
-        label.style.zIndex = '1001';
-        label.style.padding = '5px';
-        label.style.whiteSpace = 'pre-wrap';
-        
-        if (textFrameEnabled) {
-            label.style.border = '1px solid #ccc';
-            label.style.background = 'white';
-            label.setAttribute('contenteditable', 'true');
-            label.style.minWidth = '100px';
-            label.style.minHeight = '30px';
-        } else {
-            label.style.border = 'none';
-            label.style.background = 'transparent';
-            label.setAttribute('contenteditable', 'false');
-        }
-        
-        // Store world coordinates
-        const worldPos = screenToWorld(event.clientX, event.clientY);
-        label.dataset.worldX = worldPos.x;
-        label.dataset.worldY = worldPos.y;
-        label.dataset.text = text;
-        label.dataset.fontSize = textSize;
-        label.dataset.color = textColor;
-        
-        // Add resize handles
-        const handles = document.createElement('div');
-        handles.className = 'resize-handles';
-        handles.style.display = textFrameEnabled ? 'block' : 'none';
-        ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = 'resize-handle ' + pos;
-            handles.appendChild(handle);
-        });
-        label.appendChild(handles);
-        
-        document.body.appendChild(label);
-        
-        const textData = {
-            element: label,
-            text: text,
-            x: event.clientX,
-            y: event.clientY,
-            fontSize: textSize,
-            color: textColor,
-            width: 100,
-            height: 30
-        };
-        textElements.push(textData);
-        
-        makeTextDraggable(label, textData);
-        makeTextResizable(label, textData);
-        
-        // Update text content on input
-        label.addEventListener('input', () => {
-            textData.text = label.textContent;
-            label.dataset.text = label.textContent;
-        });
-        
-        // Right-click context menu for text
-        label.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showTextContextMenu(e.clientX, e.clientY, textData);
-        });
-    }
-}
-
-function makeTextDraggable(element, textData) {
-    let isDragging = false;
-    let startX, startY, startLeft, startTop;
-    
-    element.addEventListener('mousedown', (e) => {
-        if (e.target.classList.contains('resize-handle')) return;
-        if (e.button !== 0) return;
-        
-        // If frame is enabled, allow drag only when clicking on the element border/padding
-        // by checking if the click is close to the edge
-        if (textFrameEnabled && element.getAttribute('contenteditable') === 'true') {
-            const rect = element.getBoundingClientRect();
-            const borderZone = 10; // pixels from edge to allow drag
-            const inBorderZone = 
-                e.clientX < rect.left + borderZone ||
-                e.clientX > rect.right - borderZone ||
-                e.clientY < rect.top + borderZone ||
-                e.clientY > rect.bottom - borderZone;
-            
-            if (!inBorderZone) {
-                return; // Click in content area, allow editing
-            }
-            // Click near border, prevent editing and allow drag
-            e.preventDefault();
-        }
-        
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startLeft = parseInt(element.style.left);
-        startTop = parseInt(element.style.top);
-        e.stopPropagation();
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        
-        const newLeft = startLeft + dx;
-        const newTop = startTop + dy;
-        
-        element.style.left = newLeft + 'px';
-        element.style.top = newTop + 'px';
-        
-        // Update world coordinates
-        const worldPos = screenToWorld(newLeft, newTop);
-        element.dataset.worldX = worldPos.x;
-        element.dataset.worldY = worldPos.y;
-        textData.x = newLeft;
-        textData.y = newTop;
-    });
-    
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-}
-
-function makeTextResizable(element, textData) {
-    const handles = element.querySelector('.resize-handles');
-    if (!handles) return;
-    
-    Array.from(handles.children).forEach(handle => {
-        let isResizing = false;
-        let startX, startY, startWidth, startHeight, startLeft, startTop;
-        const direction = handle.className.split(' ')[1];
-        
-        handle.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-            isResizing = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            
-            const rect = element.getBoundingClientRect();
-            startWidth = rect.width;
-            startHeight = rect.height;
-            startLeft = parseInt(element.style.left);
-            startTop = parseInt(element.style.top);
-        });
-        
-        document.addEventListener('mousemove', (e) => {
-            if (!isResizing) return;
-            
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            if (direction.includes('e')) {
-                const newWidth = Math.max(50, startWidth + dx);
-                element.style.width = newWidth + 'px';
-                textData.width = newWidth;
-            }
-            if (direction.includes('w')) {
-                const newWidth = Math.max(50, startWidth - dx);
-                if (newWidth >= 50) {
-                    const newLeft = startLeft + (startWidth - newWidth);
-                    element.style.left = newLeft + 'px';
-                    element.style.width = newWidth + 'px';
-                    textData.x = newLeft;
-                    textData.width = newWidth;
-                    const worldPos = screenToWorld(newLeft, parseInt(element.style.top));
-                    element.dataset.worldX = worldPos.x;
-                }
-            }
-            if (direction.includes('s')) {
-                const newHeight = Math.max(30, startHeight + dy);
-                element.style.height = newHeight + 'px';
-                textData.height = newHeight;
-            }
-            if (direction.includes('n')) {
-                const newHeight = Math.max(30, startHeight - dy);
-                if (newHeight >= 30) {
-                    const newTop = startTop + (startHeight - newHeight);
-                    element.style.top = newTop + 'px';
-                    element.style.height = newHeight + 'px';
-                    textData.y = newTop;
-                    textData.height = newHeight;
-                    const worldPos = screenToWorld(parseInt(element.style.left), newTop);
-                    element.dataset.worldY = worldPos.y;
-                }
-            }
-        });
-        
-        document.addEventListener('mouseup', () => {
-            isResizing = false;
-        });
-    });
-}
-
-document.getElementById('canvas').addEventListener('click', onCanvasClick);
-
-// Text context menu functionality
-const textContextMenu = document.getElementById('text-context-menu');
-let selectedTextData = null;
-
-function showTextContextMenu(x, y, textData) {
-    selectedTextData = textData;
-    textContextMenu.style.left = x + 'px';
-    textContextMenu.style.top = y + 'px';
-    textContextMenu.classList.add('visible');
-}
-
-function hideTextContextMenu() {
-    textContextMenu.classList.remove('visible');
-    selectedTextData = null;
-}
-
-// Hide text context menu on click elsewhere
-document.addEventListener('click', (e) => {
-    if (!textContextMenu.contains(e.target)) {
-        hideTextContextMenu();
-    }
-});
-
-// Edit text
-document.getElementById('ctx-edit-text').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (selectedTextData) {
-        const currentText = selectedTextData.text;
-        const newText = prompt('Edit text:', currentText);
-        if (newText !== null && newText.trim() !== '') {
-            selectedTextData.text = newText.trim();
-            selectedTextData.element.textContent = newText.trim();
-            selectedTextData.element.dataset.text = newText.trim();
-            
-            // Re-add resize handles after setting textContent
-            const handles = selectedTextData.element.querySelector('.resize-handles');
-            if (handles) {
-                selectedTextData.element.appendChild(handles);
-            }
-        }
-    }
-    hideTextContextMenu();
-});
-
-// Change size
-document.getElementById('ctx-change-size').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (selectedTextData) {
-        const currentSize = selectedTextData.fontSize;
-        const newSize = prompt('Enter new font size (10-100):', currentSize);
-        if (newSize !== null) {
-            const size = Math.min(100, Math.max(10, parseInt(newSize) || currentSize));
-            selectedTextData.element.style.fontSize = size + 'px';
-            selectedTextData.fontSize = size;
-            selectedTextData.element.dataset.fontSize = size;
-        }
-    }
-    hideTextContextMenu();
-});
-
-// Delete text
-document.getElementById('ctx-delete-text').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (selectedTextData) {
-        const index = textElements.indexOf(selectedTextData);
-        if (index > -1) {
-            textElements.splice(index, 1);
-        }
-        selectedTextData.element.remove();
-    }
-    hideTextContextMenu();
-});
 
 // ===== ICONS FUNCTIONALITY =====
 
@@ -1817,7 +1539,7 @@ iconFileInput.addEventListener('change', (e) => {
 
 // Place icon on canvas when clicking with an icon selected
 document.getElementById('canvas').addEventListener('click', (e) => {
-    if (selectedIconIndex >= 0 && !isTextMode && !isDrawing && !isErasing) {
+    if (selectedIconIndex >= 0 && !isDrawing && !isErasing) {
         const icon = iconLibrary[selectedIconIndex];
         placeIconOnMap(icon.data, e.clientX, e.clientY);
     }
@@ -2433,18 +2155,6 @@ document.getElementById('save-map').addEventListener('click', () => {
         drawingData = drawingCanvas.toDataURL('image/png');
     }
     
-    // Collect text labels (save world coordinates)
-    const textLabels = [];
-    document.querySelectorAll('.text-label').forEach(label => {
-        textLabels.push({
-            text: label.textContent,
-            worldX: parseFloat(label.dataset.worldX),
-            worldY: parseFloat(label.dataset.worldY),
-            fontSize: label.style.fontSize,
-            color: label.style.color
-        });
-    });
-    
     // Collect map icons (save world coordinates for position-independent storage)
     const mapIconsData = [];
     mapIcons.forEach(icon => {
@@ -2468,7 +2178,6 @@ document.getElementById('save-map').addEventListener('click', () => {
         bgImageData: bgImageData,
         squares: squareData,
         drawingData: drawingData,
-        textLabels: textLabels,
         mapIcons: mapIconsData,
         iconLibrary: iconLibrary,
         palette: palette,
@@ -2570,62 +2279,6 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                 img.src = saveData.drawingData;
             } else if (drawingCanvas) {
                 drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-            }
-            
-            // Restore text labels
-            document.querySelectorAll('.text-label').forEach(el => el.remove());
-            textElements.length = 0; // Clear the array
-            if (saveData.textLabels) {
-                saveData.textLabels.forEach(labelData => {
-                    const label = document.createElement('div');
-                    label.className = 'text-label';
-                    label.textContent = labelData.text;
-                    label.style.position = 'absolute';
-                    label.style.fontSize = labelData.fontSize;
-                    label.style.color = labelData.color;
-                    label.style.cursor = 'move';
-                    label.style.userSelect = 'none';
-                    label.style.zIndex = '1001';
-                    
-                    label.dataset.worldX = labelData.worldX;
-                    label.dataset.worldY = labelData.worldY;
-                    const screenPos = worldToScreen(labelData.worldX, labelData.worldY);
-                    label.style.left = screenPos.x + 'px';
-                    label.style.top = screenPos.y + 'px';
-                    
-                    document.body.appendChild(label);
-                    textElements.push(label);
-                    
-                    // Make draggable
-                    let isDragging = false;
-                    let offsetX, offsetY;
-                    label.addEventListener('mousedown', (e) => {
-                        if (e.button === 0) {
-                            isDragging = true;
-                            offsetX = e.clientX - label.offsetLeft;
-                            offsetY = e.clientY - label.offsetTop;
-                            e.stopPropagation();
-                        }
-                    });
-                    document.addEventListener('mousemove', (e) => {
-                        if (isDragging) {
-                            label.style.left = (e.clientX - offsetX) + 'px';
-                            label.style.top = (e.clientY - offsetY) + 'px';
-                            const worldPos = screenToWorld(e.clientX - offsetX, e.clientY - offsetY);
-                            label.dataset.worldX = worldPos.x;
-                            label.dataset.worldY = worldPos.y;
-                        }
-                    });
-                    document.addEventListener('mouseup', () => {
-                        isDragging = false;
-                    });
-                    
-                    label.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        showTextContextMenu(e.clientX, e.clientY, label);
-                    });
-                });
             }
             
             // Restore palette

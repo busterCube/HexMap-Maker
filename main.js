@@ -63,9 +63,6 @@ let isDrawing = false;
 let isErasing = false;
 let drawingPoints = [];
 let currentLine = null;
-let textElements = [];
-let isTextMode = false;
-let textFrameEnabled = false;
 
 // Icons state
 let iconLibrary = []; // Array of {data: base64, name: string}
@@ -92,7 +89,7 @@ document.getElementById('nav-dungeon').addEventListener('click', () => {
 });
 
 document.getElementById('nav-character').addEventListener('click', () => {
-    window.open('character-sheet.html', '_blank');
+    window.open('dashboard.html', '_blank');
 });
 
 // Dark mode toggle
@@ -469,14 +466,6 @@ document.getElementById('line-color-text').addEventListener('input', (e) => {
     document.getElementById('line-color').value = e.target.value;
 });
 
-document.getElementById('text-color').addEventListener('input', (e) => {
-    document.getElementById('text-color-text').value = e.target.value;
-});
-
-document.getElementById('text-color-text').addEventListener('input', (e) => {
-    document.getElementById('text-color').value = e.target.value;
-});
-
 document.getElementById('toggle-drawing').addEventListener('click', () => {
     isDrawing = !isDrawing;
     if (isDrawing) {
@@ -499,35 +488,6 @@ document.getElementById('clear-all-drawing').addEventListener('click', () => {
     if (drawingCanvas && drawingCtx) {
         drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     }
-});
-
-document.getElementById('toggle-text').addEventListener('click', () => {
-    isTextMode = !isTextMode;
-    document.getElementById('toggle-text').textContent = isTextMode ? 'Disable Text Tool' : 'Enable Text Tool';
-});
-
-document.getElementById('text-frame-enabled').addEventListener('change', (e) => {
-    textFrameEnabled = e.target.checked;
-    // Update all existing text elements
-    textElements.forEach(textEl => {
-        if (textFrameEnabled) {
-            textEl.element.style.border = '1px solid #ccc';
-            textEl.element.style.background = 'white';
-            textEl.element.setAttribute('contenteditable', 'true');
-            textEl.element.style.minWidth = '100px';
-            textEl.element.style.minHeight = '30px';
-            // Show resize handles
-            const handles = textEl.element.querySelector('.resize-handles');
-            if (handles) handles.style.display = 'block';
-        } else {
-            textEl.element.style.border = 'none';
-            textEl.element.style.background = 'transparent';
-            textEl.element.setAttribute('contenteditable', 'false');
-            // Hide resize handles
-            const handles = textEl.element.querySelector('.resize-handles');
-            if (handles) handles.style.display = 'none';
-        }
-    });
 });
 
 // Border Tool
@@ -570,6 +530,22 @@ document.getElementById('clear-all-borders').addEventListener('click', () => {
     customBorders = [];
     renderCustomBorders();
 });
+
+// Helper to get world-space vertices of a border edge (for duplicate detection)
+function getBorderEdgeVertices(row, col, edge) {
+    const index = row * gridWidth + col;
+    if (index < 0 || index >= hexCenters.length) return null;
+    const center = hexCenters[index];
+    const sa = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
+    const angle1 = sa + (edge * Math.PI / 3);
+    const angle2 = sa + ((edge + 1) * Math.PI / 3);
+    return {
+        x1: center.x + hexRadius * Math.cos(angle1),
+        y1: center.y + hexRadius * Math.sin(angle1),
+        x2: center.x + hexRadius * Math.cos(angle2),
+        y2: center.y + hexRadius * Math.sin(angle2)
+    };
+}
 
 function renderCustomBorders() {
     // Remove existing custom border lines
@@ -960,7 +936,6 @@ document.addEventListener('mousemove', (e) => {
         updateScrollbars();
         updateTagPositions();
         updateIconPositions();
-        updateTextPositions();
         updateDrawingCanvasPosition();
     }
     
@@ -983,7 +958,6 @@ document.addEventListener('mousemove', (e) => {
         updateScrollbars();
         updateTagPositions();
         updateIconPositions();
-        updateTextPositions();
         updateDrawingCanvasPosition();
     }
 });
@@ -1018,7 +992,6 @@ document.getElementById('canvas').addEventListener('wheel', (e) => {
     updateScrollbars();
     updateTagPositions();
     updateIconPositions();
-    updateTextPositions();
     updateDrawingCanvasPosition();
     e.preventDefault();
 }, { passive: false });
@@ -1106,8 +1079,6 @@ window.addEventListener('resize', () => {
     updateTagPositions();
     // Update icon positions
     updateIconPositions();
-    // Update text positions
-    updateTextPositions();
     // Update drawing canvas position
     updateDrawingCanvasPosition();
 });
@@ -1123,7 +1094,7 @@ function onMouseClick(event) {
         contextMenuOpen = false;
         return;
     }
-    if (isDrawing || isErasing || isTextMode) return; // don't fill when drawing, erasing, or adding text
+    if (isDrawing || isErasing) return; // don't fill when drawing or erasing
     if (selectedIconIndex >= 0) return; // don't fill when placing icons
     if (event.button !== 0) return; // only left click
     if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon')) return; // ignore menu, scrollbar, and map icon clicks
@@ -1182,10 +1153,21 @@ function onMouseClick(event) {
                 const borderColor = document.getElementById('border-color').value;
                 const borderThickness = parseInt(document.getElementById('border-thickness').value);
                 
-                // Check if this border already exists
-                const existingIndex = customBorders.findIndex(b => 
-                    b.row === center.row && b.col === center.col && b.edge === closestEdge
-                );
+                // Check if this border already exists (including on neighboring cell's shared edge)
+                const newEdge = getBorderEdgeVertices(center.row, center.col, closestEdge);
+                const existingIndex = customBorders.findIndex(b => {
+                    if (b.row === center.row && b.col === center.col && b.edge === closestEdge) return true;
+                    // Check if another cell's border occupies the same physical edge
+                    const existingEdge = getBorderEdgeVertices(b.row, b.col, b.edge);
+                    if (!existingEdge || !newEdge) return false;
+                    const eps = 0.001;
+                    return (
+                        (Math.abs(existingEdge.x1 - newEdge.x1) < eps && Math.abs(existingEdge.y1 - newEdge.y1) < eps &&
+                         Math.abs(existingEdge.x2 - newEdge.x2) < eps && Math.abs(existingEdge.y2 - newEdge.y2) < eps) ||
+                        (Math.abs(existingEdge.x1 - newEdge.x2) < eps && Math.abs(existingEdge.y1 - newEdge.y2) < eps &&
+                         Math.abs(existingEdge.x2 - newEdge.x1) < eps && Math.abs(existingEdge.y2 - newEdge.y1) < eps)
+                    );
+                });
                 
                 if (existingIndex >= 0) {
                     // Border exists - remove it
@@ -1218,7 +1200,12 @@ function onMouseClick(event) {
 
 function onContextMenu(event) {
     event.preventDefault();
-    if (isDrawing || isErasing || isTextMode) return;
+    if (isDrawing || isErasing) return;
+    // Skip context menu if user was drag-filling
+    if (didRightDrag) {
+        didRightDrag = false;
+        return;
+    }
     
     // Hide any existing context menu
     hideContextMenu();
@@ -1409,19 +1396,6 @@ function updateIconPositions() {
     });
 }
 
-// Update text label positions on camera change
-function updateTextPositions() {
-    textElements.forEach(label => {
-        if (label.dataset.worldX !== undefined && label.dataset.worldY !== undefined) {
-            const worldX = parseFloat(label.dataset.worldX);
-            const worldY = parseFloat(label.dataset.worldY);
-            const screenPos = worldToScreen(worldX, worldY);
-            label.style.left = screenPos.x + 'px';
-            label.style.top = screenPos.y + 'px';
-        }
-    });
-}
-
 // Update drawing canvas position on camera change
 function updateDrawingCanvasPosition() {
     if (drawingCanvas && drawingCanvas.dataset.worldX !== undefined) {
@@ -1437,6 +1411,8 @@ window.addEventListener('click', onMouseClick);
 window.addEventListener('contextmenu', onContextMenu);
 
 let isMouseDown = false;
+let isRightFilling = false;
+let didRightDrag = false;
 let drawingCanvas = null;
 let drawingCtx = null;
 
@@ -1464,6 +1440,23 @@ function initDrawingCanvas() {
 }
 
 function onMouseDown(event) {
+    // Right-click drag fill
+    if (event.button === 2 && !isDrawing && !isErasing && !isBorderMode && !isRemovingBorder && selectedIconIndex < 0) {
+        isRightFilling = true;
+        didRightDrag = false;
+        // Fill hex under cursor immediately
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(hexes);
+        if (intersects.length > 0) {
+            const hex = intersects[0].object;
+            const color = document.getElementById('hex-color').value;
+            hex.material.color.setStyle(color);
+            hex.material.opacity = 0.8;
+        }
+        return;
+    }
     if (!isDrawing && !isErasing) return;
     isMouseDown = true;
     initDrawingCanvas();
@@ -1489,6 +1482,21 @@ function onMouseDown(event) {
 }
 
 function onMouseMove(event) {
+    // Right-click drag fill
+    if (isRightFilling) {
+        didRightDrag = true;
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(hexes);
+        if (intersects.length > 0) {
+            const hex = intersects[0].object;
+            const color = document.getElementById('hex-color').value;
+            hex.material.color.setStyle(color);
+            hex.material.opacity = 0.8;
+        }
+        return;
+    }
     if (!isMouseDown || (!isDrawing && !isErasing)) return;
     // Convert to canvas-local coordinates
     const canvasX = event.clientX - drawingCanvas.offsetLeft;
@@ -1500,6 +1508,10 @@ function onMouseMove(event) {
 }
 
 function onMouseUp(event) {
+    if (event.button === 2 && isRightFilling) {
+        isRightFilling = false;
+        return;
+    }
     if (!isDrawing && !isErasing) return;
     isMouseDown = false;
     // Reset composite operation
@@ -1511,158 +1523,6 @@ function onMouseUp(event) {
 window.addEventListener('mousedown', onMouseDown);
 window.addEventListener('mousemove', onMouseMove);
 window.addEventListener('mouseup', onMouseUp);
-
-// Text tool
-function onCanvasClick(event) {
-    if (!isTextMode || event.target !== document.getElementById('canvas')) return;
-    const textSize = parseInt(document.getElementById('text-size').value) || 20;
-    const textColor = document.getElementById('text-color').value;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'text-input';
-    input.style.left = event.clientX + 'px';
-    input.style.top = event.clientY + 'px';
-    input.style.fontSize = textSize + 'px';
-    input.style.color = textColor;
-    input.style.background = 'transparent';
-    input.style.border = '1px dashed #999';
-    input.placeholder = 'Enter text';
-    document.body.appendChild(input);
-    input.focus();
-
-    function convertToLabel() {
-        const text = input.value.trim();
-        if (text) {
-            const label = document.createElement('div');
-            label.className = 'text-label';
-            label.textContent = text;
-            label.style.position = 'absolute';
-            label.style.left = input.style.left;
-            label.style.top = input.style.top;
-            label.style.fontSize = textSize + 'px';
-            label.style.color = textColor;
-            label.style.cursor = 'move';
-            label.style.userSelect = 'none';
-            label.style.zIndex = '1001';
-            
-            // Store world coordinates
-            const worldPos = screenToWorld(parseFloat(input.style.left), parseFloat(input.style.top));
-            label.dataset.worldX = worldPos.x;
-            label.dataset.worldY = worldPos.y;
-            
-            document.body.appendChild(label);
-            textElements.push(label);
-            
-            // Make label draggable
-            let isDragging = false;
-            let offsetX, offsetY;
-            
-            label.addEventListener('mousedown', (e) => {
-                if (e.button === 0) { // Left click only
-                    isDragging = true;
-                    offsetX = e.clientX - label.offsetLeft;
-                    offsetY = e.clientY - label.offsetTop;
-                    e.stopPropagation();
-                }
-            });
-            
-            document.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    label.style.left = (e.clientX - offsetX) + 'px';
-                    label.style.top = (e.clientY - offsetY) + 'px';
-                    // Update world coordinates
-                    const worldPos = screenToWorld(e.clientX - offsetX, e.clientY - offsetY);
-                    label.dataset.worldX = worldPos.x;
-                    label.dataset.worldY = worldPos.y;
-                }
-            });
-            
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-            
-            // Right-click context menu for text
-            label.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                showTextContextMenu(e.clientX, e.clientY, label);
-            });
-        }
-        input.remove();
-    }
-
-    input.addEventListener('blur', convertToLabel);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            convertToLabel();
-        }
-    });
-}
-
-document.getElementById('canvas').addEventListener('click', onCanvasClick);
-
-// Text context menu functionality
-const textContextMenu = document.getElementById('text-context-menu');
-let selectedTextLabel = null;
-
-function showTextContextMenu(x, y, label) {
-    selectedTextLabel = label;
-    textContextMenu.style.left = x + 'px';
-    textContextMenu.style.top = y + 'px';
-    textContextMenu.classList.add('visible');
-}
-
-function hideTextContextMenu() {
-    textContextMenu.classList.remove('visible');
-    selectedTextLabel = null;
-}
-
-// Hide text context menu on click elsewhere
-document.addEventListener('click', (e) => {
-    if (!textContextMenu.contains(e.target)) {
-        hideTextContextMenu();
-    }
-});
-
-// Edit text
-document.getElementById('ctx-edit-text').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (selectedTextLabel) {
-        const currentText = selectedTextLabel.textContent;
-        const newText = prompt('Edit text:', currentText);
-        if (newText !== null && newText.trim() !== '') {
-            selectedTextLabel.textContent = newText.trim();
-        }
-    }
-    hideTextContextMenu();
-});
-
-// Change size
-document.getElementById('ctx-change-size').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (selectedTextLabel) {
-        const currentSize = parseInt(selectedTextLabel.style.fontSize) || 20;
-        const newSize = prompt('Enter new font size (10-100):', currentSize);
-        if (newSize !== null) {
-            const size = Math.min(100, Math.max(10, parseInt(newSize) || currentSize));
-            selectedTextLabel.style.fontSize = size + 'px';
-        }
-    }
-    hideTextContextMenu();
-});
-
-// Delete text
-document.getElementById('ctx-delete-text').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (selectedTextLabel) {
-        const index = textElements.indexOf(selectedTextLabel);
-        if (index > -1) {
-            textElements.splice(index, 1);
-        }
-        selectedTextLabel.remove();
-    }
-    hideTextContextMenu();
-});
 
 // ===== ICONS FUNCTIONALITY =====
 
@@ -1765,7 +1625,7 @@ iconFileInput.addEventListener('change', (e) => {
 
 // Place icon on canvas when clicking with an icon selected
 document.getElementById('canvas').addEventListener('click', (e) => {
-    if (selectedIconIndex >= 0 && !isTextMode && !isDrawing && !isErasing) {
+    if (selectedIconIndex >= 0 && !isDrawing && !isErasing) {
         const icon = iconLibrary[selectedIconIndex];
         placeIconOnMap(icon.data, e.clientX, e.clientY);
     }
@@ -2381,18 +2241,6 @@ document.getElementById('save-map').addEventListener('click', () => {
         drawingData = drawingCanvas.toDataURL('image/png');
     }
     
-    // Collect text labels (save world coordinates)
-    const textLabels = [];
-    document.querySelectorAll('.text-label').forEach(label => {
-        textLabels.push({
-            text: label.textContent,
-            worldX: parseFloat(label.dataset.worldX),
-            worldY: parseFloat(label.dataset.worldY),
-            fontSize: label.style.fontSize,
-            color: label.style.color
-        });
-    });
-    
     // Collect map icons (save world coordinates for position-independent storage)
     const mapIconsData = [];
     mapIcons.forEach(icon => {
@@ -2416,7 +2264,6 @@ document.getElementById('save-map').addEventListener('click', () => {
         bgImageData: bgImageData,
         hexes: hexData,
         drawingData: drawingData,
-        textLabels: textLabels,
         mapIcons: mapIconsData,
         iconLibrary: iconLibrary,
         palette: palette,
@@ -2521,74 +2368,6 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                 img.src = saveData.drawingData;
             } else if (drawingCanvas) {
                 drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-            }
-            
-            // Restore text labels
-            document.querySelectorAll('.text-label').forEach(el => el.remove());
-            textElements.length = 0; // Clear the array
-            if (saveData.textLabels) {
-                saveData.textLabels.forEach(labelData => {
-                    const label = document.createElement('div');
-                    label.className = 'text-label';
-                    label.textContent = labelData.text;
-                    label.style.position = 'absolute';
-                    label.style.fontSize = labelData.fontSize;
-                    label.style.color = labelData.color;
-                    label.style.cursor = 'move';
-                    label.style.userSelect = 'none';
-                    label.style.zIndex = '1001';
-                    
-                    // Check if saved with world coordinates (new format) or screen coordinates (old format)
-                    if (labelData.worldX !== undefined && labelData.worldY !== undefined) {
-                        label.dataset.worldX = labelData.worldX;
-                        label.dataset.worldY = labelData.worldY;
-                        const screenPos = worldToScreen(labelData.worldX, labelData.worldY);
-                        label.style.left = screenPos.x + 'px';
-                        label.style.top = screenPos.y + 'px';
-                    } else {
-                        // Legacy format with screen coordinates - convert to world
-                        label.style.left = labelData.left;
-                        label.style.top = labelData.top;
-                        const worldPos = screenToWorld(parseFloat(labelData.left), parseFloat(labelData.top));
-                        label.dataset.worldX = worldPos.x;
-                        label.dataset.worldY = worldPos.y;
-                    }
-                    
-                    document.body.appendChild(label);
-                    textElements.push(label);
-                    
-                    // Make draggable
-                    let isDragging = false;
-                    let offsetX, offsetY;
-                    label.addEventListener('mousedown', (e) => {
-                        if (e.button === 0) {
-                            isDragging = true;
-                            offsetX = e.clientX - label.offsetLeft;
-                            offsetY = e.clientY - label.offsetTop;
-                            e.stopPropagation();
-                        }
-                    });
-                    document.addEventListener('mousemove', (e) => {
-                        if (isDragging) {
-                            label.style.left = (e.clientX - offsetX) + 'px';
-                            label.style.top = (e.clientY - offsetY) + 'px';
-                            // Update world coordinates
-                            const worldPos = screenToWorld(e.clientX - offsetX, e.clientY - offsetY);
-                            label.dataset.worldX = worldPos.x;
-                            label.dataset.worldY = worldPos.y;
-                        }
-                    });
-                    document.addEventListener('mouseup', () => {
-                        isDragging = false;
-                    });
-                    
-                    // Right-click context menu for text
-                    label.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        showTextContextMenu(e.clientX, e.clientY, label);
-                    });
-                });
             }
             
             // Restore palette
