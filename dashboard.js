@@ -105,6 +105,28 @@ let checkboxElements = [];
 let isCheckboxMode = false;
 let activeCheckbox = null;
 
+// Slider state
+let sliderElements = [];
+let isSliderMode = false;
+let activeSlider = null;
+
+// Table state
+let tableElements = [];
+let isTableMode = false;
+let activeTable = null;
+let nextTableId = 1;
+
+// Selection state
+let selectedGroup = []; // array of element data objects currently selected
+let selectionRect = null; // the visible selection rectangle DOM element
+let isSelecting = false;
+let selectionStart = { x: 0, y: 0 };
+
+// Custom Widget state
+let widgetLibrary = []; // array of {name, elements: [...serialized]}
+let isCustomWidgetMode = false;
+let selectedWidgetIndex = -1;
+
 // Clipboard for copy/paste
 let clipboard = null; // {type: 'frame'|'text'|'numberEntry'|'label', data: {...}}
 
@@ -322,7 +344,10 @@ const toolButtonMap = {
     'toggle-icon-tool': { flag: 'isIconMode', enable: 'Enable Image Placement', disable: 'Disable Image Placement', cursor: 'cursor-cell' },
     'toggle-button-tool': { flag: 'isButtonMode', enable: 'Enable Button Tool', disable: 'Disable Button Tool', cursor: 'cursor-cell' },
     'toggle-listbox-tool': { flag: 'isListBoxMode', enable: 'Enable List Box Tool', disable: 'Disable List Box Tool', cursor: 'cursor-cell' },
-    'toggle-checkbox-tool': { flag: 'isCheckboxMode', enable: 'Enable Checkbox Tool', disable: 'Disable Checkbox Tool', cursor: 'cursor-cell' }
+    'toggle-checkbox-tool': { flag: 'isCheckboxMode', enable: 'Enable Checkbox Tool', disable: 'Disable Checkbox Tool', cursor: 'cursor-cell' },
+    'toggle-slider-tool': { flag: 'isSliderMode', enable: 'Enable Slider Tool', disable: 'Disable Slider Tool', cursor: 'cursor-cell' },
+    'toggle-table-tool': { flag: 'isTableMode', enable: 'Enable Table Tool', disable: 'Disable Table Tool', cursor: 'cursor-cell' },
+    'toggle-widget-tool': { flag: 'isCustomWidgetMode', enable: 'Enable Widget Placement', disable: 'Disable Widget Placement', cursor: 'cursor-cell' }
 };
 
 function deactivateAllTools() {
@@ -336,6 +361,11 @@ function deactivateAllTools() {
     isButtonMode = false;
     isListBoxMode = false;
     isCheckboxMode = false;
+    isSliderMode = false;
+    isTableMode = false;
+    isCustomWidgetMode = false;
+    selectedWidgetIndex = -1;
+    clearGroupSelection();
     selectedIconIndex = -1;
     renderIconLibrary();
     // Remove placement preview
@@ -586,6 +616,103 @@ document.getElementById('toggle-checkbox-tool').addEventListener('click', () => 
     }
 });
 
+// Slider Tool controls
+document.getElementById('slider-base-color').addEventListener('input', (e) => {
+    document.getElementById('slider-base-color-text').value = e.target.value;
+});
+document.getElementById('slider-base-color-text').addEventListener('input', (e) => {
+    document.getElementById('slider-base-color').value = e.target.value;
+});
+document.getElementById('slider-overmax-color').addEventListener('input', (e) => {
+    document.getElementById('slider-overmax-color-text').value = e.target.value;
+});
+document.getElementById('slider-overmax-color-text').addEventListener('input', (e) => {
+    document.getElementById('slider-overmax-color').value = e.target.value;
+});
+document.getElementById('slider-undermin-color').addEventListener('input', (e) => {
+    document.getElementById('slider-undermin-color-text').value = e.target.value;
+});
+document.getElementById('slider-undermin-color-text').addEventListener('input', (e) => {
+    document.getElementById('slider-undermin-color').value = e.target.value;
+});
+document.getElementById('slider-thumb-color').addEventListener('input', (e) => {
+    document.getElementById('slider-thumb-color-text').value = e.target.value;
+});
+document.getElementById('slider-thumb-color-text').addEventListener('input', (e) => {
+    document.getElementById('slider-thumb-color').value = e.target.value;
+});
+document.getElementById('slider-label-color').addEventListener('input', (e) => {
+    document.getElementById('slider-label-color-text').value = e.target.value;
+});
+document.getElementById('slider-label-color-text').addEventListener('input', (e) => {
+    document.getElementById('slider-label-color').value = e.target.value;
+});
+
+document.getElementById('toggle-slider-tool').addEventListener('click', () => {
+    const wasActive = isSliderMode;
+    deactivateAllTools();
+    if (!wasActive) {
+        isSliderMode = true;
+        updateToolUI('toggle-slider-tool');
+    }
+});
+
+// Table Tool controls
+document.getElementById('table-title-color').addEventListener('input', (e) => {
+    document.getElementById('table-title-color-text').value = e.target.value;
+});
+document.getElementById('table-title-color-text').addEventListener('input', (e) => {
+    document.getElementById('table-title-color').value = e.target.value;
+});
+document.getElementById('table-text-color').addEventListener('input', (e) => {
+    document.getElementById('table-text-color-text').value = e.target.value;
+});
+document.getElementById('table-text-color-text').addEventListener('input', (e) => {
+    document.getElementById('table-text-color').value = e.target.value;
+});
+document.getElementById('table-header-bg-color').addEventListener('input', (e) => {
+    document.getElementById('table-header-bg-color-text').value = e.target.value;
+});
+document.getElementById('table-header-bg-color-text').addEventListener('input', (e) => {
+    document.getElementById('table-header-bg-color').value = e.target.value;
+});
+document.getElementById('table-bg-color').addEventListener('input', (e) => {
+    document.getElementById('table-bg-color-text').value = e.target.value;
+});
+document.getElementById('table-bg-color-text').addEventListener('input', (e) => {
+    document.getElementById('table-bg-color').value = e.target.value;
+});
+document.getElementById('table-alt-row-color').addEventListener('input', (e) => {
+    document.getElementById('table-alt-row-color-text').value = e.target.value;
+});
+document.getElementById('table-alt-row-color-text').addEventListener('input', (e) => {
+    document.getElementById('table-alt-row-color').value = e.target.value;
+});
+document.getElementById('table-border-color').addEventListener('input', (e) => {
+    document.getElementById('table-border-color-text').value = e.target.value;
+});
+document.getElementById('table-border-color-text').addEventListener('input', (e) => {
+    document.getElementById('table-border-color').value = e.target.value;
+});
+
+document.getElementById('toggle-table-tool').addEventListener('click', () => {
+    const wasActive = isTableMode;
+    deactivateAllTools();
+    if (!wasActive) {
+        isTableMode = true;
+        updateToolUI('toggle-table-tool');
+    }
+});
+
+document.getElementById('toggle-widget-tool').addEventListener('click', () => {
+    const wasActive = isCustomWidgetMode;
+    deactivateAllTools();
+    if (!wasActive) {
+        isCustomWidgetMode = true;
+        updateToolUI('toggle-widget-tool');
+    }
+});
+
 // Placement preview ghost
 let placementPreview = null;
 function getPlacementSize() {
@@ -596,6 +723,9 @@ function getPlacementSize() {
     if (isButtonMode) return { w: 120, h: 40, label: 'Button' };
     if (isListBoxMode) return { w: 200, h: 200, label: 'List Box' };
     if (isCheckboxMode) return { w: 80, h: 20, label: 'Checkbox' };
+    if (isSliderMode) return { w: 200, h: 40, label: 'Slider' };
+    if (isTableMode) return { w: 300, h: 200, label: 'Table' };
+    if (isCustomWidgetMode && selectedWidgetIndex !== -1) return { w: 100, h: 60, label: 'Widget' };
     if (isIconMode && selectedIconIndex !== -1) return { w: 64, h: 64, label: 'Image' };
     return null;
 }
@@ -639,6 +769,17 @@ drawingCanvas.style.pointerEvents = 'none';
 drawingCanvas.style.zIndex = '100';
 document.body.appendChild(drawingCanvas);
 let drawingCtx = drawingCanvas.getContext('2d');
+
+// Convert viewport mouse coords to drawing canvas pixel coords
+function getDrawingCoords(e) {
+    const rect = drawingCanvas.getBoundingClientRect();
+    const scaleX = drawingCanvas.width / rect.width;
+    const scaleY = drawingCanvas.height / rect.height;
+    return [
+        (e.clientX - rect.left) * scaleX,
+        (e.clientY - rect.top) * scaleY
+    ];
+}
 
 // Grid canvas setup
 let gridCanvas = document.createElement('canvas');
@@ -782,7 +923,7 @@ function renderIconLibrary() {
         // Delete button
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
-        deleteBtn.textContent = 'ÃƒÆ’Ã¢â‚¬â€';
+        deleteBtn.textContent = '×';
         deleteBtn.title = 'Remove from library';
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -860,7 +1001,7 @@ function renderRNG() {
         
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'rng-delete-btn';
-        deleteBtn.textContent = 'ÃƒÆ’Ã¢â‚¬â€';
+        deleteBtn.textContent = '×';
         deleteBtn.addEventListener('click', () => {
             if (confirm('Delete this RNG?')) {
                 // Remove this RNG from other RNGs' linked lists
@@ -1235,9 +1376,27 @@ canvas.addEventListener('mousedown', (e) => {
         return;
     }
     
+    // Slider Tool - place slider
+    if (isSliderMode) {
+        placeSlider(e.clientX, e.clientY);
+        return;
+    }
+    
+    // Table Tool - place table
+    if (isTableMode) {
+        placeTable(e.clientX, e.clientY);
+        return;
+    }
+    
     if (isIconMode && selectedIconIndex !== -1 && iconLibrary[selectedIconIndex]) {
         // Place icon on canvas
         placeIcon(e.clientX, e.clientY);
+        return;
+    }
+    
+    // Custom Widget Tool - place widget
+    if (isCustomWidgetMode && selectedWidgetIndex !== -1 && widgetLibrary[selectedWidgetIndex]) {
+        placeWidget(e.clientX, e.clientY, widgetLibrary[selectedWidgetIndex]);
         return;
     }
     
@@ -1250,11 +1409,41 @@ canvas.addEventListener('mousedown', (e) => {
     }
     
     if (isDrawing || isErasing) {
-        drawingPoints = [[e.clientX, e.clientY]];
+        drawingPoints = [getDrawingCoords(e)];
+        return;
+    }
+    
+    // No tool active and left-click: start selection rectangle
+    if (e.button === 0 && !isDrawing && !isErasing) {
+        clearGroupSelection();
+        isSelecting = true;
+        selectionStart = { x: e.clientX, y: e.clientY };
+        if (!selectionRect) {
+            selectionRect = document.createElement('div');
+            selectionRect.className = 'selection-rect';
+            document.body.appendChild(selectionRect);
+        }
+        selectionRect.style.left = e.clientX + 'px';
+        selectionRect.style.top = e.clientY + 'px';
+        selectionRect.style.width = '0px';
+        selectionRect.style.height = '0px';
+        selectionRect.style.display = 'block';
     }
 });
 
 canvas.addEventListener('mousemove', (e) => {
+    // Update selection rectangle while dragging
+    if (isSelecting && selectionRect) {
+        const x = Math.min(selectionStart.x, e.clientX);
+        const y = Math.min(selectionStart.y, e.clientY);
+        const w = Math.abs(e.clientX - selectionStart.x);
+        const h = Math.abs(e.clientY - selectionStart.y);
+        selectionRect.style.left = x + 'px';
+        selectionRect.style.top = y + 'px';
+        selectionRect.style.width = w + 'px';
+        selectionRect.style.height = h + 'px';
+    }
+    
     if (isPanning) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
@@ -1271,7 +1460,7 @@ canvas.addEventListener('mousemove', (e) => {
     }
     
     if (isMouseDown && (isDrawing || isErasing)) {
-        drawingPoints.push([e.clientX, e.clientY]);
+        drawingPoints.push(getDrawingCoords(e));
         
         if (drawingPoints.length > 1) {
             const thickness = parseInt(document.getElementById('line-thickness').value);
@@ -1305,6 +1494,19 @@ canvas.addEventListener('mouseup', (e) => {
     isMouseDown = false;
     isPanning = false;
     
+    // Finish selection rectangle
+    if (isSelecting) {
+        isSelecting = false;
+        if (selectionRect) {
+            const rect = selectionRect.getBoundingClientRect();
+            // Only process if dragged at least 5px
+            if (rect.width > 5 && rect.height > 5) {
+                selectElementsInRect(rect);
+            }
+            selectionRect.style.display = 'none';
+        }
+    }
+    
     if (isDrawing || isErasing) {
         drawingPoints = [];
         markUnsaved();
@@ -1313,6 +1515,12 @@ canvas.addEventListener('mouseup', (e) => {
 
 canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
+    // If there's an active group selection, show selection context menu
+    if (selectedGroup.length > 0) {
+        lastContextMenuPosition = { x: e.clientX, y: e.clientY };
+        positionContextMenu(selectionContextMenu, e.clientX, e.clientY);
+        return;
+    }
     if (clipboard) {
         lastContextMenuPosition = { x: e.clientX, y: e.clientY };
         positionContextMenu(canvasContextMenu, e.clientX, e.clientY);
@@ -2419,6 +2627,9 @@ const listboxContextMenu = document.getElementById('listbox-context-menu');
 const listboxItemContextMenu = document.getElementById('listbox-item-context-menu');
 const canvasContextMenu = document.getElementById('canvas-context-menu');
 const checkboxContextMenu = document.getElementById('checkbox-context-menu');
+const sliderContextMenu = document.getElementById('slider-context-menu');
+const tableContextMenu = document.getElementById('table-context-menu');
+const selectionContextMenu = document.getElementById('selection-context-menu');
 
 let currentTextData = null;
 let currentIconData = null;
@@ -2459,6 +2670,9 @@ document.addEventListener('click', () => {
     listboxItemContextMenu.classList.remove('visible');
     canvasContextMenu.classList.remove('visible');
     checkboxContextMenu.classList.remove('visible');
+    sliderContextMenu.classList.remove('visible');
+    tableContextMenu.classList.remove('visible');
+    selectionContextMenu.classList.remove('visible');
 });
 
 // Escape key handler: close menus, deactivate tools, close panels
@@ -2475,6 +2689,10 @@ document.addEventListener('keydown', (e) => {
         listboxItemContextMenu.classList.remove('visible');
         canvasContextMenu.classList.remove('visible');
         checkboxContextMenu.classList.remove('visible');
+        sliderContextMenu.classList.remove('visible');
+        tableContextMenu.classList.remove('visible');
+        selectionContextMenu.classList.remove('visible');
+        clearGroupSelection();
         // Deactivate all tools
         deactivateAllTools();
         // Close side panels
@@ -2898,6 +3116,15 @@ document.getElementById('paste-element').addEventListener('click', () => {
             break;
         case 'checkbox':
             placeCheckbox(x, y, clipboard.data);
+            break;
+        case 'slider':
+            placeSlider(x, y, clipboard.data);
+            break;
+        case 'table':
+            placeTable(x, y, clipboard.data);
+            break;
+        case 'group':
+            placeGroupElements(x, y, clipboard.data);
             break;
     }
     
@@ -3702,7 +3929,7 @@ function placeCheckbox(x, y, overrideData = null) {
     
     const checkmark = document.createElement('span');
     checkmark.className = 'checkmark';
-    checkmark.textContent = 'âœ“';
+    checkmark.textContent = '✓';
     checkmark.style.fontSize = (boxSize - 4) + 'px';
     checkmark.style.color = checkColor;
     box.appendChild(checkmark);
@@ -3872,6 +4099,1261 @@ document.getElementById('delete-checkbox').addEventListener('click', () => {
     checkboxContextMenu.classList.remove('visible');
 });
 
+// ============== SLIDER TOOL FUNCTIONS ==============
+let currentSliderData = null;
+
+function placeSlider(x, y, overrideData = null) {
+    x = snapToGridValue(x);
+    y = snapToGridValue(y);
+
+    const orientation = overrideData?.orientation ?? document.getElementById('slider-orientation').value;
+    const baseMin = overrideData?.baseMin ?? (parseFloat(document.getElementById('slider-base-min').value) || 0);
+    const baseMax = overrideData?.baseMax ?? (parseFloat(document.getElementById('slider-base-max').value) || 10);
+    const enableOverMax = overrideData?.enableOverMax ?? document.getElementById('slider-enable-overmax').checked;
+    const overMax = overrideData?.overMax ?? (parseFloat(document.getElementById('slider-overmax').value) || 15);
+    const enableUnderMin = overrideData?.enableUnderMin ?? document.getElementById('slider-enable-undermin').checked;
+    const underMin = overrideData?.underMin ?? (parseFloat(document.getElementById('slider-undermin').value) || 10);
+    const showNumber = overrideData?.showNumber ?? document.getElementById('slider-show-number').checked;
+    const numberPlacement = overrideData?.numberPlacement ?? document.getElementById('slider-number-placement').value;
+    const baseColor = overrideData?.baseColor ?? (document.getElementById('slider-base-color').value || '#cbd5e1');
+    const overMaxColor = overrideData?.overMaxColor ?? (document.getElementById('slider-overmax-color').value || '#86efac');
+    const underMinColor = overrideData?.underMinColor ?? (document.getElementById('slider-undermin-color').value || '#fca5a5');
+    const thumbColor = overrideData?.thumbColor ?? (document.getElementById('slider-thumb-color').value || '#6366f1');
+    const labelColor = overrideData?.labelColor ?? (document.getElementById('slider-label-color').value || '#334155');
+    const fontSize = overrideData?.fontSize ?? (parseInt(document.getElementById('slider-font-size').value) || 12);
+    const value = overrideData?.value ?? baseMin;
+    const width = overrideData?.width ?? (orientation === 'horizontal' ? 200 : 60);
+    const height = overrideData?.height ?? (orientation === 'horizontal' ? 60 : 200);
+
+    const sliderData = {
+        name: overrideData?.name || null,
+        orientation: orientation,
+        baseMin: baseMin,
+        baseMax: baseMax,
+        enableOverMax: enableOverMax,
+        overMax: overMax,
+        enableUnderMin: enableUnderMin,
+        underMin: underMin,
+        showNumber: showNumber,
+        numberPlacement: numberPlacement,
+        baseColor: baseColor,
+        overMaxColor: overMaxColor,
+        underMinColor: underMinColor,
+        thumbColor: thumbColor,
+        labelColor: labelColor,
+        fontSize: fontSize,
+        value: value,
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+        locked: overrideData?.locked || false
+    };
+
+    createSliderElement(sliderData);
+    sliderElements.push(sliderData);
+    markUnsaved();
+    return sliderData;
+}
+
+function getSliderMinMax(sd) {
+    let min = sd.baseMin;
+    let max = sd.baseMax;
+    if (sd.enableUnderMin) min = sd.baseMin - sd.underMin;
+    if (sd.enableOverMax) max = sd.baseMax + sd.overMax;
+    return { min, max };
+}
+
+function formatSliderValue(sd, v) {
+    if (v > sd.baseMax) return '+' + v;
+    if (v < sd.baseMin) return '' + v;
+    return '' + v;
+}
+
+function createSliderElement(sd) {
+    const el = document.createElement('div');
+    el.className = 'slider-element';
+    if (sd.locked) el.classList.add('locked');
+    el.style.left = sd.x + 'px';
+    el.style.top = sd.y + 'px';
+    el.style.width = sd.width + 'px';
+    el.style.height = sd.height + 'px';
+
+    const { min, max } = getSliderMinMax(sd);
+
+    // Wrapper for layout
+    const wrapper = document.createElement('div');
+    wrapper.className = 'slider-wrapper layout-' + sd.orientation;
+    if (sd.showNumber) wrapper.classList.add('numbox-' + sd.numberPlacement);
+    wrapper.style.width = '100%';
+    wrapper.style.height = '100%';
+
+    // Track container
+    const trackContainer = document.createElement('div');
+    trackContainer.className = 'slider-track-container ' + sd.orientation;
+
+    const totalRange = max - min;
+    const isHoriz = sd.orientation === 'horizontal';
+
+    // Build segments
+    const segments = [];
+    if (sd.enableUnderMin) {
+        const seg = document.createElement('div');
+        seg.className = 'slider-segment under-min';
+        const pct = (sd.underMin / totalRange) * 100;
+        if (isHoriz) {
+            seg.style.width = pct + '%';
+            seg.style.height = '100%';
+        } else {
+            seg.style.height = pct + '%';
+            seg.style.width = '100%';
+        }
+        seg.style.backgroundColor = sd.underMinColor;
+        segments.push(seg);
+    }
+    {
+        const seg = document.createElement('div');
+        seg.className = 'slider-segment base';
+        const pct = ((sd.baseMax - sd.baseMin) / totalRange) * 100;
+        if (isHoriz) {
+            seg.style.width = pct + '%';
+            seg.style.height = '100%';
+        } else {
+            seg.style.height = pct + '%';
+            seg.style.width = '100%';
+        }
+        seg.style.backgroundColor = sd.baseColor;
+        segments.push(seg);
+    }
+    if (sd.enableOverMax) {
+        const seg = document.createElement('div');
+        seg.className = 'slider-segment over-max';
+        const pct = (sd.overMax / totalRange) * 100;
+        if (isHoriz) {
+            seg.style.width = pct + '%';
+            seg.style.height = '100%';
+        } else {
+            seg.style.height = pct + '%';
+            seg.style.width = '100%';
+        }
+        seg.style.backgroundColor = sd.overMaxColor;
+        segments.push(seg);
+    }
+
+    segments.forEach(s => trackContainer.appendChild(s));
+
+    // Thumb
+    const thumb = document.createElement('div');
+    thumb.className = 'slider-thumb';
+    thumb.style.backgroundColor = sd.thumbColor;
+    trackContainer.appendChild(thumb);
+
+    wrapper.appendChild(trackContainer);
+
+    // Number box
+    let numbox = null;
+    if (sd.showNumber) {
+        numbox = document.createElement('input');
+        numbox.type = 'text';
+        numbox.className = 'slider-numbox';
+        numbox.style.fontSize = sd.fontSize + 'px';
+        numbox.style.color = sd.labelColor;
+        numbox.value = formatSliderValue(sd, sd.value);
+
+        numbox.addEventListener('mousedown', (e) => e.stopPropagation());
+        numbox.addEventListener('change', () => {
+            let v = parseFloat(numbox.value.replace('+', ''));
+            if (isNaN(v)) v = sd.baseMin;
+            v = Math.max(min, Math.min(max, v));
+            sd.value = v;
+            numbox.value = formatSliderValue(sd, v);
+            updateSliderThumb(sd);
+            markUnsaved();
+        });
+
+        // Insert numbox before or after the track depending on the placement
+        if (sd.numberPlacement === 'top' || sd.numberPlacement === 'left') {
+            wrapper.insertBefore(numbox, trackContainer);
+        } else {
+            wrapper.appendChild(numbox);
+        }
+    }
+
+    // Resize handles
+    const handles = document.createElement('div');
+    handles.className = 'resize-handles';
+    ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].forEach(pos => {
+        const handle = document.createElement('div');
+        handle.className = 'resize-handle ' + pos;
+        handles.appendChild(handle);
+    });
+    el.appendChild(wrapper);
+    el.appendChild(handles);
+
+    document.body.appendChild(el);
+
+    sd.element = el;
+    sd.trackContainer = trackContainer;
+    sd.thumbEl = thumb;
+    sd.numboxEl = numbox;
+
+    updateSliderThumb(sd);
+
+    // Thumb dragging
+    let thumbDragging = false;
+    thumb.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        thumbDragging = true;
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!thumbDragging) return;
+        const rect = trackContainer.getBoundingClientRect();
+        const { min: sMin, max: sMax } = getSliderMinMax(sd);
+        let ratio;
+        if (isHoriz) {
+            ratio = (e.clientX - rect.left) / rect.width;
+        } else {
+            ratio = 1 - (e.clientY - rect.top) / rect.height;
+        }
+        ratio = Math.max(0, Math.min(1, ratio));
+        const rawValue = sMin + ratio * (sMax - sMin);
+        sd.value = Math.round(rawValue);
+        updateSliderThumb(sd);
+        if (sd.numboxEl) sd.numboxEl.value = formatSliderValue(sd, sd.value);
+        markUnsaved();
+    });
+    document.addEventListener('mouseup', () => {
+        thumbDragging = false;
+    });
+
+    // Track click to set value
+    trackContainer.addEventListener('mousedown', (e) => {
+        if (e.target === thumb) return;
+        const rect = trackContainer.getBoundingClientRect();
+        const { min: sMin, max: sMax } = getSliderMinMax(sd);
+        let ratio;
+        if (isHoriz) {
+            ratio = (e.clientX - rect.left) / rect.width;
+        } else {
+            ratio = 1 - (e.clientY - rect.top) / rect.height;
+        }
+        ratio = Math.max(0, Math.min(1, ratio));
+        const rawValue = sMin + ratio * (sMax - sMin);
+        sd.value = Math.round(rawValue);
+        updateSliderThumb(sd);
+        if (sd.numboxEl) sd.numboxEl.value = formatSliderValue(sd, sd.value);
+        markUnsaved();
+        // start thumb dragging so user can hold and slide
+        thumbDragging = true;
+        e.stopPropagation();
+    });
+
+    makeSliderDraggable(el, sd);
+    makeSliderResizable(el, sd);
+
+    el.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showSliderContextMenu(e, sd);
+    });
+
+    el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveSlider(sd);
+    });
+}
+
+function updateSliderThumb(sd) {
+    const { min, max } = getSliderMinMax(sd);
+    const range = max - min;
+    if (range <= 0) return;
+    const ratio = (sd.value - min) / range;
+    const clamped = Math.max(0, Math.min(1, ratio));
+    if (sd.orientation === 'horizontal') {
+        sd.thumbEl.style.left = (clamped * 100) + '%';
+        sd.thumbEl.style.top = '50%';
+    } else {
+        sd.thumbEl.style.bottom = (clamped * 100) + '%';
+        sd.thumbEl.style.left = '50%';
+        sd.thumbEl.style.top = 'auto';
+        sd.thumbEl.style.transform = 'translate(-50%, 50%)';
+    }
+}
+
+function setActiveSlider(sd) {
+    if (activeSlider && activeSlider.element) {
+        activeSlider.element.classList.remove('active');
+    }
+    activeSlider = sd;
+    if (!sd.locked) {
+        sd.element.classList.add('active');
+    }
+}
+
+function makeSliderDraggable(element, sd) {
+    if (!sd._ac) sd._ac = new AbortController();
+    const signal = sd._ac.signal;
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+
+    element.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('resize-handle')) return;
+        if (e.target.classList.contains('slider-thumb')) return;
+        if (e.target.classList.contains('slider-numbox')) return;
+        if (e.target.closest('.slider-track-container')) return;
+        if (e.button !== 0) return;
+        if (sd.locked) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = sd.x;
+        startTop = sd.y;
+        e.stopPropagation();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        sd.x = snapToGridValue(startLeft + (e.clientX - startX));
+        sd.y = snapToGridValue(startTop + (e.clientY - startY));
+        element.style.left = sd.x + 'px';
+        element.style.top = sd.y + 'px';
+    }, { signal });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    }, { signal });
+}
+
+function makeSliderResizable(element, sd) {
+    const handles = element.querySelector('.resize-handles');
+    if (!handles) return;
+    if (!sd._ac) sd._ac = new AbortController();
+    const signal = sd._ac.signal;
+
+    Array.from(handles.children).forEach(handle => {
+        let isResizing = false;
+        let rStartX, rStartY, rStartW, rStartH, rStartLeft, rStartTop;
+        const direction = handle.className.split(' ').pop();
+
+        handle.addEventListener('mousedown', (e) => {
+            if (sd.locked) return;
+            isResizing = true;
+            rStartX = e.clientX;
+            rStartY = e.clientY;
+            rStartW = sd.width;
+            rStartH = sd.height;
+            rStartLeft = sd.x;
+            rStartTop = sd.y;
+            e.stopPropagation();
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const dx = e.clientX - rStartX;
+            const dy = e.clientY - rStartY;
+
+            if (direction.includes('e')) {
+                sd.width = Math.max(60, rStartW + dx);
+            }
+            if (direction.includes('w')) {
+                const newW = Math.max(60, rStartW - dx);
+                sd.x = rStartLeft + (rStartW - newW);
+                sd.width = newW;
+            }
+            if (direction.includes('s')) {
+                sd.height = Math.max(40, rStartH + dy);
+            }
+            if (direction.includes('n')) {
+                const newH = Math.max(40, rStartH - dy);
+                sd.y = rStartTop + (rStartH - newH);
+                sd.height = newH;
+            }
+
+            element.style.left = sd.x + 'px';
+            element.style.top = sd.y + 'px';
+            element.style.width = sd.width + 'px';
+            element.style.height = sd.height + 'px';
+            updateSliderThumb(sd);
+        }, { signal });
+
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+        }, { signal });
+    });
+}
+
+function showSliderContextMenu(e, sd) {
+    currentSliderData = sd;
+    document.getElementById('toggle-slider-lock').textContent = sd.locked ? 'Unlock' : 'Lock';
+    positionContextMenu(sliderContextMenu, e.clientX, e.clientY);
+}
+
+document.getElementById('rename-slider').addEventListener('click', () => {
+    if (currentSliderData) {
+        const idx = sliderElements.indexOf(currentSliderData);
+        const currentName = currentSliderData.name || `Slider ${idx + 1}`;
+        const newName = prompt('Enter a name for this Slider:', currentName);
+        if (newName !== null && newName.trim() !== '') {
+            currentSliderData.name = newName.trim();
+            updateElementTooltip(currentSliderData.element, currentSliderData.name, 'Slider');
+            markUnsaved();
+        }
+    }
+    sliderContextMenu.classList.remove('visible');
+});
+
+document.getElementById('toggle-slider-lock').addEventListener('click', () => {
+    if (currentSliderData) {
+        currentSliderData.locked = !currentSliderData.locked;
+        if (currentSliderData.locked) {
+            currentSliderData.element.classList.add('locked');
+            currentSliderData.element.classList.remove('active');
+        } else {
+            currentSliderData.element.classList.remove('locked');
+        }
+    }
+    sliderContextMenu.classList.remove('visible');
+});
+
+document.getElementById('copy-slider').addEventListener('click', () => {
+    if (currentSliderData) {
+        clipboard = {
+            type: 'slider',
+            data: {
+                orientation: currentSliderData.orientation,
+                baseMin: currentSliderData.baseMin,
+                baseMax: currentSliderData.baseMax,
+                enableOverMax: currentSliderData.enableOverMax,
+                overMax: currentSliderData.overMax,
+                enableUnderMin: currentSliderData.enableUnderMin,
+                underMin: currentSliderData.underMin,
+                showNumber: currentSliderData.showNumber,
+                numberPlacement: currentSliderData.numberPlacement,
+                baseColor: currentSliderData.baseColor,
+                overMaxColor: currentSliderData.overMaxColor,
+                underMinColor: currentSliderData.underMinColor,
+                thumbColor: currentSliderData.thumbColor,
+                labelColor: currentSliderData.labelColor,
+                fontSize: currentSliderData.fontSize,
+                value: currentSliderData.value,
+                width: currentSliderData.width,
+                height: currentSliderData.height
+            }
+        };
+    }
+    sliderContextMenu.classList.remove('visible');
+});
+
+document.getElementById('delete-slider').addEventListener('click', () => {
+    if (currentSliderData) {
+        const index = sliderElements.indexOf(currentSliderData);
+        if (index !== -1) {
+            sliderElements.splice(index, 1);
+            if (currentSliderData._ac) currentSliderData._ac.abort();
+            markUnsaved();
+            currentSliderData.element.remove();
+            if (activeSlider === currentSliderData) {
+                activeSlider = null;
+            }
+        }
+    }
+    sliderContextMenu.classList.remove('visible');
+});
+
+// ============== TABLE TOOL FUNCTIONS ==============
+let currentTableData = null;
+let pendingCsvData = null;
+
+// CSV import button wiring
+document.getElementById('table-csv-import-btn').addEventListener('click', () => {
+    document.getElementById('table-csv-file').click();
+});
+
+document.getElementById('table-csv-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const text = ev.target.result;
+        const rows = text.split(/\r?\n/).filter(r => r.trim() !== '');
+        pendingCsvData = rows.map(r => parseCSVRow(r));
+        alert('CSV loaded (' + pendingCsvData.length + ' rows). Click on the canvas to place the table.');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
+
+function parseCSVRow(row) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < row.length; i++) {
+        const ch = row[i];
+        if (inQuotes) {
+            if (ch === '"' && row[i + 1] === '"') {
+                current += '"';
+                i++;
+            } else if (ch === '"') {
+                inQuotes = false;
+            } else {
+                current += ch;
+            }
+        } else {
+            if (ch === '"') {
+                inQuotes = true;
+            } else if (ch === ',') {
+                result.push(current);
+                current = '';
+            } else {
+                current += ch;
+            }
+        }
+    }
+    result.push(current);
+    return result;
+}
+
+function placeTable(x, y, overrideData = null) {
+    x = snapToGridValue(x);
+    y = snapToGridValue(y);
+
+    const title = overrideData?.title ?? (document.getElementById('table-title').value || 'Table');
+    const rows = overrideData?.rows ?? (parseInt(document.getElementById('table-rows').value) || 3);
+    const cols = overrideData?.cols ?? (parseInt(document.getElementById('table-cols').value) || 3);
+    const altRows = overrideData?.altRows ?? document.getElementById('table-alt-rows').checked;
+    const titleColor = overrideData?.titleColor ?? document.getElementById('table-title-color').value;
+    const headerBgColor = overrideData?.headerBgColor ?? document.getElementById('table-header-bg-color').value;
+    const textColor = overrideData?.textColor ?? document.getElementById('table-text-color').value;
+    const bgColor = overrideData?.bgColor ?? document.getElementById('table-bg-color').value;
+    const altRowColor = overrideData?.altRowColor ?? document.getElementById('table-alt-row-color').value;
+    const borderSize = overrideData?.borderSize ?? (parseInt(document.getElementById('table-border-size').value) || 1);
+    const borderColor = overrideData?.borderColor ?? document.getElementById('table-border-color').value;
+    const fontSize = overrideData?.fontSize ?? (parseInt(document.getElementById('table-font-size').value) || 14);
+    const bold = overrideData?.bold ?? document.getElementById('table-bold').checked;
+    const italic = overrideData?.italic ?? document.getElementById('table-italic').checked;
+    const width = overrideData?.width ?? 300;
+    const height = overrideData?.height ?? 200;
+
+    // Build cell data
+    let cellData;
+    if (overrideData?.cellData) {
+        cellData = overrideData.cellData;
+    } else if (pendingCsvData) {
+        cellData = pendingCsvData;
+        pendingCsvData = null;
+    } else {
+        // Empty table: first row is headers (A, B, C...), rest are empty
+        const headerRow = [];
+        for (let c = 0; c < cols; c++) headerRow.push(String.fromCharCode(65 + c));
+        cellData = [headerRow];
+        for (let r = 0; r < rows; r++) {
+            cellData.push(new Array(cols).fill(''));
+        }
+    }
+
+    // Normalize columns: ensure all rows have the same number of columns
+    const maxCols = Math.max(...cellData.map(r => r.length));
+    cellData = cellData.map(r => {
+        while (r.length < maxCols) r.push('');
+        return r;
+    });
+
+    const td = {
+        name: overrideData?.name || null,
+        title,
+        rows: cellData.length - 1, // exclude header row
+        cols: maxCols,
+        altRows,
+        titleColor,
+        headerBgColor,
+        textColor,
+        bgColor,
+        altRowColor,
+        borderSize,
+        borderColor,
+        fontSize,
+        bold,
+        italic,
+        cellData,
+        x, y,
+        width, height,
+        locked: overrideData?.locked || false
+    };
+
+    createTableElement(td);
+    tableElements.push(td);
+    markUnsaved();
+    return td;
+}
+
+function createTableElement(td) {
+    const el = document.createElement('div');
+    el.className = 'table-widget';
+    if (td.locked) el.classList.add('locked');
+    el.style.left = td.x + 'px';
+    el.style.top = td.y + 'px';
+    el.style.width = td.width + 'px';
+    el.style.height = td.height + 'px';
+    el.style.border = td.borderSize + 'px solid ' + td.borderColor;
+    el.style.backgroundColor = td.bgColor;
+    el.style.fontSize = td.fontSize + 'px';
+    el.style.fontWeight = td.bold ? 'bold' : 'normal';
+    el.style.fontStyle = td.italic ? 'italic' : 'normal';
+    el.style.color = td.textColor;
+
+    // Title bar
+    const titleBar = document.createElement('div');
+    titleBar.className = 'table-widget-title';
+    titleBar.textContent = td.title;
+    titleBar.style.color = td.titleColor;
+    titleBar.style.backgroundColor = td.headerBgColor;
+    el.appendChild(titleBar);
+
+    // Scroll container
+    const scrollContainer = document.createElement('div');
+    scrollContainer.className = 'table-scroll-container';
+    el.appendChild(scrollContainer);
+
+    // Resize handles
+    const handles = document.createElement('div');
+    handles.className = 'resize-handles';
+    ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].forEach(pos => {
+        const h = document.createElement('div');
+        h.className = 'resize-handle ' + pos;
+        handles.appendChild(h);
+    });
+    el.appendChild(handles);
+
+    document.body.appendChild(el);
+
+    td.element = el;
+    td.titleBar = titleBar;
+    td.scrollContainer = scrollContainer;
+
+    renderTableContent(td);
+
+    makeTableDraggable(el, td);
+    makeTableResizable(el, td);
+
+    el.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showTableContextMenu(e, td);
+    });
+
+    el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveTable(td);
+    });
+}
+
+function renderTableContent(td) {
+    const container = td.scrollContainer;
+    container.innerHTML = '';
+
+    const table = document.createElement('table');
+    table.className = 'table-inner';
+
+    td.cellData.forEach((row, ri) => {
+        const tr = document.createElement('tr');
+        row.forEach((cellVal, ci) => {
+            const cell = ri === 0 ? document.createElement('th') : document.createElement('td');
+            cell.textContent = cellVal;
+            cell.style.borderColor = td.borderColor;
+            cell.style.borderWidth = td.borderSize + 'px';
+
+            if (ri === 0) {
+                cell.style.backgroundColor = td.headerBgColor;
+                cell.style.color = td.titleColor;
+            } else {
+                if (td.altRows && ri % 2 === 0) {
+                    cell.style.backgroundColor = td.altRowColor;
+                } else {
+                    cell.style.backgroundColor = td.bgColor;
+                }
+            }
+
+            // Editable on double-click
+            if (ri > 0 || true) { // headers are also editable
+                cell.setAttribute('contenteditable', 'false');
+                cell.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    cell.setAttribute('contenteditable', 'true');
+                    cell.focus();
+                });
+                cell.addEventListener('blur', () => {
+                    cell.setAttribute('contenteditable', 'false');
+                    td.cellData[ri][ci] = cell.textContent;
+                    markUnsaved();
+                });
+                cell.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        cell.blur();
+                    }
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        cell.blur();
+                        // Move to next cell
+                        const nextCi = ci + 1 < td.cellData[ri].length ? ci + 1 : 0;
+                        const nextRi = nextCi === 0 ? (ri + 1 < td.cellData.length ? ri + 1 : 0) : ri;
+                        const nextCell = table.rows[nextRi]?.cells[nextCi];
+                        if (nextCell) {
+                            nextCell.setAttribute('contenteditable', 'true');
+                            nextCell.focus();
+                        }
+                    }
+                });
+                cell.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            tr.appendChild(cell);
+        });
+        table.appendChild(tr);
+    });
+
+    container.appendChild(table);
+}
+
+function setActiveTable(td) {
+    if (activeTable && activeTable.element) {
+        activeTable.element.classList.remove('active');
+    }
+    activeTable = td;
+    if (!td.locked) {
+        td.element.classList.add('active');
+    }
+}
+
+function makeTableDraggable(element, td) {
+    if (!td._ac) td._ac = new AbortController();
+    const signal = td._ac.signal;
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+
+    element.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('resize-handle')) return;
+        if (e.target.closest('.table-scroll-container')) return;
+        if (e.button !== 0) return;
+        if (td.locked) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = td.x;
+        startTop = td.y;
+        e.stopPropagation();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        td.x = snapToGridValue(startLeft + (e.clientX - startX));
+        td.y = snapToGridValue(startTop + (e.clientY - startY));
+        element.style.left = td.x + 'px';
+        element.style.top = td.y + 'px';
+    }, { signal });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    }, { signal });
+}
+
+function makeTableResizable(element, td) {
+    const handles = element.querySelector('.resize-handles');
+    if (!handles) return;
+    if (!td._ac) td._ac = new AbortController();
+    const signal = td._ac.signal;
+
+    Array.from(handles.children).forEach(handle => {
+        let isResizing = false;
+        let rStartX, rStartY, rStartW, rStartH, rStartLeft, rStartTop;
+        const direction = handle.className.split(' ').pop();
+
+        handle.addEventListener('mousedown', (e) => {
+            if (td.locked) return;
+            isResizing = true;
+            rStartX = e.clientX;
+            rStartY = e.clientY;
+            rStartW = td.width;
+            rStartH = td.height;
+            rStartLeft = td.x;
+            rStartTop = td.y;
+            e.stopPropagation();
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const dx = e.clientX - rStartX;
+            const dy = e.clientY - rStartY;
+
+            if (direction.includes('e')) {
+                td.width = Math.max(200, rStartW + dx);
+            }
+            if (direction.includes('w')) {
+                const newW = Math.max(200, rStartW - dx);
+                td.x = rStartLeft + (rStartW - newW);
+                td.width = newW;
+            }
+            if (direction.includes('s')) {
+                td.height = Math.max(120, rStartH + dy);
+            }
+            if (direction.includes('n')) {
+                const newH = Math.max(120, rStartH - dy);
+                td.y = rStartTop + (rStartH - newH);
+                td.height = newH;
+            }
+
+            element.style.left = td.x + 'px';
+            element.style.top = td.y + 'px';
+            element.style.width = td.width + 'px';
+            element.style.height = td.height + 'px';
+        }, { signal });
+
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+        }, { signal });
+    });
+}
+
+function showTableContextMenu(e, td) {
+    currentTableData = td;
+    document.getElementById('toggle-table-lock').textContent = td.locked ? 'Unlock' : 'Lock';
+    positionContextMenu(tableContextMenu, e.clientX, e.clientY);
+}
+
+document.getElementById('rename-table').addEventListener('click', () => {
+    if (currentTableData) {
+        const currentName = currentTableData.name || currentTableData.title;
+        const newName = prompt('Enter a name for this Table:', currentName);
+        if (newName !== null && newName.trim() !== '') {
+            currentTableData.name = newName.trim();
+            currentTableData.title = newName.trim();
+            currentTableData.titleBar.textContent = newName.trim();
+            updateElementTooltip(currentTableData.element, currentTableData.name, 'Table');
+            markUnsaved();
+        }
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+document.getElementById('table-add-row').addEventListener('click', () => {
+    if (currentTableData) {
+        const newRow = new Array(currentTableData.cols).fill('');
+        currentTableData.cellData.push(newRow);
+        currentTableData.rows = currentTableData.cellData.length - 1;
+        renderTableContent(currentTableData);
+        markUnsaved();
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+document.getElementById('table-add-col').addEventListener('click', () => {
+    if (currentTableData) {
+        const nextLetter = String.fromCharCode(65 + currentTableData.cols);
+        currentTableData.cellData.forEach((row, i) => {
+            row.push(i === 0 ? nextLetter : '');
+        });
+        currentTableData.cols++;
+        renderTableContent(currentTableData);
+        markUnsaved();
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+document.getElementById('table-delete-row').addEventListener('click', () => {
+    if (currentTableData && currentTableData.cellData.length > 2) {
+        currentTableData.cellData.pop();
+        currentTableData.rows = currentTableData.cellData.length - 1;
+        renderTableContent(currentTableData);
+        markUnsaved();
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+document.getElementById('table-delete-col').addEventListener('click', () => {
+    if (currentTableData && currentTableData.cols > 1) {
+        currentTableData.cellData.forEach(row => row.pop());
+        currentTableData.cols--;
+        renderTableContent(currentTableData);
+        markUnsaved();
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+document.getElementById('toggle-table-lock').addEventListener('click', () => {
+    if (currentTableData) {
+        currentTableData.locked = !currentTableData.locked;
+        if (currentTableData.locked) {
+            currentTableData.element.classList.add('locked');
+            currentTableData.element.classList.remove('active');
+        } else {
+            currentTableData.element.classList.remove('locked');
+        }
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+document.getElementById('copy-table').addEventListener('click', () => {
+    if (currentTableData) {
+        clipboard = {
+            type: 'table',
+            data: {
+                title: currentTableData.title,
+                cols: currentTableData.cols,
+                rows: currentTableData.rows,
+                altRows: currentTableData.altRows,
+                titleColor: currentTableData.titleColor,
+                headerBgColor: currentTableData.headerBgColor,
+                textColor: currentTableData.textColor,
+                bgColor: currentTableData.bgColor,
+                altRowColor: currentTableData.altRowColor,
+                borderSize: currentTableData.borderSize,
+                borderColor: currentTableData.borderColor,
+                fontSize: currentTableData.fontSize,
+                bold: currentTableData.bold,
+                italic: currentTableData.italic,
+                cellData: JSON.parse(JSON.stringify(currentTableData.cellData)),
+                width: currentTableData.width,
+                height: currentTableData.height
+            }
+        };
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+document.getElementById('delete-table').addEventListener('click', () => {
+    if (currentTableData) {
+        const index = tableElements.indexOf(currentTableData);
+        if (index !== -1) {
+            tableElements.splice(index, 1);
+            if (currentTableData._ac) currentTableData._ac.abort();
+            markUnsaved();
+            currentTableData.element.remove();
+            if (activeTable === currentTableData) {
+                activeTable = null;
+            }
+        }
+    }
+    tableContextMenu.classList.remove('visible');
+});
+
+// ============== GROUP SELECTION & CUSTOM WIDGET FUNCTIONS ==============
+
+function clearGroupSelection() {
+    selectedGroup.forEach(item => {
+        if (item.element) item.element.classList.remove('group-selected');
+    });
+    selectedGroup = [];
+}
+
+function getElementBounds(el) {
+    const dom = el.element;
+    if (!dom) return null;
+    const r = dom.getBoundingClientRect();
+    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+}
+
+function rectsOverlap(a, b) {
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+}
+
+function selectElementsInRect(rect) {
+    const selBox = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+    const allArrays = [
+        { arr: textElements, type: 'text' },
+        { arr: mapIcons, type: 'icon' },
+        { arr: frameElements, type: 'frame' },
+        { arr: numberEntries, type: 'numberEntry' },
+        { arr: labelElements, type: 'label' },
+        { arr: buttonElements, type: 'button' },
+        { arr: listBoxElements, type: 'listbox' },
+        { arr: checkboxElements, type: 'checkbox' },
+        { arr: sliderElements, type: 'slider' },
+        { arr: tableElements, type: 'table' }
+    ];
+
+    allArrays.forEach(({ arr, type }) => {
+        arr.forEach(item => {
+            const bounds = getElementBounds(item);
+            if (bounds && rectsOverlap(selBox, bounds)) {
+                item._selType = type;
+                selectedGroup.push(item);
+                item.element.classList.add('group-selected');
+            }
+        });
+    });
+}
+
+function serializeElement(item) {
+    const type = item._selType;
+    switch (type) {
+        case 'text':
+            return { type, name: item.name, text: item.text, x: item.x, y: item.y, fontSize: item.fontSize, color: item.color, width: item.width, height: item.height, resizeEnabled: item.resizeEnabled !== false, locked: item.locked || false };
+        case 'icon':
+            return { type, iconIndex: item.iconIndex, iconData: iconLibrary[item.iconIndex]?.data || null, iconName: iconLibrary[item.iconIndex]?.name || '', x: item.x, y: item.y, width: item.width, height: item.height, rotation: item.rotation || 0, locked: item.locked || false };
+        case 'frame':
+            return { type, title: item.title, x: item.x, y: item.y, width: item.width, height: item.height, titleSize: item.titleSize, titleColor: item.titleColor, borderSize: item.borderSize, borderColor: item.borderColor, bgColor: item.bgColor, bgOpacity: item.bgOpacity, locked: item.locked || false };
+        case 'numberEntry':
+            return { type, name: item.name, value: item.value, min: item.min, max: item.max, fontSize: item.fontSize, color: item.color, bgColor: item.bgColor, borderColor: item.borderColor, width: item.width, height: item.height, x: item.x, y: item.y, locked: item.locked || false };
+        case 'label':
+            return { type, name: item.name, text: item.text, fontSize: item.fontSize, color: item.color, bold: item.bold, italic: item.italic, x: item.x, y: item.y, locked: item.locked || false };
+        case 'button':
+            return { type, text: item.text, fontSize: item.fontSize, textColor: item.textColor, bgColor: item.bgColor, bold: item.bold, italic: item.italic, width: item.width, height: item.height, x: item.x, y: item.y, locked: item.locked || false, tasks: JSON.parse(JSON.stringify(item.tasks || [])) };
+        case 'listbox':
+            return { type, title: item.title, titleSize: item.titleSize, titleColor: item.titleColor, fontSize: item.fontSize, textColor: item.textColor, bgColor: item.bgColor, buttonColor: item.buttonColor, borderSize: item.borderSize, borderColor: item.borderColor, bold: item.bold, italic: item.italic, x: item.x, y: item.y, width: item.width, height: item.height, locked: item.locked || false, items: JSON.parse(JSON.stringify(item.items || [])) };
+        case 'checkbox':
+            return { type, name: item.name, label: item.label, checked: item.checked, fontSize: item.fontSize, textColor: item.textColor, boxSize: item.boxSize, checkColor: item.checkColor, x: item.x, y: item.y, locked: item.locked || false };
+        case 'slider':
+            return { type, name: item.name, orientation: item.orientation, baseMin: item.baseMin, baseMax: item.baseMax, enableOverMax: item.enableOverMax, overMax: item.overMax, enableUnderMin: item.enableUnderMin, underMin: item.underMin, showNumber: item.showNumber, numberPlacement: item.numberPlacement, baseColor: item.baseColor, overMaxColor: item.overMaxColor, underMinColor: item.underMinColor, thumbColor: item.thumbColor, labelColor: item.labelColor, fontSize: item.fontSize, value: item.value, x: item.x, y: item.y, width: item.width, height: item.height, locked: item.locked || false };
+        case 'table':
+            return { type, name: item.name, title: item.title, rows: item.rows, cols: item.cols, altRows: item.altRows, titleColor: item.titleColor, headerBgColor: item.headerBgColor, textColor: item.textColor, bgColor: item.bgColor, altRowColor: item.altRowColor, borderSize: item.borderSize, borderColor: item.borderColor, fontSize: item.fontSize, bold: item.bold, italic: item.italic, cellData: JSON.parse(JSON.stringify(item.cellData)), x: item.x, y: item.y, width: item.width, height: item.height, locked: item.locked || false };
+        default:
+            return null;
+    }
+}
+
+function serializeGroup(group) {
+    // Serialize all elements, converting positions to relative offsets from the top-left of the group
+    const serialized = group.map(item => serializeElement(item)).filter(Boolean);
+    if (serialized.length === 0) return null;
+
+    const minX = Math.min(...serialized.map(e => e.x));
+    const minY = Math.min(...serialized.map(e => e.y));
+
+    serialized.forEach(e => {
+        e.x -= minX;
+        e.y -= minY;
+    });
+
+    return { elements: serialized };
+}
+
+function placeGroupElements(x, y, widgetData) {
+    const elems = widgetData.elements;
+    elems.forEach(e => {
+        const px = x + e.x;
+        const py = y + e.y;
+        switch (e.type) {
+            case 'text': {
+                const textEl = document.createElement('div');
+                textEl.className = 'text-input';
+                textEl.style.position = 'absolute';
+                textEl.style.left = px + 'px';
+                textEl.style.top = py + 'px';
+                textEl.style.fontSize = e.fontSize + 'px';
+                textEl.style.color = e.color;
+                textEl.style.padding = '5px';
+                textEl.style.cursor = 'move';
+                textEl.style.zIndex = '1001';
+                textEl.style.whiteSpace = 'pre-wrap';
+                textEl.textContent = e.text;
+                textEl.style.border = 'none';
+                textEl.style.background = 'transparent';
+                textEl.setAttribute('contenteditable', 'false');
+                if (e.width) textEl.style.width = e.width + 'px';
+                if (e.height) textEl.style.height = e.height + 'px';
+                const handles = document.createElement('div');
+                handles.className = 'resize-handles';
+                handles.style.display = e.resizeEnabled ? 'block' : 'none';
+                ['nw','n','ne','e','se','s','sw','w'].forEach(pos => {
+                    const h = document.createElement('div');
+                    h.className = 'resize-handle ' + pos;
+                    handles.appendChild(h);
+                });
+                textEl.appendChild(handles);
+                document.body.appendChild(textEl);
+                const td = { element: textEl, name: e.name, text: e.text, x: px, y: py, fontSize: e.fontSize, color: e.color, width: e.width || 100, height: e.height || 30, resizeEnabled: e.resizeEnabled, locked: e.locked };
+                textElements.push(td);
+                makeTextDraggable(textEl, td);
+                makeTextResizable(textEl, td);
+                makeTextEditable(textEl, td);
+                if (td.locked) textEl.classList.add('locked');
+                break;
+            }
+            case 'icon': {
+                // Ensure icon is in library
+                let idx = e.iconIndex;
+                if (e.iconData && (!iconLibrary[idx] || iconLibrary[idx].data !== e.iconData)) {
+                    idx = iconLibrary.findIndex(ic => ic.data === e.iconData);
+                    if (idx === -1) {
+                        iconLibrary.push({ data: e.iconData, name: e.iconName || 'widget-icon' });
+                        idx = iconLibrary.length - 1;
+                        renderIconLibrary();
+                    }
+                }
+                const savedIcon = selectedIconIndex;
+                selectedIconIndex = idx;
+                placeIcon(px, py);
+                const placed = mapIcons[mapIcons.length - 1];
+                if (placed) {
+                    placed.width = e.width;
+                    placed.height = e.height;
+                    placed.rotation = e.rotation || 0;
+                    placed.locked = e.locked;
+                    placed.element.style.width = e.width + 'px';
+                    placed.element.style.height = e.height + 'px';
+                    if (e.rotation) placed.element.querySelector('img').style.transform = 'rotate(' + e.rotation + 'deg)';
+                    if (e.locked) placed.element.classList.add('locked');
+                }
+                selectedIconIndex = savedIcon;
+                break;
+            }
+            case 'frame':
+                placeFrameWithData(px, py, e);
+                break;
+            case 'numberEntry':
+                placeNumberEntry(px, py, e);
+                break;
+            case 'label':
+                placeLabelWithData(px, py, e);
+                break;
+            case 'button':
+                placeButtonWithData(px, py, e);
+                break;
+            case 'listbox':
+                placeListBoxWithData(px, py, e);
+                break;
+            case 'checkbox':
+                placeCheckbox(px, py, e);
+                break;
+            case 'slider':
+                placeSlider(px, py, e);
+                break;
+            case 'table':
+                placeTable(px, py, e);
+                break;
+        }
+    });
+    markUnsaved();
+}
+
+// Selection context menu handlers
+document.getElementById('selection-copy').addEventListener('click', () => {
+    if (selectedGroup.length > 0) {
+        const groupData = serializeGroup(selectedGroup);
+        if (groupData) {
+            clipboard = { type: 'group', data: groupData };
+        }
+    }
+    selectionContextMenu.classList.remove('visible');
+});
+
+document.getElementById('selection-save-widget').addEventListener('click', () => {
+    if (selectedGroup.length > 0) {
+        const name = prompt('Enter a name for this widget:', 'My Widget');
+        if (name !== null && name.trim() !== '') {
+            const groupData = serializeGroup(selectedGroup);
+            if (groupData) {
+                const widgetFile = {
+                    type: 'custom-widget',
+                    version: 1,
+                    name: name.trim(),
+                    elements: groupData.elements
+                };
+                const blob = new Blob([JSON.stringify(widgetFile, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = name.trim().replace(/[^a-zA-Z0-9_-]/g, '_') + '.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+    }
+    selectionContextMenu.classList.remove('visible');
+});
+
+document.getElementById('selection-deselect').addEventListener('click', () => {
+    clearGroupSelection();
+    selectionContextMenu.classList.remove('visible');
+});
+
+// Paste handler for groups
+// (Handled inside the existing paste-element handler - we add the case there)
+
+// ============== CUSTOM WIDGET LIBRARY ==============
+function renderWidgetLibrary() {
+    const container = document.getElementById('widget-library-container');
+    container.innerHTML = '';
+    widgetLibrary.forEach((widget, index) => {
+        const item = document.createElement('div');
+        item.className = 'widget-library-item';
+        if (selectedWidgetIndex === index) item.classList.add('selected');
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'widget-name';
+        nameSpan.textContent = widget.name;
+        item.appendChild(nameSpan);
+
+        const infoSpan = document.createElement('span');
+        infoSpan.className = 'widget-info';
+        infoSpan.textContent = widget.elements.length + ' items';
+        item.appendChild(infoSpan);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'widget-delete-btn';
+        delBtn.textContent = '\u00d7';
+        delBtn.title = 'Remove widget';
+        delBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            widgetLibrary.splice(index, 1);
+            if (selectedWidgetIndex === index) selectedWidgetIndex = -1;
+            else if (selectedWidgetIndex > index) selectedWidgetIndex--;
+            renderWidgetLibrary();
+        });
+        item.appendChild(delBtn);
+
+        item.addEventListener('click', () => {
+            if (selectedWidgetIndex === index) {
+                selectedWidgetIndex = -1;
+            } else {
+                selectedWidgetIndex = index;
+            }
+            renderWidgetLibrary();
+        });
+
+        container.appendChild(item);
+    });
+}
+
+document.getElementById('widget-import-btn').addEventListener('click', () => {
+    document.getElementById('widget-import-file').click();
+});
+
+document.getElementById('widget-import-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        try {
+            const data = JSON.parse(ev.target.result);
+            if (data.type !== 'custom-widget' || !Array.isArray(data.elements)) {
+                alert('Invalid widget file format.');
+                return;
+            }
+            widgetLibrary.push({ name: data.name || file.name, elements: data.elements });
+            renderWidgetLibrary();
+        } catch (err) {
+            alert('Error reading widget file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
+
+function placeWidget(x, y, widget) {
+    x = snapToGridValue(x);
+    y = snapToGridValue(y);
+    placeGroupElements(x, y, { elements: widget.elements });
+}
+
 // ============== TASK EDITOR ==============
 let currentEditingButton = null;
 let tempTasks = [];
@@ -3905,136 +5387,136 @@ function showTaskEditor(buttonData) {
     palette.innerHTML = `
         <h4>Available Actions</h4>
         <div class="palette-category">
-            <div class="palette-category-header" data-category="basic">ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ Basic Actions</div>
+            <div class="palette-category-header" data-category="basic">▶ Basic Actions</div>
             <div class="palette-category-items" id="palette-basic" style="display:none;">
                 <div class="task-block-template" data-type="run-rng" draggable="true" title="Roll the dice using the RNG element to generate a random number">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â²</span> Run RNG
+                    <span class="task-icon">🎲</span> Run RNG
                 </div>
                 <div class="task-block-template" data-type="add" draggable="true" title="Add a value to a Number Entry box">
-                    <span class="task-icon">ÃƒÂ¢Ã…Â¾Ã¢â‚¬Â¢</span> Add to Number
+                    <span class="task-icon">➕</span> Add to Number
                 </div>
                 <div class="task-block-template" data-type="subtract" draggable="true" title="Subtract a value from a Number Entry box">
-                    <span class="task-icon">ÃƒÂ¢Ã…Â¾Ã¢â‚¬â€œ</span> Subtract from Number
+                    <span class="task-icon">➖</span> Subtract from Number
                 </div>
                 <div class="task-block-template" data-type="set" draggable="true" title="Set a Number Entry box to a specific value">
-                    <span class="task-icon">ÃƒÂ¢Ã…â€œÃ‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â</span> Set Number
+                    <span class="task-icon">✏️</span> Set Number
                 </div>
             </div>
         </div>
         <div class="palette-category">
-            <div class="palette-category-header" data-category="variables">ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ Variables</div>
+            <div class="palette-category-header" data-category="variables">▶ Variables</div>
             <div class="palette-category-items" id="palette-variables" style="display:none;">
                 <div class="task-block-template" data-type="create-var" draggable="true" title="Create a new variable to store values during execution">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦</span> Create Variable
+                    <span class="task-icon">📦</span> Create Variable
                 </div>
                 <div class="task-block-template" data-type="set-var" draggable="true" title="Set a variable to a specific value, number entry, or another variable">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â</span> Set Variable
+                    <span class="task-icon">📝</span> Set Variable
                 </div>
                 <div class="task-block-template" data-type="add-var" draggable="true" title="Add a value to an existing variable">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‹â€ </span> Add to Variable
+                    <span class="task-icon">📈</span> Add to Variable
                 </div>
                 <div class="task-block-template" data-type="subtract-var" draggable="true" title="Subtract a value from an existing variable">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â°</span> Subtract from Variable
+                    <span class="task-icon">📉</span> Subtract from Variable
                 </div>
             </div>
         </div>
         <div class="palette-category">
-            <div class="palette-category-header" data-category="compare">ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ Compare (IF)</div>
+            <div class="palette-category-header" data-category="compare">▶ Compare (IF)</div>
             <div class="palette-category-items" id="palette-compare" style="display:none;">
                 <div class="task-block-template" data-type="if" draggable="true" title="Start a conditional block that only runs if the condition is true">
-                    <span class="task-icon">ÃƒÂ¢Ã‚ÂÃ¢â‚¬Å“</span> IF
+                    <span class="task-icon">❓</span> IF
                 </div>
                 <div class="task-block-template" data-type="elseif" draggable="true" title="Check an alternate condition if the previous IF was false">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â€šÂ¬</span> ELSE IF
+                    <span class="task-icon">🔀</span> ELSE IF
                 </div>
                 <div class="task-block-template" data-type="else" draggable="true" title="Runs if all previous IF and ELSE IF conditions were false">
-                    <span class="task-icon">ÃƒÂ¢Ã¢â‚¬Â Ã‚Â©ÃƒÂ¯Ã‚Â¸Ã‚Â</span> ELSE
+                    <span class="task-icon">↩️</span> ELSE
                 </div>
                 <div class="task-block-template" data-type="endif" draggable="true" title="Marks the end of an IF / ELSE IF / ELSE block">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ…Â¡</span> END IF
+                    <span class="task-icon">🔚</span> END IF
                 </div>
             </div>
         </div>
         <div class="palette-category">
-            <div class="palette-category-header" data-category="loop">ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ Loop</div>
+            <div class="palette-category-header" data-category="loop">▶ Loop</div>
             <div class="palette-category-items" id="palette-loop" style="display:none;">
                 <div class="task-block-template" data-type="loop" draggable="true" title="Repeat a set of tasks a specified number of times">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â</span> Loop
+                    <span class="task-icon">🔁</span> Loop
                 </div>
                 <div class="task-block-template" data-type="loop-exit" draggable="true" title="Exit the current loop early, skipping any remaining iterations">
-                    <span class="task-icon">ÃƒÂ¢Ã‚ÂÃ‚Â©</span> Loop Exit
+                    <span class="task-icon">⏩</span> Loop Exit
                 </div>
                 <div class="task-block-template" data-type="loop-end" draggable="true" title="Marks the end of a loop block">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ…Â¡</span> Loop End
+                    <span class="task-icon">🔚</span> Loop End
                 </div>
             </div>
         </div>
         <div class="palette-category">
-            <div class="palette-category-header" data-category="functions">ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ Functions</div>
+            <div class="palette-category-header" data-category="functions">▶ Functions</div>
             <div class="palette-category-items" id="palette-functions" style="display:none;">
                 <div class="task-block-template" data-type="func-min" draggable="true" title="Returns the lower value of the entries">
-                    <span class="task-icon">ÃƒÂ¢Ã‚Â¬Ã¢â‚¬Â¡ÃƒÂ¯Ã‚Â¸Ã‚Â</span> Min
+                    <span class="task-icon">⬇️</span> Min
                 </div>
                 <div class="task-block-template" data-type="func-max" draggable="true" title="Returns the higher value of the entries">
-                    <span class="task-icon">ÃƒÂ¢Ã‚Â¬Ã¢â‚¬Â ÃƒÂ¯Ã‚Â¸Ã‚Â</span> Max
+                    <span class="task-icon">⬆️</span> Max
                 </div>
                 <div class="task-block-template" data-type="func-rand" draggable="true" title="Generate a random number between two values and store it in a variable">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¢</span> Rand
+                    <span class="task-icon">🔢</span> Rand
                 </div>
                 <div class="task-block-template" data-type="func-print" draggable="true" title="Display a message in a popup alert dialog">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¨ÃƒÂ¯Ã‚Â¸Ã‚Â</span> Print
+                    <span class="task-icon">🖨️</span> Print
                 </div>
                 <div class="task-block-template" data-type="func-math" draggable="true" title="Perform arithmetic (add, subtract, multiply, divide) on two values and store the result">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã‚Â§Ã‚Â®</span> Math
+                    <span class="task-icon">🧮</span> Math
                 </div>
                 <div class="task-block-template" data-type="func-sum" draggable="true" title="Add up to 6 values together and store the total in a variable">
-                    <span class="task-icon">ÃƒÂ¢Ã…Â¾Ã¢â‚¬Â¢</span> Sum
+                    <span class="task-icon">➕</span> Sum
                 </div>
                 <div class="task-block-template" data-type="func-concat" draggable="true" title="Join up to 6 text or number values together into a single string">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â‚¬â€</span> Concat
+                    <span class="task-icon">🔗</span> Concat
                 </div>
                 <div class="task-block-template" data-type="func-round" draggable="true" title="Round a variable's value up, down, or to the nearest whole number">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â‚¬Å¾</span> Round
+                    <span class="task-icon">🔄</span> Round
                 </div>
                 <div class="task-block-template" data-type="func-tolower" draggable="true" title="Convert a variable's text to all lowercase letters">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¡</span> ToLower
+                    <span class="task-icon">🔡</span> ToLower
                 </div>
                 <div class="task-block-template" data-type="func-toupper" draggable="true" title="Convert a variable's text to all uppercase letters">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â </span> ToUpper
+                    <span class="task-icon">🔠</span> ToUpper
                 </div>
             </div>
         </div>
         <div class="palette-category">
-            <div class="palette-category-header" data-category="itemlists">ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ Item Lists</div>
+            <div class="palette-category-header" data-category="itemlists">▶ Item Lists</div>
             <div class="palette-category-items" id="palette-itemlists" style="display:none;">
                 <div class="task-block-template" data-type="list-add-item" draggable="true" title="Add a new item to an Item List with a starting amount">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â¹</span> Add Item to List
+                    <span class="task-icon">📋</span> Add Item to List
                 </div>
                 <div class="task-block-template" data-type="list-add-amount" draggable="true" title="Increase the count of an existing item in an Item List">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‹â€ </span> Add Amount to Item
+                    <span class="task-icon">📈</span> Add Amount to Item
                 </div>
                 <div class="task-block-template" data-type="list-remove-amount" draggable="true" title="Decrease the count of an existing item in an Item List">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â°</span> Remove Amount from Item
+                    <span class="task-icon">📉</span> Remove Amount from Item
                 </div>
                 <div class="task-block-template" data-type="list-remove-item" draggable="true" title="Remove an item entirely from an Item List">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€Ã¢â‚¬ËœÃƒÂ¯Ã‚Â¸Ã‚Â</span> Remove Item from List
+                    <span class="task-icon">🗑️</span> Remove Item from List
                 </div>
                 <div class="task-block-template" data-type="func-checklist" draggable="true" title="Check if an item exists in an Item List and store true or false in a variable">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â</span> Check for Item in List
+                    <span class="task-icon">🔍</span> Check for Item in List
                 </div>
                 <div class="task-block-template" data-type="list-get-amount" draggable="true" title="Get the count of an item in an Item List and store it in a variable">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¢</span> Get Item Amount
+                    <span class="task-icon">🔢</span> Get Item Amount
                 </div>
             </div>
         </div>
         <div class="palette-category">
-            <div class="palette-category-header" data-category="textfields">ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ Textfields</div>
+            <div class="palette-category-header" data-category="textfields">▶ Textfields</div>
             <div class="palette-category-items" id="palette-textfields" style="display:none;">
                 <div class="task-block-template" data-type="textfield-read" draggable="true" title="Read the text from a Textbox or Label into a variable">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬â€œ</span> Read
+                    <span class="task-icon">📖</span> Read
                 </div>
                 <div class="task-block-template" data-type="textfield-write" draggable="true" title="Write text or a variable's value to a Textbox or Label">
-                    <span class="task-icon">ÃƒÂ¢Ã…â€œÃ‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â</span> Write
+                    <span class="task-icon">✏️</span> Write
                 </div>
             </div>
         </div>
@@ -4050,7 +5532,7 @@ function showTaskEditor(buttonData) {
                 if (items) {
                     const isOpen = items.style.display !== 'none';
                     items.style.display = isOpen ? 'none' : 'block';
-                    header.textContent = (isOpen ? 'ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¶ ' : 'ÃƒÂ¢Ã¢â‚¬â€œÃ‚Â¼ ') + header.textContent.substring(2);
+                    header.textContent = (isOpen ? '▶ ' : '▼ ') + header.textContent.substring(2);
                 }
             });
         });
@@ -4257,8 +5739,8 @@ function createTaskBlock(task, index) {
         case 'run-rng':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â²</span> Run RNG
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🎲</span> Run RNG
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <select class="task-rng-select" data-index="${index}">
@@ -4272,8 +5754,8 @@ function createTaskBlock(task, index) {
         case 'add':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã…Â¾Ã¢â‚¬Â¢</span> Add to Number
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">➕</span> Add to Number
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Target:</label>
@@ -4295,8 +5777,8 @@ function createTaskBlock(task, index) {
         case 'subtract':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã…Â¾Ã¢â‚¬â€œ</span> Subtract from Number
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">➖</span> Subtract from Number
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Target:</label>
@@ -4318,8 +5800,8 @@ function createTaskBlock(task, index) {
         case 'set':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã…â€œÃ‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â</span> Set Number
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">✏️</span> Set Number
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Target:</label>
@@ -4342,8 +5824,8 @@ function createTaskBlock(task, index) {
         case 'create-var':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦</span> Create Variable
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📦</span> Create Variable
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Name:</label>
@@ -4363,8 +5845,8 @@ function createTaskBlock(task, index) {
         case 'set-var':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â</span> Set Variable
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📝</span> Set Variable
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Variable:</label>
@@ -4387,8 +5869,8 @@ function createTaskBlock(task, index) {
         case 'add-var':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‹â€ </span> Add to Variable
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📈</span> Add to Variable
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Variable:</label>
@@ -4410,8 +5892,8 @@ function createTaskBlock(task, index) {
         case 'subtract-var':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â°</span> Subtract from Variable
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📉</span> Subtract from Variable
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Variable:</label>
@@ -4434,8 +5916,8 @@ function createTaskBlock(task, index) {
         case 'if':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã‚ÂÃ¢â‚¬Å“</span> IF
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">❓</span> IF
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     ${buildConditionUI(task, index)}
@@ -4445,8 +5927,8 @@ function createTaskBlock(task, index) {
         case 'elseif':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â€šÂ¬</span> ELSE IF
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔀</span> ELSE IF
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     ${buildConditionUI(task, index)}
@@ -4456,16 +5938,16 @@ function createTaskBlock(task, index) {
         case 'else':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã¢â‚¬Â Ã‚Â©ÃƒÂ¯Ã‚Â¸Ã‚Â</span> ELSE
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">↩️</span> ELSE
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
             `;
             break;
         case 'endif':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ…Â¡</span> END IF
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔚</span> END IF
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
             `;
             break;
@@ -4473,8 +5955,8 @@ function createTaskBlock(task, index) {
         case 'loop':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â</span> LOOP
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔁</span> LOOP
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     ${buildLoopConditionUI(task, index)}
@@ -4484,8 +5966,8 @@ function createTaskBlock(task, index) {
         case 'loop-exit':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã‚ÂÃ‚Â©</span> LOOP EXIT
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">⏩</span> LOOP EXIT
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     ${buildLoopSetValueUI(task, index, 'loop-exit')}
@@ -4495,8 +5977,8 @@ function createTaskBlock(task, index) {
         case 'loop-end':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ…Â¡</span> LOOP END
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔚</span> LOOP END
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     ${buildLoopSetValueUI(task, index, 'loop-end')}
@@ -4507,8 +5989,8 @@ function createTaskBlock(task, index) {
         case 'func-min':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã‚Â¬Ã¢â‚¬Â¡ÃƒÂ¯Ã‚Â¸Ã‚Â</span> Min
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">⬇️</span> Min
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Value A:</label>
@@ -4539,8 +6021,8 @@ function createTaskBlock(task, index) {
         case 'func-max':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã‚Â¬Ã¢â‚¬Â ÃƒÂ¯Ã‚Â¸Ã‚Â</span> Max
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">⬆️</span> Max
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Value A:</label>
@@ -4571,8 +6053,8 @@ function createTaskBlock(task, index) {
         case 'func-rand':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¢</span> Rand
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔢</span> Rand
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Minimum:</label>
@@ -4593,8 +6075,8 @@ function createTaskBlock(task, index) {
         case 'func-print':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¨ÃƒÂ¯Ã‚Â¸Ã‚Â</span> Print
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🖨️</span> Print
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Label (optional):</label>
@@ -4613,8 +6095,8 @@ function createTaskBlock(task, index) {
         case 'func-math':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã‚Â§Ã‚Â®</span> Math
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🧮</span> Math
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Value A:</label>
@@ -4629,8 +6111,8 @@ function createTaskBlock(task, index) {
                     <select class="task-math-op" data-index="${index}">
                         <option value="add" ${task.mathOp === 'add' ? 'selected' : ''}>Add (+)</option>
                         <option value="subtract" ${task.mathOp === 'subtract' ? 'selected' : ''}>Subtract (-)</option>
-                        <option value="multiply" ${task.mathOp === 'multiply' ? 'selected' : ''}>Multiply (ÃƒÆ’Ã¢â‚¬â€)</option>
-                        <option value="divide" ${task.mathOp === 'divide' ? 'selected' : ''}>Divide (ÃƒÆ’Ã‚Â·)</option>
+                        <option value="multiply" ${task.mathOp === 'multiply' ? 'selected' : ''}>Multiply (×)</option>
+                        <option value="divide" ${task.mathOp === 'divide' ? 'selected' : ''}>Divide (÷)</option>
                         <option value="modulo" ${task.mathOp === 'modulo' ? 'selected' : ''}>Modulo (%)</option>
                     </select>
                     <label>Value B:</label>
@@ -4653,8 +6135,8 @@ function createTaskBlock(task, index) {
         case 'func-sum':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã…Â¾Ã¢â‚¬Â¢</span> Sum
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">➕</span> Sum
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <div class="sum-values-container">
@@ -4673,8 +6155,8 @@ function createTaskBlock(task, index) {
         case 'func-concat':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â‚¬â€</span> Concat
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔗</span> Concat
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <div class="concat-values-container">
@@ -4692,8 +6174,8 @@ function createTaskBlock(task, index) {
         case 'func-round':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â‚¬Å¾</span> Round
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔄</span> Round
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Value:</label>
@@ -4721,8 +6203,8 @@ function createTaskBlock(task, index) {
         case 'func-checklist':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â</span> Check for Item in List
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔍</span> Check for Item in List
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>List Box:</label>
@@ -4753,8 +6235,8 @@ function createTaskBlock(task, index) {
         case 'func-tolower':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¡</span> ToLower
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔡</span> ToLower
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Variable:</label>
@@ -4768,8 +6250,8 @@ function createTaskBlock(task, index) {
         case 'func-toupper':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â </span> ToUpper
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔠</span> ToUpper
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Variable:</label>
@@ -4784,8 +6266,8 @@ function createTaskBlock(task, index) {
         case 'list-add-item':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â¹</span> Add Item to List
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📋</span> Add Item to List
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>List Box:</label>
@@ -4819,8 +6301,8 @@ function createTaskBlock(task, index) {
         case 'list-add-amount':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‹â€ </span> Add Amount to Item
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📈</span> Add Amount to Item
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>List Box:</label>
@@ -4854,8 +6336,8 @@ function createTaskBlock(task, index) {
         case 'list-remove-amount':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â°</span> Remove Amount from Item
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📉</span> Remove Amount from Item
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>List Box:</label>
@@ -4889,8 +6371,8 @@ function createTaskBlock(task, index) {
         case 'list-remove-item':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€Ã¢â‚¬ËœÃƒÂ¯Ã‚Â¸Ã‚Â</span> Remove Item from List
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🗑️</span> Remove Item from List
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>List Box:</label>
@@ -4916,8 +6398,8 @@ function createTaskBlock(task, index) {
         case 'list-get-amount':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¢</span> Get Item Amount
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">🔢</span> Get Item Amount
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>List Box:</label>
@@ -4945,8 +6427,8 @@ function createTaskBlock(task, index) {
         case 'textfield-read':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬â€œ</span> Read
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">📖</span> Read
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Read from:</label>
@@ -4969,8 +6451,8 @@ function createTaskBlock(task, index) {
         case 'textfield-write':
             blockContent = `
                 <div class="task-block-header">
-                    <span class="task-icon">ÃƒÂ¢Ã…â€œÃ‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â</span> Write
-                    <button class="task-delete" data-index="${index}">ÃƒÆ’Ã¢â‚¬â€</button>
+                    <span class="task-icon">✏️</span> Write
+                    <button class="task-delete" data-index="${index}">×</button>
                 </div>
                 <div class="task-block-config">
                     <label>Write to:</label>
@@ -5672,7 +7154,7 @@ function buildConcatValuesUI(task, index) {
                 <option value="lastRng" ${cv.type === 'lastRng' ? 'selected' : ''}>Last RNG</option>
             </select>
             ${getConcatValueInput(cv, index, ci)}
-            ${ci > 1 ? `<button class="concat-value-remove" data-index="${index}" data-concatindex="${ci}">ÃƒÆ’Ã¢â‚¬â€</button>` : ''}
+            ${ci > 1 ? `<button class="concat-value-remove" data-index="${index}" data-concatindex="${ci}">×</button>` : ''}
         </div>
     `).join('');
 }
@@ -5726,7 +7208,7 @@ function buildSumValuesUI(task, index) {
                 <option value="variable" ${sv.type === 'variable' ? 'selected' : ''}>Variable</option>
             </select>
             ${getSumValueInput(sv, index, si)}
-            ${si > 1 ? `<button class="sum-value-remove" data-index="${index}" data-sumindex="${si}">ÃƒÆ’Ã¢â‚¬â€</button>` : ''}
+            ${si > 1 ? `<button class="sum-value-remove" data-index="${index}" data-sumindex="${si}">×</button>` : ''}
         </div>
     `).join('');
 }
@@ -6069,7 +7551,7 @@ function buildConditionUI(task, index) {
                     <option value="boolean" ${cond.rightType === 'boolean' ? 'selected' : ''}>Boolean</option>
                 </select>
                 ${getConditionValueInput(cond, index, ci, 'right')}
-                ${ci > 0 ? `<button class="task-cond-remove" data-index="${index}" data-cond="${ci}">ÃƒÆ’Ã¢â‚¬â€</button>` : ''}
+                ${ci > 0 ? `<button class="task-cond-remove" data-index="${index}" data-cond="${ci}">×</button>` : ''}
             </div>
         `;
     });
@@ -7450,7 +8932,7 @@ function createOrResetVariable(name, varType, initValue) {
     if (!name) return;
     const existing = eventVariables.find(v => v.name === name);
     if (existing) {
-        // Variable already exists ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â do NOT overwrite its current value.
+        // Variable already exists — do NOT overwrite its current value.
         // Only update varType if needed, but preserve the runtime value.
         return;
     } else {
@@ -7745,6 +9227,57 @@ document.getElementById('save-map').addEventListener('click', () => {
             x: cb.x,
             y: cb.y,
             locked: cb.locked || false
+        })),
+        sliderElements: sliderElements.map(sl => ({
+            name: sl.name || null,
+            orientation: sl.orientation,
+            baseMin: sl.baseMin,
+            baseMax: sl.baseMax,
+            enableOverMax: sl.enableOverMax,
+            overMax: sl.overMax,
+            enableUnderMin: sl.enableUnderMin,
+            underMin: sl.underMin,
+            showNumber: sl.showNumber,
+            numberPlacement: sl.numberPlacement,
+            baseColor: sl.baseColor,
+            overMaxColor: sl.overMaxColor,
+            underMinColor: sl.underMinColor,
+            thumbColor: sl.thumbColor,
+            labelColor: sl.labelColor,
+            fontSize: sl.fontSize,
+            value: sl.value,
+            x: sl.x,
+            y: sl.y,
+            width: sl.width,
+            height: sl.height,
+            locked: sl.locked || false
+        })),
+        tableElements: tableElements.map(t => ({
+            name: t.name || null,
+            title: t.title,
+            rows: t.rows,
+            cols: t.cols,
+            altRows: t.altRows,
+            titleColor: t.titleColor,
+            headerBgColor: t.headerBgColor,
+            textColor: t.textColor,
+            bgColor: t.bgColor,
+            altRowColor: t.altRowColor,
+            borderSize: t.borderSize,
+            borderColor: t.borderColor,
+            fontSize: t.fontSize,
+            bold: t.bold,
+            italic: t.italic,
+            cellData: t.cellData,
+            x: t.x,
+            y: t.y,
+            width: t.width,
+            height: t.height,
+            locked: t.locked || false
+        })),
+        widgetLibrary: widgetLibrary.map(w => ({
+            name: w.name,
+            elements: w.elements
         }))
     };
     
@@ -7802,6 +9335,13 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
             nextListBoxId = 1;
             checkboxElements.forEach(cb => cb.element.remove());
             checkboxElements = [];
+            sliderElements.forEach(sl => sl.element.remove());
+            sliderElements = [];
+            tableElements.forEach(t => t.element.remove());
+            tableElements = [];
+            nextTableId = 1;
+            widgetLibrary = [];
+            selectedWidgetIndex = -1;
             eventVariables = [];
             nextVariableId = 1;
             if (drawingCtx) {
@@ -8300,6 +9840,65 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
                 });
             }
             
+            // Load slider elements
+            if (data.sliderElements) {
+                data.sliderElements.forEach(sl => {
+                    placeSlider(sl.x, sl.y, {
+                        name: sl.name,
+                        orientation: sl.orientation,
+                        baseMin: sl.baseMin,
+                        baseMax: sl.baseMax,
+                        enableOverMax: sl.enableOverMax,
+                        overMax: sl.overMax,
+                        enableUnderMin: sl.enableUnderMin,
+                        underMin: sl.underMin,
+                        showNumber: sl.showNumber,
+                        numberPlacement: sl.numberPlacement,
+                        baseColor: sl.baseColor,
+                        overMaxColor: sl.overMaxColor,
+                        underMinColor: sl.underMinColor,
+                        thumbColor: sl.thumbColor,
+                        labelColor: sl.labelColor,
+                        fontSize: sl.fontSize,
+                        value: sl.value,
+                        width: sl.width,
+                        height: sl.height,
+                        locked: sl.locked
+                    });
+                });
+            }
+
+            if (data.tableElements) {
+                data.tableElements.forEach(t => {
+                    placeTable(t.x, t.y, {
+                        name: t.name,
+                        title: t.title,
+                        rows: t.rows,
+                        cols: t.cols,
+                        altRows: t.altRows,
+                        titleColor: t.titleColor,
+                        headerBgColor: t.headerBgColor,
+                        textColor: t.textColor,
+                        bgColor: t.bgColor,
+                        altRowColor: t.altRowColor,
+                        borderSize: t.borderSize,
+                        borderColor: t.borderColor,
+                        fontSize: t.fontSize,
+                        bold: t.bold,
+                        italic: t.italic,
+                        cellData: t.cellData,
+                        width: t.width,
+                        height: t.height,
+                        locked: t.locked
+                    });
+                });
+            }
+            
+            if (data.widgetLibrary) {
+                widgetLibrary = data.widgetLibrary;
+                renderWidgetLibrary();
+            }
+            
             // Check if any elements exceed the current viewport and enable scrollbars if needed
             applyCanvasSize();
             adjustOverflowForImport();
@@ -8329,7 +9928,9 @@ function adjustOverflowForImport() {
         ...numberEntries,
         ...labelElements,
         ...buttonElements,
-        ...listBoxElements
+        ...listBoxElements,
+        ...sliderElements,
+        ...tableElements
     ];
     
     allElements.forEach(el => {
@@ -8360,10 +9961,17 @@ function adjustOverflowForImport() {
         const fullW = Math.max(maxRight + 40, vw);
         const fullH = Math.max(maxBottom + 40, vh);
         if (drawingCanvas) {
+            // Preserve existing drawing content when resizing
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = drawingCanvas.width;
+            tempCanvas.height = drawingCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(drawingCanvas, 0, 0);
             drawingCanvas.width = fullW;
             drawingCanvas.height = fullH;
             drawingCanvas.style.width = fullW + 'px';
             drawingCanvas.style.height = fullH + 'px';
+            drawingCtx.drawImage(tempCanvas, 0, 0);
         }
         if (gridCanvas) {
             gridCanvas.width = fullW;
@@ -8372,7 +9980,7 @@ function adjustOverflowForImport() {
             gridCanvas.style.height = fullH + 'px';
         }
     } else {
-        // Content fits ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â keep overflow hidden
+        // Content fits — keep overflow hidden
         document.body.style.overflow = 'hidden';
         const spacer = document.getElementById('import-spacer');
         if (spacer) spacer.remove();

@@ -437,6 +437,294 @@
             cursor: default;
             opacity: 0.9;
         }
+        /* Slider element styles */
+        #slider-context-menu {
+            position: absolute;
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            min-width: 160px;
+            overflow: hidden;
+        }
+        #slider-context-menu.visible {
+            display: block;
+        }
+        .slider-element {
+            position: absolute;
+            z-index: 500;
+            user-select: none;
+            cursor: move;
+            padding: 4px;
+        }
+        .slider-element.locked {
+            cursor: default;
+            opacity: 0.9;
+        }
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slider-wrapper.layout-horizontal.numbox-bottom,
+        .slider-wrapper.layout-horizontal.numbox-top,
+        .slider-wrapper.layout-vertical.numbox-bottom,
+        .slider-wrapper.layout-vertical.numbox-top {
+            flex-direction: column;
+        }
+        .slider-wrapper.layout-horizontal.numbox-left,
+        .slider-wrapper.layout-horizontal.numbox-right,
+        .slider-wrapper.layout-vertical.numbox-left,
+        .slider-wrapper.layout-vertical.numbox-right {
+            flex-direction: row;
+        }
+        .slider-track-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        .slider-track-container.horizontal {
+            flex-direction: row;
+            height: 20px;
+            width: 100%;
+        }
+        .slider-track-container.vertical {
+            flex-direction: column-reverse;
+            width: 20px;
+            height: 100%;
+        }
+        .slider-segment {
+            position: relative;
+            border-radius: 4px;
+        }
+        .slider-track-container.horizontal .slider-segment {
+            height: 8px;
+        }
+        .slider-track-container.vertical .slider-segment {
+            width: 8px;
+        }
+        .slider-thumb {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .slider-track-container.horizontal .slider-thumb {
+            top: 50%;
+        }
+        .slider-track-container.vertical .slider-thumb {
+            left: 50%;
+        }
+        .slider-numbox {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: 4px;
+            background: white;
+        }
+        .slider-element .resize-handles { display: none; }
+        .slider-element.active .resize-handles { display: block; }
+        .slider-element .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ec4899;
+            border: 2px solid white;
+            border-radius: 3px;
+            z-index: 10;
+        }
+        .slider-element .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .slider-element .resize-handle.n  { top: -5px; left: 50%; margin-left: -5px; cursor: n-resize; }
+        .slider-element .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .slider-element .resize-handle.e  { top: 50%; margin-top: -5px; right: -5px; cursor: e-resize; }
+        .slider-element .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .slider-element .resize-handle.s  { bottom: -5px; left: 50%; margin-left: -5px; cursor: s-resize; }
+        .slider-element .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .slider-element .resize-handle.w  { top: 50%; margin-top: -5px; left: -5px; cursor: w-resize; }
+        /* Table widget styles */
+        #table-context-menu {
+            position: absolute;
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            min-width: 160px;
+            overflow: hidden;
+        }
+        #table-context-menu.visible {
+            display: block;
+        }
+        .table-widget {
+            position: absolute;
+            z-index: 745;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+            min-width: 200px;
+            min-height: 120px;
+            user-select: none;
+            cursor: move;
+        }
+        .table-widget.locked {
+            cursor: default;
+        }
+        .table-widget .resize-handles { display: none; }
+        .table-widget.active .resize-handles { display: block; }
+        .table-widget.locked .resize-handles { display: none !important; }
+        .table-widget .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f59e0b;
+            border: 2px solid white;
+            border-radius: 3px;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+        .table-widget .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .table-widget .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .table-widget .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .table-widget .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .table-widget .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .table-widget .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .table-widget .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+        .table-widget .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+        .table-widget-title {
+            padding: 8px 12px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .table-scroll-container {
+            flex: 1;
+            overflow: auto;
+            min-height: 0;
+        }
+        .table-inner {
+            border-collapse: collapse;
+            min-width: 100%;
+        }
+        .table-inner th, .table-inner td {
+            padding: 4px 8px;
+            border: 1px solid rgba(0,0,0,0.15);
+            white-space: nowrap;
+            min-width: 60px;
+        }
+        .table-inner th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+        }
+        .table-inner td {
+            cursor: text;
+        }
+        .table-inner td:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
+        /* Selection rectangle */
+        .selection-rect {
+            position: absolute;
+            border: 2px dashed var(--primary);
+            background: rgba(99, 102, 241, 0.08);
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .group-selected {
+            outline: 2px solid var(--primary) !important;
+            outline-offset: 2px;
+        }
+        /* Selection context menu */
+        #selection-context-menu {
+            position: absolute;
+            background: var(--bg-section);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            min-width: 180px;
+            overflow: hidden;
+        }
+        #selection-context-menu.visible {
+            display: block;
+        }
+        /* Custom Widget styles */
+        .widget-library-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .widget-library-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .widget-library-item:hover {
+            border-color: var(--primary);
+            background: #eef2ff;
+        }
+        .widget-library-item.selected {
+            border-color: var(--primary);
+            background: #e0e7ff;
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
+        }
+        .widget-library-item .widget-name {
+            font-size: 13px;
+            font-weight: 500;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .widget-library-item .widget-info {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        .widget-library-item .widget-delete-btn {
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: transparent;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            margin-left: 4px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .widget-library-item .widget-delete-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
         #canvas-context-menu {
             position: fixed;
             background: var(--panel-bg);
@@ -1798,6 +2086,104 @@
             </div>
         </div>
         <div class="tool-section collapsed">
+            <h3>Slider Tool</h3>
+            <div class="tool-section-content">
+                <label>Orientation:</label>
+                <select id="slider-orientation" style="width: 120px;">
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                </select><br><br>
+                <label>Base Min: <input type="number" id="slider-base-min" value="0" style="width: 60px;"></label><br><br>
+                <label>Base Max: <input type="number" id="slider-base-max" value="10" style="width: 60px;"></label><br><br>
+                <label><input type="checkbox" id="slider-enable-overmax"> Over Max: <input type="number" id="slider-overmax" value="15" style="width: 60px;"></label><br><br>
+                <label><input type="checkbox" id="slider-enable-undermin"> Under Min: <input type="number" id="slider-undermin" value="10" style="width: 60px;"></label><br><br>
+                <label><input type="checkbox" id="slider-show-number"> Show Number Box</label><br>
+                <label>Number Placement:</label>
+                <select id="slider-number-placement" style="width: 120px;">
+                    <option value="bottom">Bottom</option>
+                    <option value="top">Top</option>
+                    <option value="right">Right</option>
+                    <option value="left">Left</option>
+                </select><br><br>
+                <label>Base Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="slider-base-color" value="#cbd5e1">
+                    <input type="text" id="slider-base-color-text" value="#cbd5e1" maxlength="7">
+                </div>
+                <label>Over Max Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="slider-overmax-color" value="#86efac">
+                    <input type="text" id="slider-overmax-color-text" value="#86efac" maxlength="7">
+                </div>
+                <label>Under Min Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="slider-undermin-color" value="#fca5a5">
+                    <input type="text" id="slider-undermin-color-text" value="#fca5a5" maxlength="7">
+                </div>
+                <label>Thumb Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="slider-thumb-color" value="#6366f1">
+                    <input type="text" id="slider-thumb-color-text" value="#6366f1" maxlength="7">
+                </div>
+                <label>Label Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="slider-label-color" value="#334155">
+                    <input type="text" id="slider-label-color-text" value="#334155" maxlength="7">
+                </div>
+                <label>Font Size: <input type="number" id="slider-font-size" min="8" max="36" value="12" style="width: 60px;">px</label><br><br>
+                <button id="toggle-slider-tool">Enable Slider Tool</button>
+                <p>Click on the canvas to place a slider. Right-click to rename, copy, or delete.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Table Tool</h3>
+            <div class="tool-section-content">
+                <label>Title: <input type="text" id="table-title" value="Table" style="width: 120px;"></label><br><br>
+                <label>Rows: <input type="number" id="table-rows" min="1" max="100" value="3" style="width: 60px;"></label>
+                <label>Columns: <input type="number" id="table-cols" min="1" max="26" value="3" style="width: 60px;"></label><br><br>
+                <label><input type="checkbox" id="table-alt-rows"> Alternate Row Colors</label><br><br>
+                <label>Title Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="table-title-color" value="#1f2937">
+                    <input type="text" id="table-title-color-text" value="#1f2937" maxlength="7">
+                </div>
+                <label>Header BG Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="table-header-bg-color" value="#e2e8f0">
+                    <input type="text" id="table-header-bg-color-text" value="#e2e8f0" maxlength="7">
+                </div>
+                <label>Text Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="table-text-color" value="#374151">
+                    <input type="text" id="table-text-color-text" value="#374151" maxlength="7">
+                </div>
+                <label>Background Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="table-bg-color" value="#ffffff">
+                    <input type="text" id="table-bg-color-text" value="#ffffff" maxlength="7">
+                </div>
+                <label>Alternate Row Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="table-alt-row-color" value="#f1f5f9">
+                    <input type="text" id="table-alt-row-color-text" value="#f1f5f9" maxlength="7">
+                </div>
+                <label>Border Size: <input type="number" id="table-border-size" min="0" max="10" value="1" style="width: 60px;">px</label><br><br>
+                <label>Border Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="table-border-color" value="#d1d5db">
+                    <input type="text" id="table-border-color-text" value="#d1d5db" maxlength="7">
+                </div>
+                <label>Font Size: <input type="number" id="table-font-size" min="8" max="36" value="14" style="width: 60px;">px</label><br><br>
+                <label><input type="checkbox" id="table-bold"> Bold</label>
+                <label><input type="checkbox" id="table-italic"> Italic</label><br><br>
+                <label>Import CSV:</label>
+                <input type="file" id="table-csv-file" accept=".csv,.txt" style="display:none;">
+                <button id="table-csv-import-btn">Import from CSV</button><br><br>
+                <button id="toggle-table-tool">Enable Table Tool</button>
+                <p>Click on the canvas to place a table. Right-click to rename, add rows/columns, copy, or delete. Double-click cells to edit.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
             <h3>List Box Tool</h3>
             <div class="tool-section-content">
                 <label>Title: <input type="text" id="listbox-title" value="Items" style="width: 120px;"></label><br><br>
@@ -1846,6 +2232,16 @@
                 <div class="icon-container" id="icon-container"></div>
                 <button id="toggle-icon-tool" style="margin-top: 10px;">Enable Image Placement</button>
                 <p style="margin-top: 10px;">Click + to add images (max 40). Enable placement then click an image to select it, then click on the sheet to place.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Custom Widgets</h3>
+            <div class="tool-section-content">
+                <input type="file" id="widget-import-file" accept=".json" style="display:none;">
+                <button id="widget-import-btn">Import Widget</button><br><br>
+                <div class="widget-library-container" id="widget-library-container"></div>
+                <button id="toggle-widget-tool" style="margin-top: 10px;">Enable Widget Placement</button>
+                <p style="margin-top: 10px;">Drag-select items on the canvas to group them. Right-click the selection to copy or save as a custom widget. Import widgets here to place them.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -1923,6 +2319,27 @@
         <div class="context-menu-item" id="toggle-checkbox-lock">Lock</div>
         <div class="context-menu-item" id="copy-checkbox">Copy</div>
         <div class="context-menu-item" id="delete-checkbox">Delete Checkbox</div>
+    </div>
+    <div id="slider-context-menu">
+        <div class="context-menu-item" id="rename-slider">Rename</div>
+        <div class="context-menu-item" id="toggle-slider-lock">Lock</div>
+        <div class="context-menu-item" id="copy-slider">Copy</div>
+        <div class="context-menu-item" id="delete-slider">Delete Slider</div>
+    </div>
+    <div id="selection-context-menu">
+        <div class="context-menu-item" id="selection-copy">Copy Group</div>
+        <div class="context-menu-item" id="selection-save-widget">Save as Widget</div>
+        <div class="context-menu-item" id="selection-deselect">Deselect</div>
+    </div>
+    <div id="table-context-menu">
+        <div class="context-menu-item" id="rename-table">Rename</div>
+        <div class="context-menu-item" id="table-add-row">Add Row</div>
+        <div class="context-menu-item" id="table-add-col">Add Column</div>
+        <div class="context-menu-item" id="table-delete-row">Delete Row</div>
+        <div class="context-menu-item" id="table-delete-col">Delete Column</div>
+        <div class="context-menu-item" id="toggle-table-lock">Lock</div>
+        <div class="context-menu-item" id="copy-table">Copy</div>
+        <div class="context-menu-item" id="delete-table">Delete Table</div>
     </div>
 
     <script type="module" src="dashboard.js"></script>
