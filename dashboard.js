@@ -647,6 +647,12 @@ document.getElementById('slider-label-color').addEventListener('input', (e) => {
 document.getElementById('slider-label-color-text').addEventListener('input', (e) => {
     document.getElementById('slider-label-color').value = e.target.value;
 });
+document.getElementById('slider-track-border-color').addEventListener('input', (e) => {
+    document.getElementById('slider-track-border-color-text').value = e.target.value;
+});
+document.getElementById('slider-track-border-color-text').addEventListener('input', (e) => {
+    document.getElementById('slider-track-border-color').value = e.target.value;
+});
 
 document.getElementById('toggle-slider-tool').addEventListener('click', () => {
     const wasActive = isSliderMode;
@@ -3915,6 +3921,7 @@ function placeCheckbox(x, y, overrideData = null) {
     const boxSize = overrideData?.boxSize ?? (parseInt(document.getElementById('checkbox-box-size').value) || 18);
     const checkColor = overrideData?.checkColor ?? (document.getElementById('checkbox-check-color').value || '#6366f1');
     const checked = overrideData?.checked ?? document.getElementById('checkbox-default-checked').checked;
+    const noLabel = overrideData?.noLabel ?? document.getElementById('checkbox-no-label').checked;
     
     const el = document.createElement('div');
     el.className = 'checkbox-element';
@@ -3939,6 +3946,7 @@ function placeCheckbox(x, y, overrideData = null) {
     label.textContent = labelText;
     label.style.fontSize = fontSize + 'px';
     label.style.color = textColor;
+    if (noLabel) label.style.display = 'none';
     
     el.appendChild(box);
     el.appendChild(label);
@@ -3955,6 +3963,7 @@ function placeCheckbox(x, y, overrideData = null) {
         textColor: textColor,
         boxSize: boxSize,
         checkColor: checkColor,
+        noLabel: noLabel,
         x: x,
         y: y,
         locked: overrideData?.locked || false
@@ -4025,6 +4034,7 @@ function makeCheckboxDraggable(element, cbData) {
 function showCheckboxContextMenu(e, cbData) {
     currentCheckboxData = cbData;
     document.getElementById('toggle-checkbox-lock').textContent = cbData.locked ? 'Unlock' : 'Lock';
+    document.getElementById('toggle-checkbox-label').textContent = cbData.noLabel ? 'Show Label' : 'Hide Label';
     positionContextMenu(checkboxContextMenu, e.clientX, e.clientY);
 }
 
@@ -4054,6 +4064,15 @@ document.getElementById('edit-checkbox-label').addEventListener('click', () => {
     checkboxContextMenu.classList.remove('visible');
 });
 
+document.getElementById('toggle-checkbox-label').addEventListener('click', () => {
+    if (currentCheckboxData) {
+        currentCheckboxData.noLabel = !currentCheckboxData.noLabel;
+        currentCheckboxData.labelEl.style.display = currentCheckboxData.noLabel ? 'none' : '';
+        markUnsaved();
+    }
+    checkboxContextMenu.classList.remove('visible');
+});
+
 document.getElementById('toggle-checkbox-lock').addEventListener('click', () => {
     if (currentCheckboxData) {
         currentCheckboxData.locked = !currentCheckboxData.locked;
@@ -4076,6 +4095,7 @@ document.getElementById('copy-checkbox').addEventListener('click', () => {
                 textColor: currentCheckboxData.textColor,
                 boxSize: currentCheckboxData.boxSize,
                 checkColor: currentCheckboxData.checkColor,
+                noLabel: currentCheckboxData.noLabel,
                 checked: currentCheckboxData.checked
             }
         };
@@ -4120,6 +4140,8 @@ function placeSlider(x, y, overrideData = null) {
     const underMinColor = overrideData?.underMinColor ?? (document.getElementById('slider-undermin-color').value || '#fca5a5');
     const thumbColor = overrideData?.thumbColor ?? (document.getElementById('slider-thumb-color').value || '#6366f1');
     const labelColor = overrideData?.labelColor ?? (document.getElementById('slider-label-color').value || '#334155');
+    const trackBorderColor = overrideData?.trackBorderColor ?? (document.getElementById('slider-track-border-color').value || '#94a3b8');
+    const trackThickness = overrideData?.trackThickness ?? (parseInt(document.getElementById('slider-track-thickness').value) || 20);
     const fontSize = overrideData?.fontSize ?? (parseInt(document.getElementById('slider-font-size').value) || 12);
     const value = overrideData?.value ?? baseMin;
     const width = overrideData?.width ?? (orientation === 'horizontal' ? 200 : 60);
@@ -4141,6 +4163,8 @@ function placeSlider(x, y, overrideData = null) {
         underMinColor: underMinColor,
         thumbColor: thumbColor,
         labelColor: labelColor,
+        trackBorderColor: trackBorderColor,
+        trackThickness: trackThickness,
         fontSize: fontSize,
         value: value,
         x: x,
@@ -4180,6 +4204,19 @@ function createSliderElement(sd) {
     el.style.height = sd.height + 'px';
 
     const { min, max } = getSliderMinMax(sd);
+    const isHoriz = sd.orientation === 'horizontal';
+    const thickness = sd.trackThickness || 20;
+
+    // For vertical sliders, fit outer element width to the track thickness
+    if (!isHoriz) {
+        const fitWidth = thickness + 8; // 8 = padding
+        if (sd.showNumber && (sd.numberPlacement === 'left' || sd.numberPlacement === 'right')) {
+            el.style.width = (fitWidth + 58) + 'px'; // 58 = numbox width + margin
+        } else {
+            el.style.width = fitWidth + 'px';
+        }
+        sd.width = parseInt(el.style.width);
+    }
 
     // Wrapper for layout
     const wrapper = document.createElement('div');
@@ -4191,9 +4228,16 @@ function createSliderElement(sd) {
     // Track container
     const trackContainer = document.createElement('div');
     trackContainer.className = 'slider-track-container ' + sd.orientation;
+    if (sd.trackBorderColor) {
+        trackContainer.style.border = '1px solid ' + sd.trackBorderColor;
+    }
+    if (isHoriz) {
+        trackContainer.style.height = thickness + 'px';
+    } else {
+        trackContainer.style.width = thickness + 'px';
+    }
 
     const totalRange = max - min;
-    const isHoriz = sd.orientation === 'horizontal';
 
     // Build segments
     const segments = [];
@@ -4246,6 +4290,9 @@ function createSliderElement(sd) {
     const thumb = document.createElement('div');
     thumb.className = 'slider-thumb';
     thumb.style.backgroundColor = sd.thumbColor;
+    const thumbSize = Math.max(12, thickness - 2);
+    thumb.style.width = thumbSize + 'px';
+    thumb.style.height = thumbSize + 'px';
     trackContainer.appendChild(thumb);
 
     wrapper.appendChild(trackContainer);
@@ -4361,6 +4408,12 @@ function createSliderElement(sd) {
         e.stopPropagation();
         setActiveSlider(sd);
     });
+}
+
+function refreshSliderElement(sd) {
+    if (sd._ac) { sd._ac.abort(); sd._ac = null; }
+    if (sd.element) sd.element.remove();
+    createSliderElement(sd);
 }
 
 function updateSliderThumb(sd) {
@@ -4536,6 +4589,8 @@ document.getElementById('copy-slider').addEventListener('click', () => {
                 underMinColor: currentSliderData.underMinColor,
                 thumbColor: currentSliderData.thumbColor,
                 labelColor: currentSliderData.labelColor,
+                trackBorderColor: currentSliderData.trackBorderColor,
+                trackThickness: currentSliderData.trackThickness,
                 fontSize: currentSliderData.fontSize,
                 value: currentSliderData.value,
                 width: currentSliderData.width,
@@ -5107,9 +5162,9 @@ function serializeElement(item) {
         case 'listbox':
             return { type, title: item.title, titleSize: item.titleSize, titleColor: item.titleColor, fontSize: item.fontSize, textColor: item.textColor, bgColor: item.bgColor, buttonColor: item.buttonColor, borderSize: item.borderSize, borderColor: item.borderColor, bold: item.bold, italic: item.italic, x: item.x, y: item.y, width: item.width, height: item.height, locked: item.locked || false, items: JSON.parse(JSON.stringify(item.items || [])) };
         case 'checkbox':
-            return { type, name: item.name, label: item.label, checked: item.checked, fontSize: item.fontSize, textColor: item.textColor, boxSize: item.boxSize, checkColor: item.checkColor, x: item.x, y: item.y, locked: item.locked || false };
+            return { type, name: item.name, label: item.label, checked: item.checked, fontSize: item.fontSize, textColor: item.textColor, boxSize: item.boxSize, checkColor: item.checkColor, noLabel: item.noLabel || false, x: item.x, y: item.y, locked: item.locked || false };
         case 'slider':
-            return { type, name: item.name, orientation: item.orientation, baseMin: item.baseMin, baseMax: item.baseMax, enableOverMax: item.enableOverMax, overMax: item.overMax, enableUnderMin: item.enableUnderMin, underMin: item.underMin, showNumber: item.showNumber, numberPlacement: item.numberPlacement, baseColor: item.baseColor, overMaxColor: item.overMaxColor, underMinColor: item.underMinColor, thumbColor: item.thumbColor, labelColor: item.labelColor, fontSize: item.fontSize, value: item.value, x: item.x, y: item.y, width: item.width, height: item.height, locked: item.locked || false };
+            return { type, name: item.name, orientation: item.orientation, baseMin: item.baseMin, baseMax: item.baseMax, enableOverMax: item.enableOverMax, overMax: item.overMax, enableUnderMin: item.enableUnderMin, underMin: item.underMin, showNumber: item.showNumber, numberPlacement: item.numberPlacement, baseColor: item.baseColor, overMaxColor: item.overMaxColor, underMinColor: item.underMinColor, thumbColor: item.thumbColor, labelColor: item.labelColor, trackBorderColor: item.trackBorderColor, trackThickness: item.trackThickness, fontSize: item.fontSize, value: item.value, x: item.x, y: item.y, width: item.width, height: item.height, locked: item.locked || false };
         case 'table':
             return { type, name: item.name, title: item.title, rows: item.rows, cols: item.cols, altRows: item.altRows, titleColor: item.titleColor, headerBgColor: item.headerBgColor, textColor: item.textColor, bgColor: item.bgColor, altRowColor: item.altRowColor, borderSize: item.borderSize, borderColor: item.borderColor, fontSize: item.fontSize, bold: item.bold, italic: item.italic, cellData: JSON.parse(JSON.stringify(item.cellData)), x: item.x, y: item.y, width: item.width, height: item.height, locked: item.locked || false };
         default:
@@ -5275,6 +5330,49 @@ document.getElementById('selection-deselect').addEventListener('click', () => {
     selectionContextMenu.classList.remove('visible');
 });
 
+document.getElementById('selection-delete').addEventListener('click', () => {
+    if (selectedGroup.length > 0) {
+        const typeArrayMap = {
+            text: textElements,
+            icon: mapIcons,
+            frame: frameElements,
+            numberEntry: numberEntries,
+            label: labelElements,
+            button: buttonElements,
+            listbox: listBoxElements,
+            checkbox: checkboxElements,
+            slider: sliderElements,
+            table: tableElements
+        };
+        const activeMap = {
+            text: () => null,
+            icon: () => { if (activeMapIcon && selectedGroup.includes(activeMapIcon)) activeMapIcon = null; },
+            frame: () => { if (activeFrame && selectedGroup.includes(activeFrame)) activeFrame = null; },
+            numberEntry: () => { if (activeNumberEntry && selectedGroup.includes(activeNumberEntry)) activeNumberEntry = null; },
+            label: () => { if (activeLabel && selectedGroup.includes(activeLabel)) activeLabel = null; },
+            button: () => { if (activeButton && selectedGroup.includes(activeButton)) activeButton = null; },
+            listbox: () => { if (activeListBox && selectedGroup.includes(activeListBox)) activeListBox = null; },
+            checkbox: () => { if (activeCheckbox && selectedGroup.includes(activeCheckbox)) activeCheckbox = null; },
+            slider: () => { if (activeSlider && selectedGroup.includes(activeSlider)) activeSlider = null; },
+            table: () => { if (activeTable && selectedGroup.includes(activeTable)) activeTable = null; }
+        };
+        selectedGroup.forEach(item => {
+            const type = item._selType;
+            const arr = typeArrayMap[type];
+            if (arr) {
+                const idx = arr.indexOf(item);
+                if (idx !== -1) arr.splice(idx, 1);
+            }
+            if (item._ac) item._ac.abort();
+            if (item.element) item.element.remove();
+            if (activeMap[type]) activeMap[type]();
+        });
+        selectedGroup = [];
+        markUnsaved();
+    }
+    selectionContextMenu.classList.remove('visible');
+});
+
 // Paste handler for groups
 // (Handled inside the existing paste-element handler - we add the case there)
 
@@ -5390,16 +5488,16 @@ function showTaskEditor(buttonData) {
             <div class="palette-category-header" data-category="basic">▶ Basic Actions</div>
             <div class="palette-category-items" id="palette-basic" style="display:none;">
                 <div class="task-block-template" data-type="run-rng" draggable="true" title="Roll the dice using the RNG element to generate a random number">
-                    <span class="task-icon">🎲</span> Run RNG
+                    <span class="task-icon"></span> Run RNG
                 </div>
                 <div class="task-block-template" data-type="add" draggable="true" title="Add a value to a Number Entry box">
-                    <span class="task-icon">➕</span> Add to Number
+                    <span class="task-icon"></span> Add to Number
                 </div>
                 <div class="task-block-template" data-type="subtract" draggable="true" title="Subtract a value from a Number Entry box">
-                    <span class="task-icon">➖</span> Subtract from Number
+                    <span class="task-icon"></span> Subtract from Number
                 </div>
                 <div class="task-block-template" data-type="set" draggable="true" title="Set a Number Entry box to a specific value">
-                    <span class="task-icon">✏️</span> Set Number
+                    <span class="task-icon"></span> Set Number
                 </div>
             </div>
         </div>
@@ -5407,16 +5505,16 @@ function showTaskEditor(buttonData) {
             <div class="palette-category-header" data-category="variables">▶ Variables</div>
             <div class="palette-category-items" id="palette-variables" style="display:none;">
                 <div class="task-block-template" data-type="create-var" draggable="true" title="Create a new variable to store values during execution">
-                    <span class="task-icon">📦</span> Create Variable
+                    <span class="task-icon"></span> Create Variable
                 </div>
                 <div class="task-block-template" data-type="set-var" draggable="true" title="Set a variable to a specific value, number entry, or another variable">
-                    <span class="task-icon">📝</span> Set Variable
+                    <span class="task-icon"></span> Set Variable
                 </div>
                 <div class="task-block-template" data-type="add-var" draggable="true" title="Add a value to an existing variable">
-                    <span class="task-icon">📈</span> Add to Variable
+                    <span class="task-icon"></span> Add to Variable
                 </div>
                 <div class="task-block-template" data-type="subtract-var" draggable="true" title="Subtract a value from an existing variable">
-                    <span class="task-icon">📉</span> Subtract from Variable
+                    <span class="task-icon"></span> Subtract from Variable
                 </div>
             </div>
         </div>
@@ -5424,16 +5522,16 @@ function showTaskEditor(buttonData) {
             <div class="palette-category-header" data-category="compare">▶ Compare (IF)</div>
             <div class="palette-category-items" id="palette-compare" style="display:none;">
                 <div class="task-block-template" data-type="if" draggable="true" title="Start a conditional block that only runs if the condition is true">
-                    <span class="task-icon">❓</span> IF
+                    <span class="task-icon"></span> IF
                 </div>
                 <div class="task-block-template" data-type="elseif" draggable="true" title="Check an alternate condition if the previous IF was false">
-                    <span class="task-icon">🔀</span> ELSE IF
+                    <span class="task-icon"></span> ELSE IF
                 </div>
                 <div class="task-block-template" data-type="else" draggable="true" title="Runs if all previous IF and ELSE IF conditions were false">
-                    <span class="task-icon">↩️</span> ELSE
+                    <span class="task-icon"></span> ELSE
                 </div>
                 <div class="task-block-template" data-type="endif" draggable="true" title="Marks the end of an IF / ELSE IF / ELSE block">
-                    <span class="task-icon">🔚</span> END IF
+                    <span class="task-icon"></span> END IF
                 </div>
             </div>
         </div>
@@ -5441,13 +5539,13 @@ function showTaskEditor(buttonData) {
             <div class="palette-category-header" data-category="loop">▶ Loop</div>
             <div class="palette-category-items" id="palette-loop" style="display:none;">
                 <div class="task-block-template" data-type="loop" draggable="true" title="Repeat a set of tasks a specified number of times">
-                    <span class="task-icon">🔁</span> Loop
+                    <span class="task-icon"></span> Loop
                 </div>
                 <div class="task-block-template" data-type="loop-exit" draggable="true" title="Exit the current loop early, skipping any remaining iterations">
-                    <span class="task-icon">⏩</span> Loop Exit
+                    <span class="task-icon"></span> Loop Exit
                 </div>
                 <div class="task-block-template" data-type="loop-end" draggable="true" title="Marks the end of a loop block">
-                    <span class="task-icon">🔚</span> Loop End
+                    <span class="task-icon"></span> Loop End
                 </div>
             </div>
         </div>
@@ -5455,34 +5553,34 @@ function showTaskEditor(buttonData) {
             <div class="palette-category-header" data-category="functions">▶ Functions</div>
             <div class="palette-category-items" id="palette-functions" style="display:none;">
                 <div class="task-block-template" data-type="func-min" draggable="true" title="Returns the lower value of the entries">
-                    <span class="task-icon">⬇️</span> Min
+                    <span class="task-icon"></span> Min
                 </div>
                 <div class="task-block-template" data-type="func-max" draggable="true" title="Returns the higher value of the entries">
-                    <span class="task-icon">⬆️</span> Max
+                    <span class="task-icon"></span> Max
                 </div>
                 <div class="task-block-template" data-type="func-rand" draggable="true" title="Generate a random number between two values and store it in a variable">
-                    <span class="task-icon">🔢</span> Rand
+                    <span class="task-icon"></span> Rand
                 </div>
                 <div class="task-block-template" data-type="func-print" draggable="true" title="Display a message in a popup alert dialog">
-                    <span class="task-icon">🖨️</span> Print
+                    <span class="task-icon"></span> Print
                 </div>
                 <div class="task-block-template" data-type="func-math" draggable="true" title="Perform arithmetic (add, subtract, multiply, divide) on two values and store the result">
-                    <span class="task-icon">🧮</span> Math
+                    <span class="task-icon"></span> Math
                 </div>
                 <div class="task-block-template" data-type="func-sum" draggable="true" title="Add up to 6 values together and store the total in a variable">
-                    <span class="task-icon">➕</span> Sum
+                    <span class="task-icon"></span> Sum
                 </div>
                 <div class="task-block-template" data-type="func-concat" draggable="true" title="Join up to 6 text or number values together into a single string">
-                    <span class="task-icon">🔗</span> Concat
+                    <span class="task-icon"></span> Concat
                 </div>
                 <div class="task-block-template" data-type="func-round" draggable="true" title="Round a variable's value up, down, or to the nearest whole number">
-                    <span class="task-icon">🔄</span> Round
+                    <span class="task-icon"></span> Round
                 </div>
                 <div class="task-block-template" data-type="func-tolower" draggable="true" title="Convert a variable's text to all lowercase letters">
-                    <span class="task-icon">🔡</span> ToLower
+                    <span class="task-icon"></span> ToLower
                 </div>
                 <div class="task-block-template" data-type="func-toupper" draggable="true" title="Convert a variable's text to all uppercase letters">
-                    <span class="task-icon">🔠</span> ToUpper
+                    <span class="task-icon"></span> ToUpper
                 </div>
             </div>
         </div>
@@ -5490,22 +5588,22 @@ function showTaskEditor(buttonData) {
             <div class="palette-category-header" data-category="itemlists">▶ Item Lists</div>
             <div class="palette-category-items" id="palette-itemlists" style="display:none;">
                 <div class="task-block-template" data-type="list-add-item" draggable="true" title="Add a new item to an Item List with a starting amount">
-                    <span class="task-icon">📋</span> Add Item to List
+                    <span class="task-icon"></span> Add Item to List
                 </div>
                 <div class="task-block-template" data-type="list-add-amount" draggable="true" title="Increase the count of an existing item in an Item List">
-                    <span class="task-icon">📈</span> Add Amount to Item
+                    <span class="task-icon"></span> Add Amount to Item
                 </div>
                 <div class="task-block-template" data-type="list-remove-amount" draggable="true" title="Decrease the count of an existing item in an Item List">
-                    <span class="task-icon">📉</span> Remove Amount from Item
+                    <span class="task-icon"></span> Remove Amount from Item
                 </div>
                 <div class="task-block-template" data-type="list-remove-item" draggable="true" title="Remove an item entirely from an Item List">
-                    <span class="task-icon">🗑️</span> Remove Item from List
+                    <span class="task-icon"></span> Remove Item from List
                 </div>
                 <div class="task-block-template" data-type="func-checklist" draggable="true" title="Check if an item exists in an Item List and store true or false in a variable">
-                    <span class="task-icon">🔍</span> Check for Item in List
+                    <span class="task-icon"></span> Check for Item in List
                 </div>
                 <div class="task-block-template" data-type="list-get-amount" draggable="true" title="Get the count of an item in an Item List and store it in a variable">
-                    <span class="task-icon">🔢</span> Get Item Amount
+                    <span class="task-icon"></span> Get Item Amount
                 </div>
             </div>
         </div>
@@ -5513,10 +5611,49 @@ function showTaskEditor(buttonData) {
             <div class="palette-category-header" data-category="textfields">▶ Textfields</div>
             <div class="palette-category-items" id="palette-textfields" style="display:none;">
                 <div class="task-block-template" data-type="textfield-read" draggable="true" title="Read the text from a Textbox or Label into a variable">
-                    <span class="task-icon">📖</span> Read
+                    <span class="task-icon"></span> Read
                 </div>
                 <div class="task-block-template" data-type="textfield-write" draggable="true" title="Write text or a variable's value to a Textbox or Label">
-                    <span class="task-icon">✏️</span> Write
+                    <span class="task-icon"></span> Write
+                </div>
+            </div>
+        </div>
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="checkboxes">▶ Checkboxes</div>
+            <div class="palette-category-items" id="palette-checkboxes" style="display:none;">
+                <div class="task-block-template" data-type="checkbox-get-state" draggable="true" title="Get the checked state of a checkbox and store true/false in a variable">
+                    <span class="task-icon"></span> Get Checkbox State
+                </div>
+                <div class="task-block-template" data-type="checkbox-set-state" draggable="true" title="Set a checkbox to checked (true) or unchecked (false)">
+                    <span class="task-icon"></span> Set Checkbox State
+                </div>
+            </div>
+        </div>
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="sliders">▶ Sliders</div>
+            <div class="palette-category-items" id="palette-sliders" style="display:none;">
+                <div class="task-block-template" data-type="slider-get-values" draggable="true" title="Get a slider property (Base Min, Base Max, Over Max, Under Min) and store it in a variable">
+                    <span class="task-icon"></span> Get Slider Values
+                </div>
+                <div class="task-block-template" data-type="slider-set-values" draggable="true" title="Set a slider property (Base Min, Base Max, Over Max, Under Min) from a value source">
+                    <span class="task-icon"></span> Set Slider Values
+                </div>
+                <div class="task-block-template" data-type="slider-get-current" draggable="true" title="Get the current value of a slider and store it in a variable">
+                    <span class="task-icon"></span> Get Current Value
+                </div>
+                <div class="task-block-template" data-type="slider-set-current" draggable="true" title="Set the current value of a slider from a variable, static value, or number entry">
+                    <span class="task-icon"></span> Set Current Value
+                </div>
+            </div>
+        </div>
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="tables">▶ Tables</div>
+            <div class="palette-category-items" id="palette-tables" style="display:none;">
+                <div class="task-block-template" data-type="table-lookup-row" draggable="true" title="Look up a row in a table by matching column value(s). Stores the matched row number in a variable.">
+                    <span class="task-icon"></span> Table Lookup Row
+                </div>
+                <div class="task-block-template" data-type="table-get-value" draggable="true" title="Get a cell value from a table by row number and column index. Stores the value in a variable.">
+                    <span class="task-icon"></span> Get Table Value
                 </div>
             </div>
         </div>
@@ -6479,6 +6616,246 @@ function createTaskBlock(task, index) {
                 </div>
             `;
             break;
+        case 'checkbox-get-state':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">☑️</span> Get Checkbox State
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Checkbox:</label>
+                    <select class="task-checkbox-select" data-index="${index}">
+                        <option value="">Select Checkbox...</option>
+                        ${checkboxElements.map((cb, i) => `<option value="${i}" ${task.checkboxIndex === i ? 'selected' : ''}>${cb.name || cb.label || 'Checkbox ' + (i+1)}</option>`).join('')}
+                    </select>
+                    <label>Store state in variable:</label>
+                    <select class="task-func-output-var" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.outputVarName)}
+                    </select>
+                </div>
+            `;
+            break;
+        case 'checkbox-set-state':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">☑️</span> Set Checkbox State
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Checkbox:</label>
+                    <select class="task-checkbox-select" data-index="${index}">
+                        <option value="">Select Checkbox...</option>
+                        ${checkboxElements.map((cb, i) => `<option value="${i}" ${task.checkboxIndex === i ? 'selected' : ''}>${cb.name || cb.label || 'Checkbox ' + (i+1)}</option>`).join('')}
+                    </select>
+                    <label>Set to:</label>
+                    <select class="task-checkbox-state-source" data-index="${index}">
+                        <option value="static" ${task.stateSource === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="variable" ${task.stateSource === 'variable' ? 'selected' : ''}>Variable</option>
+                    </select>
+                    ${task.stateSource === 'variable' ?
+                        `<select class="task-checkbox-state-var" data-index="${index}">
+                            <option value="">Select Variable...</option>
+                            ${getVariableOptions(task.sourceVarName)}
+                        </select>` :
+                        `<select class="task-checkbox-static-state" data-index="${index}">
+                            <option value="true" ${task.staticState === true ? 'selected' : ''}>Checked (True)</option>
+                            <option value="false" ${task.staticState === false ? 'selected' : ''}>Unchecked (False)</option>
+                        </select>`
+                    }
+                </div>
+            `;
+            break;
+        case 'slider-get-values':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🎚️</span> Get Slider Values
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Slider:</label>
+                    <select class="task-slider-select" data-index="${index}">
+                        <option value="">Select Slider...</option>
+                        ${sliderElements.map((sl, i) => `<option value="${i}" ${task.sliderIndex === i ? 'selected' : ''}>${sl.name || 'Slider ' + (i+1)}</option>`).join('')}
+                    </select>
+                    <label>Property:</label>
+                    <select class="task-slider-property" data-index="${index}">
+                        <option value="baseMin" ${task.sliderProperty === 'baseMin' ? 'selected' : ''}>Base Min</option>
+                        <option value="baseMax" ${task.sliderProperty === 'baseMax' ? 'selected' : ''}>Base Max</option>
+                        <option value="overMax" ${task.sliderProperty === 'overMax' ? 'selected' : ''}>Over Max</option>
+                        <option value="underMin" ${task.sliderProperty === 'underMin' ? 'selected' : ''}>Under Min</option>
+                    </select>
+                    <label>Store in variable:</label>
+                    <select class="task-func-output-var" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.outputVarName)}
+                    </select>
+                </div>
+            `;
+            break;
+        case 'slider-set-values':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🎚️</span> Set Slider Values
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Slider:</label>
+                    <select class="task-slider-select" data-index="${index}">
+                        <option value="">Select Slider...</option>
+                        ${sliderElements.map((sl, i) => `<option value="${i}" ${task.sliderIndex === i ? 'selected' : ''}>${sl.name || 'Slider ' + (i+1)}</option>`).join('')}
+                    </select>
+                    <label>Property:</label>
+                    <select class="task-slider-property" data-index="${index}">
+                        <option value="baseMin" ${task.sliderProperty === 'baseMin' ? 'selected' : ''}>Base Min</option>
+                        <option value="baseMax" ${task.sliderProperty === 'baseMax' ? 'selected' : ''}>Base Max</option>
+                        <option value="overMax" ${task.sliderProperty === 'overMax' ? 'selected' : ''}>Over Max</option>
+                        <option value="underMin" ${task.sliderProperty === 'underMin' ? 'selected' : ''}>Under Min</option>
+                    </select>
+                    <label>Value:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'slider-get-current':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🎚️</span> Get Current Value
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Slider:</label>
+                    <select class="task-slider-select" data-index="${index}">
+                        <option value="">Select Slider...</option>
+                        ${sliderElements.map((sl, i) => `<option value="${i}" ${task.sliderIndex === i ? 'selected' : ''}>${sl.name || 'Slider ' + (i+1)}</option>`).join('')}
+                    </select>
+                    <label>Store in variable:</label>
+                    <select class="task-func-output-var" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.outputVarName)}
+                    </select>
+                </div>
+            `;
+            break;
+        case 'slider-set-current':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🎚️</span> Set Current Value
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Slider:</label>
+                    <select class="task-slider-select" data-index="${index}">
+                        <option value="">Select Slider...</option>
+                        ${sliderElements.map((sl, i) => `<option value="${i}" ${task.sliderIndex === i ? 'selected' : ''}>${sl.name || 'Slider ' + (i+1)}</option>`).join('')}
+                    </select>
+                    <label>Value:</label>
+                    <select class="task-source-type" data-index="${index}">
+                        <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${getSourceInput(task, index)}
+                </div>
+            `;
+            break;
+        case 'table-lookup-row': {
+            const tableOpts = tableElements.map((t, i) => `<option value="${i}" ${task.tableIndex === i ? 'selected' : ''}>${t.title || t.name || 'Table ' + (i+1)}</option>`).join('');
+            let lookupsHtml = '';
+            task.lookups.forEach((lk, li) => {
+                const colOpts = task.tableIndex !== null && tableElements[task.tableIndex]
+                    ? tableElements[task.tableIndex].cellData[0].map((h, ci) => `<option value="${ci}" ${lk.columnIndex === ci ? 'selected' : ''}>${h} (col ${ci})</option>`).join('')
+                    : '';
+                lookupsHtml += `
+                    <div class="task-lookup-entry" data-lookup-index="${li}">
+                        <label>Column to Match:</label>
+                        <select class="task-lookup-column" data-index="${index}" data-lookup="${li}">
+                            <option value="">Select Column...</option>
+                            ${colOpts}
+                        </select>
+                        <label>Match Value From:</label>
+                        <select class="task-lookup-source-type" data-index="${index}" data-lookup="${li}">
+                            <option value="lastRng" ${lk.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
+                            <option value="variable" ${lk.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                            <option value="numberEntry" ${lk.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                            <option value="static" ${lk.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        </select>
+                        ${lk.sourceType === 'static' ? `<input type="number" class="task-lookup-static" data-index="${index}" data-lookup="${li}" value="${lk.staticValue || 0}">` : ''}
+                        ${lk.sourceType === 'variable' ? `<select class="task-lookup-var" data-index="${index}" data-lookup="${li}"><option value="">Select Variable...</option>${getVariableOptions(lk.sourceVarName)}</select>` : ''}
+                        ${lk.sourceType === 'numberEntry' ? `<select class="task-lookup-ne" data-index="${index}" data-lookup="${li}"><option value="">Select Number Entry...</option>${numberEntries.map((ne, ni) => `<option value="${ni}" ${lk.sourceIndex === ni ? 'selected' : ''}>${ne.name || 'Number Entry ' + (ni+1)}</option>`).join('')}</select>` : ''}
+                        ${lk.sourceType === 'lastRng' ? `<span class="task-source-label">Uses the last RNG result</span>` : ''}
+                        ${task.lookups.length > 1 ? `<button class="task-lookup-remove" data-index="${index}" data-lookup="${li}" title="Remove this lookup">✕</button>` : ''}
+                    </div>
+                `;
+            });
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📋</span> Table Lookup Row
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Table:</label>
+                    <select class="task-table-select" data-index="${index}">
+                        <option value="">Select Table...</option>
+                        ${tableOpts}
+                    </select>
+                    <div class="task-lookups-container">
+                        ${lookupsHtml}
+                    </div>
+                    <button class="task-lookup-add" data-index="${index}" title="Add another lookup condition">+ Add Lookup</button>
+                    <label>Store Row # in variable:</label>
+                    <select class="task-func-output-var" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.outputVarName)}
+                    </select>
+                </div>
+            `;
+            break;
+        }
+        case 'table-get-value': {
+            const tableOpts2 = tableElements.map((t, i) => `<option value="${i}" ${task.tableIndex === i ? 'selected' : ''}>${t.title || t.name || 'Table ' + (i+1)}</option>`).join('');
+            const colOpts2 = task.tableIndex !== null && tableElements[task.tableIndex]
+                ? tableElements[task.tableIndex].cellData[0].map((h, ci) => `<option value="${ci}" ${task.columnIndex === ci ? 'selected' : ''}>${h} (col ${ci})</option>`).join('')
+                : '';
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">📋</span> Get Table Value
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Table:</label>
+                    <select class="task-table-select" data-index="${index}">
+                        <option value="">Select Table...</option>
+                        ${tableOpts2}
+                    </select>
+                    <label>Row Number From:</label>
+                    <select class="task-row-source-type" data-index="${index}">
+                        <option value="static" ${task.rowSourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="variable" ${task.rowSourceType === 'variable' ? 'selected' : ''}>Variable</option>
+                        <option value="numberEntry" ${task.rowSourceType === 'numberEntry' ? 'selected' : ''}>Number Entry</option>
+                    </select>
+                    ${task.rowSourceType === 'static' ? `<input type="number" class="task-row-static" data-index="${index}" value="${task.rowStaticValue || 0}" min="0">` : ''}
+                    ${task.rowSourceType === 'variable' ? `<select class="task-row-var" data-index="${index}"><option value="">Select Variable...</option>${getVariableOptions(task.rowSourceVarName)}</select>` : ''}
+                    ${task.rowSourceType === 'numberEntry' ? `<select class="task-row-ne" data-index="${index}"><option value="">Select Number Entry...</option>${numberEntries.map((ne, ni) => `<option value="${ni}" ${task.rowSourceIndex === ni ? 'selected' : ''}>${ne.name || 'Number Entry ' + (ni+1)}</option>`).join('')}</select>` : ''}
+                    <label>Column:</label>
+                    <select class="task-table-column" data-index="${index}">
+                        <option value="">Select Column...</option>
+                        ${colOpts2}
+                    </select>
+                    <label>Store value in variable:</label>
+                    <select class="task-func-output-var" data-index="${index}">
+                        <option value="">Select Variable...</option>
+                        ${getVariableOptions(task.outputVarName)}
+                    </select>
+                </div>
+            `;
+            break;
+        }
     }
     
     block.innerHTML = blockContent;
@@ -7013,6 +7390,169 @@ function createTaskBlock(task, index) {
             tfSourceVar.addEventListener('change', (e) => {
                 const idx = parseInt(e.target.dataset.index);
                 tempTasks[idx].sourceVarName = e.target.value;
+            });
+        }
+        
+        // Checkbox select (for get-state and set-state)
+        const cbSelect = block.querySelector('.task-checkbox-select');
+        if (cbSelect) {
+            cbSelect.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].checkboxIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
+            });
+        }
+        
+        // Checkbox set-state source type (static vs variable)
+        const cbStateSource = block.querySelector('.task-checkbox-state-source');
+        if (cbStateSource) {
+            cbStateSource.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].stateSource = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        
+        // Checkbox set-state static value (true/false)
+        const cbStaticState = block.querySelector('.task-checkbox-static-state');
+        if (cbStaticState) {
+            cbStaticState.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].staticState = e.target.value === 'true';
+            });
+        }
+        
+        // Checkbox set-state variable select
+        const cbStateVar = block.querySelector('.task-checkbox-state-var');
+        if (cbStateVar) {
+            cbStateVar.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].sourceVarName = e.target.value;
+            });
+        }
+        
+        // Slider select (for all slider tasks)
+        const sliderSelect = block.querySelector('.task-slider-select');
+        if (sliderSelect) {
+            sliderSelect.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].sliderIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
+            });
+        }
+        
+        // Slider property select (for get-values and set-values)
+        const sliderProp = block.querySelector('.task-slider-property');
+        if (sliderProp) {
+            sliderProp.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].sliderProperty = e.target.value;
+            });
+        }
+        
+        // Table select
+        const tableSelect = block.querySelector('.task-table-select');
+        if (tableSelect) {
+            tableSelect.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].tableIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
+                renderTaskSequence();
+            });
+        }
+        
+        // Table lookup: column selects, source types, static values, var selects, NE selects
+        block.querySelectorAll('.task-lookup-column').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const li = parseInt(e.target.dataset.lookup);
+                tempTasks[idx].lookups[li].columnIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
+            });
+        });
+        block.querySelectorAll('.task-lookup-source-type').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const li = parseInt(e.target.dataset.lookup);
+                tempTasks[idx].lookups[li].sourceType = e.target.value;
+                renderTaskSequence();
+            });
+        });
+        block.querySelectorAll('.task-lookup-static').forEach(inp => {
+            inp.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const li = parseInt(e.target.dataset.lookup);
+                tempTasks[idx].lookups[li].staticValue = parseFloat(e.target.value) || 0;
+            });
+        });
+        block.querySelectorAll('.task-lookup-var').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const li = parseInt(e.target.dataset.lookup);
+                tempTasks[idx].lookups[li].sourceVarName = e.target.value;
+            });
+        });
+        block.querySelectorAll('.task-lookup-ne').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const li = parseInt(e.target.dataset.lookup);
+                tempTasks[idx].lookups[li].sourceIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
+            });
+        });
+        
+        // Table lookup: add lookup button
+        const addLookupBtn = block.querySelector('.task-lookup-add');
+        if (addLookupBtn) {
+            addLookupBtn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].lookups.push({ columnIndex: null, sourceType: 'lastRng', staticValue: 0, sourceIndex: null, sourceVarName: '' });
+                renderTaskSequence();
+            });
+        }
+        
+        // Table lookup: remove lookup button
+        block.querySelectorAll('.task-lookup-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const li = parseInt(e.target.dataset.lookup);
+                tempTasks[idx].lookups.splice(li, 1);
+                renderTaskSequence();
+            });
+        });
+        
+        // Table get-value: row source type
+        const rowSourceType = block.querySelector('.task-row-source-type');
+        if (rowSourceType) {
+            rowSourceType.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].rowSourceType = e.target.value;
+                renderTaskSequence();
+            });
+        }
+        const rowStatic = block.querySelector('.task-row-static');
+        if (rowStatic) {
+            rowStatic.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].rowStaticValue = parseFloat(e.target.value) || 0;
+            });
+        }
+        const rowVar = block.querySelector('.task-row-var');
+        if (rowVar) {
+            rowVar.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].rowSourceVarName = e.target.value;
+            });
+        }
+        const rowNe = block.querySelector('.task-row-ne');
+        if (rowNe) {
+            rowNe.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].rowSourceIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
+            });
+        }
+        
+        // Table get-value: column select
+        const tableCol = block.querySelector('.task-table-column');
+        if (tableCol) {
+            tableCol.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].columnIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
             });
         }
     }, 0);
@@ -8177,6 +8717,72 @@ function createNewTaskFromType(type) {
                 staticText: '',
                 sourceVarName: ''
             };
+        case 'checkbox-get-state':
+            return {
+                type: 'checkbox-get-state',
+                checkboxIndex: null,
+                outputVarName: ''
+            };
+        case 'checkbox-set-state':
+            return {
+                type: 'checkbox-set-state',
+                checkboxIndex: null,
+                stateSource: 'static',
+                staticState: true,
+                sourceVarName: ''
+            };
+        case 'slider-get-values':
+            return {
+                type: 'slider-get-values',
+                sliderIndex: null,
+                sliderProperty: 'baseMin',
+                outputVarName: ''
+            };
+        case 'slider-set-values':
+            return {
+                type: 'slider-set-values',
+                sliderIndex: null,
+                sliderProperty: 'baseMin',
+                sourceType: 'static',
+                staticValue: 0,
+                sourceIndex: null,
+                sourceVarName: ''
+            };
+        case 'slider-get-current':
+            return {
+                type: 'slider-get-current',
+                sliderIndex: null,
+                outputVarName: ''
+            };
+        case 'slider-set-current':
+            return {
+                type: 'slider-set-current',
+                sliderIndex: null,
+                sourceType: 'static',
+                staticValue: 0,
+                sourceIndex: null,
+                sourceVarName: ''
+            };
+        case 'table-lookup-row':
+            return {
+                type: 'table-lookup-row',
+                tableIndex: null,
+                lookups: [
+                    { columnIndex: null, sourceType: 'lastRng', staticValue: 0, sourceIndex: null, sourceVarName: '' }
+                ],
+                outputVarName: ''
+            };
+        case 'table-get-value':
+            return {
+                type: 'table-get-value',
+                tableIndex: null,
+                rowSourceType: 'variable',
+                rowStaticValue: 0,
+                rowSourceIndex: null,
+                rowSourceVarName: '',
+                columnIndex: 0,
+                outputVarName: ''
+            };
         default:
             return {
                 type: type,
@@ -8856,6 +9462,152 @@ function executeTask(task) {
             }
             break;
         }
+        // ===== CHECKBOX TASKS =====
+        case 'checkbox-get-state': {
+            if (task.checkboxIndex !== null && checkboxElements[task.checkboxIndex]) {
+                const isChecked = checkboxElements[task.checkboxIndex].checked ? true : false;
+                if (task.outputVarName) {
+                    setVariableValue(task.outputVarName, isChecked);
+                }
+            }
+            break;
+        }
+        case 'checkbox-set-state': {
+            if (task.checkboxIndex !== null && checkboxElements[task.checkboxIndex]) {
+                const cb = checkboxElements[task.checkboxIndex];
+                let newState;
+                if (task.stateSource === 'variable' && task.sourceVarName) {
+                    const val = getVariableValue(task.sourceVarName);
+                    newState = val === true || val === 'true' || val === 1;
+                } else {
+                    newState = task.staticState === true;
+                }
+                cb.checked = newState;
+                if (newState) {
+                    cb.boxEl.classList.add('checked');
+                } else {
+                    cb.boxEl.classList.remove('checked');
+                }
+                markUnsaved();
+            }
+            break;
+        }
+        // ===== SLIDER TASKS =====
+        case 'slider-get-values': {
+            if (task.sliderIndex !== null && sliderElements[task.sliderIndex]) {
+                const sd = sliderElements[task.sliderIndex];
+                const prop = task.sliderProperty;
+                let val = 0;
+                if (prop === 'baseMin') val = sd.baseMin;
+                else if (prop === 'baseMax') val = sd.baseMax;
+                else if (prop === 'overMax') val = sd.overMax;
+                else if (prop === 'underMin') val = sd.underMin;
+                if (task.outputVarName) {
+                    setVariableValue(task.outputVarName, val);
+                }
+            }
+            break;
+        }
+        case 'slider-set-values': {
+            if (task.sliderIndex !== null && sliderElements[task.sliderIndex]) {
+                const sd = sliderElements[task.sliderIndex];
+                const prop = task.sliderProperty;
+                const val = parseFloat(getTaskSourceValue(task)) || 0;
+                if (prop === 'baseMin') sd.baseMin = val;
+                else if (prop === 'baseMax') sd.baseMax = val;
+                else if (prop === 'overMax') sd.overMax = val;
+                else if (prop === 'underMin') sd.underMin = val;
+                // Clamp current value to new range
+                const { min, max } = getSliderMinMax(sd);
+                sd.value = Math.max(min, Math.min(max, sd.value));
+                refreshSliderElement(sd);
+                markUnsaved();
+            }
+            break;
+        }
+        case 'slider-get-current': {
+            if (task.sliderIndex !== null && sliderElements[task.sliderIndex]) {
+                const sd = sliderElements[task.sliderIndex];
+                if (task.outputVarName) {
+                    setVariableValue(task.outputVarName, sd.value);
+                }
+            }
+            break;
+        }
+        case 'slider-set-current': {
+            if (task.sliderIndex !== null && sliderElements[task.sliderIndex]) {
+                const sd = sliderElements[task.sliderIndex];
+                const val = parseFloat(getTaskSourceValue(task)) || 0;
+                const { min, max } = getSliderMinMax(sd);
+                sd.value = Math.max(min, Math.min(max, Math.round(val)));
+                updateSliderThumb(sd);
+                if (sd.numboxEl) sd.numboxEl.value = formatSliderValue(sd, sd.value);
+                markUnsaved();
+            }
+            break;
+        }
+        // ===== TABLE TASKS =====
+        case 'table-lookup-row': {
+            if (task.tableIndex !== null && tableElements[task.tableIndex]) {
+                const td = tableElements[task.tableIndex];
+                const data = td.cellData;
+                let matchedRow = -1;
+                // Iterate data rows (skip header at index 0)
+                for (let ri = 1; ri < data.length; ri++) {
+                    let allMatch = true;
+                    for (const lk of task.lookups) {
+                        if (lk.columnIndex === null) { allMatch = false; break; }
+                        const cellVal = data[ri][lk.columnIndex];
+                        let matchVal;
+                        switch (lk.sourceType) {
+                            case 'lastRng': matchVal = lastRngResult; break;
+                            case 'variable': matchVal = getVariableValue(lk.sourceVarName); break;
+                            case 'numberEntry':
+                                matchVal = (lk.sourceIndex !== null && numberEntries[lk.sourceIndex]) ? numberEntries[lk.sourceIndex].value : 0;
+                                break;
+                            case 'static': default: matchVal = lk.staticValue; break;
+                        }
+                        // Compare as numbers if both are numeric, otherwise as strings
+                        const cellNum = parseFloat(cellVal);
+                        const matchNum = parseFloat(matchVal);
+                        if (!isNaN(cellNum) && !isNaN(matchNum)) {
+                            if (cellNum !== matchNum) { allMatch = false; break; }
+                        } else {
+                            if (String(cellVal).trim() !== String(matchVal).trim()) { allMatch = false; break; }
+                        }
+                    }
+                    if (allMatch) { matchedRow = ri; break; }
+                }
+                if (task.outputVarName) {
+                    setVariableValue(task.outputVarName, matchedRow);
+                }
+            }
+            break;
+        }
+        case 'table-get-value': {
+            if (task.tableIndex !== null && tableElements[task.tableIndex]) {
+                const td = tableElements[task.tableIndex];
+                const data = td.cellData;
+                // Resolve row number
+                let rowNum;
+                switch (task.rowSourceType) {
+                    case 'variable': rowNum = parseInt(getVariableValue(task.rowSourceVarName)) || 0; break;
+                    case 'numberEntry':
+                        rowNum = (task.rowSourceIndex !== null && numberEntries[task.rowSourceIndex]) ? parseInt(numberEntries[task.rowSourceIndex].value) || 0 : 0;
+                        break;
+                    case 'static': default: rowNum = parseInt(task.rowStaticValue) || 0; break;
+                }
+                const colIdx = task.columnIndex !== null ? task.columnIndex : 0;
+                let cellValue = '';
+                if (rowNum >= 0 && rowNum < data.length && colIdx >= 0 && colIdx < data[rowNum].length) {
+                    cellValue = data[rowNum][colIdx];
+                }
+                if (task.outputVarName) {
+                    setVariableValue(task.outputVarName, cellValue);
+                }
+            }
+            break;
+        }
     }
 }
 
@@ -9224,6 +9976,7 @@ document.getElementById('save-map').addEventListener('click', () => {
             textColor: cb.textColor,
             boxSize: cb.boxSize,
             checkColor: cb.checkColor,
+            noLabel: cb.noLabel || false,
             x: cb.x,
             y: cb.y,
             locked: cb.locked || false
@@ -9244,6 +9997,8 @@ document.getElementById('save-map').addEventListener('click', () => {
             underMinColor: sl.underMinColor,
             thumbColor: sl.thumbColor,
             labelColor: sl.labelColor,
+            trackBorderColor: sl.trackBorderColor || '#94a3b8',
+            trackThickness: sl.trackThickness || 20,
             fontSize: sl.fontSize,
             value: sl.value,
             x: sl.x,
@@ -9835,6 +10590,7 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
                         textColor: cb.textColor,
                         boxSize: cb.boxSize,
                         checkColor: cb.checkColor,
+                        noLabel: cb.noLabel,
                         locked: cb.locked
                     });
                 });
@@ -9859,6 +10615,8 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
                         underMinColor: sl.underMinColor,
                         thumbColor: sl.thumbColor,
                         labelColor: sl.labelColor,
+                        trackBorderColor: sl.trackBorderColor,
+                        trackThickness: sl.trackThickness,
                         fontSize: sl.fontSize,
                         value: sl.value,
                         width: sl.width,

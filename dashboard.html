@@ -484,16 +484,18 @@
             position: relative;
             display: flex;
             align-items: center;
-            flex: 1;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
         .slider-track-container.horizontal {
+            flex: 1;
             flex-direction: row;
             height: 20px;
             width: 100%;
         }
         .slider-track-container.vertical {
             flex-direction: column-reverse;
-            width: 20px;
+            flex-shrink: 0;
             height: 100%;
         }
         .slider-segment {
@@ -501,10 +503,10 @@
             border-radius: 4px;
         }
         .slider-track-container.horizontal .slider-segment {
-            height: 8px;
+            height: 100%;
         }
         .slider-track-container.vertical .slider-segment {
-            width: 8px;
+            width: 100%;
         }
         .slider-thumb {
             position: absolute;
@@ -1673,6 +1675,55 @@
             color: #6b7280;
             font-style: italic;
         }
+        .task-lookup-entry {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            position: relative;
+        }
+        .task-lookup-entry label {
+            display: block;
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .task-lookup-entry select,
+        .task-lookup-entry input[type="number"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .task-lookup-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 1px 5px;
+            line-height: 1.2;
+        }
+        .task-lookup-remove:hover {
+            background: #dc2626;
+        }
+        .task-lookup-add {
+            width: 100%;
+            padding: 4px;
+            margin-top: 4px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .task-lookup-add:hover {
+            background: #2563eb;
+        }
         /* Palette category styles */
         .palette-category {
             margin-bottom: 4px;
@@ -2081,6 +2132,7 @@
                     <input type="text" id="checkbox-check-color-text" value="#6366f1" maxlength="7">
                 </div>
                 <label><input type="checkbox" id="checkbox-default-checked"> Default Checked</label><br><br>
+                <label><input type="checkbox" id="checkbox-no-label"> No Label</label><br><br>
                 <button id="toggle-checkbox-tool">Enable Checkbox Tool</button>
                 <p>Click on the canvas to place a checkbox. Right-click to rename, copy, or delete.</p>
             </div>
@@ -2092,6 +2144,13 @@
                 <select id="slider-orientation" style="width: 120px;">
                     <option value="horizontal">Horizontal</option>
                     <option value="vertical">Vertical</option>
+                </select><br><br>
+                <label>Track Thickness:</label>
+                <select id="slider-track-thickness" style="width: 120px;">
+                    <option value="5">5 px</option>
+                    <option value="10">10 px</option>
+                    <option value="15">15 px</option>
+                    <option value="20" selected>20 px</option>
                 </select><br><br>
                 <label>Base Min: <input type="number" id="slider-base-min" value="0" style="width: 60px;"></label><br><br>
                 <label>Base Max: <input type="number" id="slider-base-max" value="10" style="width: 60px;"></label><br><br>
@@ -2131,6 +2190,11 @@
                     <input type="text" id="slider-label-color-text" value="#334155" maxlength="7">
                 </div>
                 <label>Font Size: <input type="number" id="slider-font-size" min="8" max="36" value="12" style="width: 60px;">px</label><br><br>
+                <label>Track Border Color:</label>
+                <div class="color-picker">
+                    <input type="color" id="slider-track-border-color" value="#94a3b8">
+                    <input type="text" id="slider-track-border-color-text" value="#94a3b8" maxlength="7">
+                </div>
                 <button id="toggle-slider-tool">Enable Slider Tool</button>
                 <p>Click on the canvas to place a slider. Right-click to rename, copy, or delete.</p>
             </div>
@@ -2316,6 +2380,7 @@
     <div id="checkbox-context-menu">
         <div class="context-menu-item" id="rename-checkbox">Rename</div>
         <div class="context-menu-item" id="edit-checkbox-label">Edit Label</div>
+        <div class="context-menu-item" id="toggle-checkbox-label">Hide Label</div>
         <div class="context-menu-item" id="toggle-checkbox-lock">Lock</div>
         <div class="context-menu-item" id="copy-checkbox">Copy</div>
         <div class="context-menu-item" id="delete-checkbox">Delete Checkbox</div>
@@ -2329,6 +2394,7 @@
     <div id="selection-context-menu">
         <div class="context-menu-item" id="selection-copy">Copy Group</div>
         <div class="context-menu-item" id="selection-save-widget">Save as Widget</div>
+        <div class="context-menu-item" id="selection-delete">Delete Group</div>
         <div class="context-menu-item" id="selection-deselect">Deselect</div>
     </div>
     <div id="table-context-menu">
