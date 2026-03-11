@@ -9123,24 +9123,38 @@ function applyLoopSetValue(task) {
 }
 
 // Evaluate conditions for IF/ELSEIF tasks
+// AND has higher precedence than OR: groups AND-connected conditions first, then ORs the groups
 function evaluateConditions(task) {
     if (!task.conditions || task.conditions.length === 0) return false;
     
-    let result = evaluateSingleCondition(task.conditions[0]);
+    // Split conditions into groups separated by OR boundaries
+    // Each group's conditions are ANDed together, then groups are ORed
+    const groups = [[]];
+    groups[0].push(task.conditions[0]);
     
     for (let i = 1; i < task.conditions.length; i++) {
         const cond = task.conditions[i];
-        const condResult = evaluateSingleCondition(cond);
-        
         if (cond.logic === 'or') {
-            result = result || condResult;
+            // Start a new OR group
+            groups.push([cond]);
         } else {
-            // AND (default)
-            result = result && condResult;
+            // AND: add to the current group
+            groups[groups.length - 1].push(cond);
         }
     }
     
-    return result;
+    // Evaluate: AND within each group, OR across groups
+    for (const group of groups) {
+        let groupResult = true;
+        for (const cond of group) {
+            if (!evaluateSingleCondition(cond)) {
+                groupResult = false;
+                break;
+            }
+        }
+        if (groupResult) return true;
+    }
+    return false;
 }
 
 function evaluateSingleCondition(cond) {
