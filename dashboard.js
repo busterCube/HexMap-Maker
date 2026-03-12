@@ -134,6 +134,9 @@ let clipboard = null; // {type: 'frame'|'text'|'numberEntry'|'label', data: {...
 let eventVariables = []; // Array of {name, value, varType: 'integer'|'float'|'string'|'boolean'}
 let nextVariableId = 1;
 
+// Event-placed images on canvas
+let eventImages = []; // Array of {name, src, x, y, width, height, element}
+
 // Grid state
 let showGrid = false;
 let snapToGrid = false;
@@ -5605,6 +5608,23 @@ function showTaskEditor(buttonData) {
                 <div class="task-block-template" data-type="list-get-amount" draggable="true" title="Get the count of an item in an Item List and store it in a variable">
                     <span class="task-icon"></span> Get Item Amount
                 </div>
+                <div class="task-block-template" data-type="list-clear" draggable="true" title="Remove all items from a List Box">
+                    <span class="task-icon"></span> Clear List Box
+                </div>
+            </div>
+        </div>
+        <div class="palette-category">
+            <div class="palette-category-header" data-category="images">▶ Images</div>
+            <div class="palette-category-items" id="palette-images" style="display:none;">
+                <div class="task-block-template" data-type="img-add" draggable="true" title="Add an image to the canvas at a specified position and size">
+                    <span class="task-icon"></span> Add Image
+                </div>
+                <div class="task-block-template" data-type="img-change" draggable="true" title="Replace an existing event image on the canvas with a new image file">
+                    <span class="task-icon"></span> Change Image
+                </div>
+                <div class="task-block-template" data-type="img-remove" draggable="true" title="Remove an event image from the canvas by its name">
+                    <span class="task-icon"></span> Remove Image
+                </div>
             </div>
         </div>
         <div class="palette-category">
@@ -5710,6 +5730,8 @@ function showTaskEditor(buttonData) {
     });
     
     document.getElementById('task-editor-save').addEventListener('click', () => {
+        // Strip transient UI state before saving
+        tempTasks.forEach(t => delete t.collapsed);
         currentEditingButton.tasks = tempTasks;
         closeTaskEditor();
     });
@@ -5742,13 +5764,162 @@ function renderTaskSequence() {
         return;
     }
     
+    // Build a set of indices that should be hidden due to group collapse
+    const hiddenIndices = new Set();
+    for (let i = 0; i < tempTasks.length; i++) {
+        const task = tempTasks[i];
+        if (task.collapsed && (task.type === 'if' || task.type === 'loop')) {
+            const endIdx = getGroupEndIndex(i);
+            if (endIdx > i) {
+                for (let j = i + 1; j <= endIdx; j++) {
+                    hiddenIndices.add(j);
+                }
+            }
+        }
+    }
+    
     tempTasks.forEach((task, index) => {
         const block = createTaskBlock(task, index);
+        if (hiddenIndices.has(index)) {
+            block.classList.add('task-group-hidden');
+        }
         sequence.appendChild(block);
     });
     
     // Setup drag-to-reorder on the rendered blocks
     setupTaskReorderDrag();
+}
+
+// Find the matching end index for a group-collapsible block (IF→ENDIF, LOOP→LOOP END)
+function getGroupEndIndex(startIndex) {
+    const startType = tempTasks[startIndex].type;
+    let depth = 0;
+    
+    if (startType === 'if') {
+        for (let i = startIndex; i < tempTasks.length; i++) {
+            if (tempTasks[i].type === 'if') depth++;
+            if (tempTasks[i].type === 'endif') {
+                depth--;
+                if (depth === 0) return i;
+            }
+        }
+    }
+    
+    if (startType === 'loop') {
+        for (let i = startIndex; i < tempTasks.length; i++) {
+            if (tempTasks[i].type === 'loop') depth++;
+            if (tempTasks[i].type === 'loop-end') {
+                depth--;
+                if (depth === 0) return i;
+            }
+        }
+    }
+    
+    return -1;
+}
+
+// Generate a short summary string for a collapsed task block
+function getTaskSummary(task) {
+    switch (task.type) {
+        case 'run-rng': {
+            const rng = task.rngIndex != null && rngList[task.rngIndex];
+            return rng ? `— ${rng.name || 'RNG ' + (task.rngIndex + 1)}` : '— (none selected)';
+        }
+        case 'add': case 'subtract': case 'set': {
+            const ne = task.targetIndex != null && numberEntries[task.targetIndex];
+            const target = ne ? (ne.name || 'Entry ' + (task.targetIndex + 1)) : '?';
+            const src = task.sourceType === 'static' ? (task.staticValue || 0) : task.sourceType || '?';
+            return `— ${target} ${task.type === 'add' ? '+' : task.type === 'subtract' ? '-' : '='} ${src}`;
+        }
+        case 'create-var':
+            return `— ${task.varName || '?'} (${task.varType || 'integer'})`;
+        case 'set-var': case 'add-var': case 'subtract-var': {
+            const src = task.sourceType === 'static' ? (task.staticValue ?? '') : (task.sourceType || '?');
+            return `— ${task.varName || '?'} ${task.type === 'set-var' ? '=' : task.type === 'add-var' ? '+' : '-'} ${src}`;
+        }
+        case 'if': case 'elseif': {
+            const left = task.condLeftType === 'variable' ? (task.condLeftVar || '?') :
+                         task.condLeftType === 'numberEntry' ? 'NumEntry' :
+                         task.condLeftType === 'lastRng' ? 'LastRNG' : (task.condLeftStatic ?? '?');
+            const op = task.condOp || '?';
+            const right = task.condRightType === 'variable' ? (task.condRightVar || '?') :
+                          task.condRightType === 'numberEntry' ? 'NumEntry' :
+                          task.condRightType === 'lastRng' ? 'LastRNG' : (task.condRightStatic ?? '?');
+            return `— ${left} ${op} ${right}`;
+        }
+        case 'else': return '';
+        case 'endif': return '';
+        case 'loop': {
+            if (task.loopType === 'boolean') {
+                const mode = task.boolCondition === 'until' ? 'Until' : 'While';
+                return `— ${mode} ${task.boolVarName || '?'} is ${task.boolExpected ?? 'true'}`;
+            }
+            const count = task.loopType === 'static' ? (task.loopCount ?? '?') :
+                          task.loopType === 'variable' ? (task.loopVarName || 'var') :
+                          task.loopType === 'numberEntry' ? 'NumEntry' : 'LastRNG';
+            return `— ${count} times`;
+        }
+        case 'loop-exit': return '';
+        case 'loop-end': return '';
+        case 'func-rand':
+            return `— ${task.randMin ?? 1} to ${task.randMax ?? 100}`;
+        case 'func-print': {
+            if (task.sourceType === 'variable') return `— Variable: ${task.sourceVarName || '?'}`;
+            if (task.sourceType === 'static') return `— Static: ${task.staticValue ?? ''}`;
+            if (task.sourceType === 'staticText') return `— "${(task.staticText || '').substring(0, 20)}"`;
+            if (task.sourceType === 'lastRng') return '— Last RNG';
+            if (task.sourceType === 'numberEntry') return '— NumEntry';
+            return '';
+        }
+        case 'func-math': {
+            const ops = {add:'+', subtract:'-', multiply:'×', divide:'÷', modulo:'%'};
+            return `— A ${ops[task.mathOp] || '?'} B`;
+        }
+        case 'func-concat': {
+            const n = task.concatValues ? task.concatValues.length : 0;
+            return `— ${n} value${n !== 1 ? 's' : ''}`;
+        }
+        case 'func-sum': {
+            const n = task.sumValues ? task.sumValues.length : 0;
+            return `— ${n} value${n !== 1 ? 's' : ''}`;
+        }
+        case 'func-min': case 'func-max':
+            return `— A, B → ${task.outputType || 'variable'}`;
+        case 'func-round':
+            return `— ${task.roundDir === 'up' ? 'Ceil' : 'Floor'}`;
+        case 'func-tolower': case 'func-toupper':
+            return `— ${task.outputVarName || '?'}`;
+        case 'func-checklist':
+            return `— ${task.checkText || task.checkVarName || '?'}`;
+        case 'list-add-item': case 'list-remove-item':
+            return `— ${task.itemName || task.nameVarName || '?'}`;
+        case 'list-add-amount': case 'list-remove-amount':
+            return `— ${task.itemName || task.nameVarName || '?'}`;
+        case 'list-get-amount':
+            return `— → ${task.outputVarName || '?'}`;
+        case 'textfield-read':
+            return `— ${task.targetType || 'textbox'} → ${task.outputVarName || '?'}`;
+        case 'textfield-write':
+            return `— ${task.sourceType === 'static' ? (task.staticText || '""') : (task.sourceVarName || '?')} → ${task.targetType || 'textbox'}`;
+        case 'checkbox-get-state': case 'checkbox-set-state':
+            return `— Checkbox ${task.checkboxIndex != null ? task.checkboxIndex + 1 : '?'}`;
+        case 'slider-get-values': case 'slider-set-values': case 'slider-get-current': case 'slider-set-current':
+            return `— Slider ${task.sliderIndex != null ? task.sliderIndex + 1 : '?'}`;
+        case 'table-lookup-row': case 'table-get-value':
+            return `— Table ${task.tableIndex != null ? task.tableIndex + 1 : '?'}`;
+        case 'list-clear': {
+            const lb = task.listBoxIndex != null && listBoxElements[task.listBoxIndex];
+            return lb ? `— ${lb.title || 'List Box ' + (task.listBoxIndex + 1)}` : '— ?';
+        }
+        case 'img-add':
+            return `— ${task.imgName || '?'}`;
+        case 'img-change':
+            return `— ${task.imgName || '?'}`;
+        case 'img-remove':
+            return `— ${task.imgName || '?'}`;
+        default:
+            return '';
+    }
 }
 
 function setupTaskReorderDrag() {
@@ -6221,11 +6392,14 @@ function createTaskBlock(task, index) {
                     <label>Value from:</label>
                     <select class="task-source-type" data-index="${index}">
                         <option value="static" ${task.sourceType === 'static' ? 'selected' : ''}>Static Value</option>
+                        <option value="staticText" ${task.sourceType === 'staticText' ? 'selected' : ''}>Static Text</option>
                         <option value="lastRng" ${task.sourceType === 'lastRng' ? 'selected' : ''}>Last RNG Result</option>
                         <option value="numberEntry" ${task.sourceType === 'numberEntry' ? 'selected' : ''}>Number Entry Value</option>
                         <option value="variable" ${task.sourceType === 'variable' ? 'selected' : ''}>Variable</option>
                     </select>
-                    ${getSourceInput(task, index)}
+                    ${task.sourceType === 'staticText' ?
+                        `<input type="text" class="task-print-static-text" data-index="${index}" value="${(task.staticText || '').replace(/"/g, '&quot;')}" placeholder="Enter text to print...">` :
+                        getSourceInput(task, index)}
                 </div>
             `;
             break;
@@ -6817,6 +6991,85 @@ function createTaskBlock(task, index) {
             `;
             break;
         }
+        // ===== CLEAR LIST BOX =====
+        case 'list-clear':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🧹</span> Clear List Box
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>List Box:</label>
+                    <select class="task-listbox-select" data-index="${index}">
+                        <option value="">Select List Box...</option>
+                        ${getListBoxOptions(task.listBoxIndex)}
+                    </select>
+                </div>
+            `;
+            break;
+        // ===== IMAGE TASKS =====
+        case 'img-add':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🖼️</span> Add Image
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Image File:</label>
+                    <div class="task-block-row">
+                        <input type="text" class="task-img-path" data-index="${index}" value="${(task.imgPath || '').replace(/"/g, '&quot;')}" placeholder="No file selected..." readonly>
+                        <button class="task-img-browse" data-index="${index}">Browse...</button>
+                    </div>
+                    ${task.imgPreview ? `<img src="${task.imgPreview}" class="task-img-preview" style="max-width:80px;max-height:80px;margin-top:4px;border-radius:4px;">` : ''}
+                    <label>Name:</label>
+                    <input type="text" class="task-img-name" data-index="${index}" value="${(task.imgName || '').replace(/"/g, '&quot;')}" placeholder="Image name">
+                    <div class="task-block-row">
+                        <div><label>X:</label><input type="number" class="task-img-x" data-index="${index}" value="${task.imgX ?? 0}"></div>
+                        <div><label>Y:</label><input type="number" class="task-img-y" data-index="${index}" value="${task.imgY ?? 0}"></div>
+                    </div>
+                    <div class="task-block-row">
+                        <div><label>Width:</label><input type="number" class="task-img-w" data-index="${index}" value="${task.imgW ?? 100}" min="1"></div>
+                        <div><label>Height:</label><input type="number" class="task-img-h" data-index="${index}" value="${task.imgH ?? 100}" min="1"></div>
+                    </div>
+                </div>
+            `;
+            break;
+        case 'img-change':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">🔄</span> Change Image
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Image Name:</label>
+                    <select class="task-img-name-select" data-index="${index}">
+                        <option value="">Select Image...</option>
+                        ${getEventImageOptions(task.imgName)}
+                    </select>
+                    <label>New Image File:</label>
+                    <div class="task-block-row">
+                        <input type="text" class="task-img-path" data-index="${index}" value="${(task.imgPath || '').replace(/"/g, '&quot;')}" placeholder="No file selected..." readonly>
+                        <button class="task-img-browse" data-index="${index}">Browse...</button>
+                    </div>
+                    ${task.imgPreview ? `<img src="${task.imgPreview}" class="task-img-preview" style="max-width:80px;max-height:80px;margin-top:4px;border-radius:4px;">` : ''}
+                </div>
+            `;
+            break;
+        case 'img-remove':
+            blockContent = `
+                <div class="task-block-header">
+                    <span class="task-icon">❌</span> Remove Image
+                    <button class="task-delete" data-index="${index}">×</button>
+                </div>
+                <div class="task-block-config">
+                    <label>Image Name:</label>
+                    <select class="task-img-name-select" data-index="${index}">
+                        <option value="">Select Image...</option>
+                        ${getEventImageOptions(task.imgName)}
+                    </select>
+                </div>
+            `;
+            break;
         case 'table-get-value': {
             const tableOpts2 = tableElements.map((t, i) => `<option value="${i}" ${task.tableIndex === i ? 'selected' : ''}>${t.title || t.name || 'Table ' + (i+1)}</option>`).join('');
             const colOpts2 = task.tableIndex !== null && tableElements[task.tableIndex]
@@ -6860,8 +7113,63 @@ function createTaskBlock(task, index) {
     
     block.innerHTML = blockContent;
     
+    // Add collapse toggle and summary to header
+    const header = block.querySelector('.task-block-header');
+    if (header) {
+        const isGroupType = (task.type === 'if' || task.type === 'loop');
+        
+        // Insert collapse toggle at the beginning
+        const toggle = document.createElement('span');
+        toggle.className = 'task-collapse-toggle';
+        toggle.dataset.index = index;
+        toggle.textContent = task.collapsed ? '▶' : '▼';
+        toggle.title = task.collapsed ? 'Expand' : 'Collapse';
+        header.insertBefore(toggle, header.firstChild);
+        
+        // Insert summary span before the delete button
+        const summary = document.createElement('span');
+        summary.className = 'task-summary';
+        summary.textContent = getTaskSummary(task);
+        const deleteBtn = header.querySelector('.task-delete');
+        if (deleteBtn) {
+            header.insertBefore(summary, deleteBtn);
+        } else {
+            header.appendChild(summary);
+        }
+        
+        // For group types, add hidden block count badge
+        if (isGroupType) {
+            const endIdx = getGroupEndIndex(index);
+            const hiddenCount = endIdx > index ? endIdx - index : 0;
+            const badge = document.createElement('span');
+            badge.className = 'task-group-count';
+            badge.textContent = hiddenCount > 0 ? `${hiddenCount} block${hiddenCount !== 1 ? 's' : ''}` : '';
+            if (deleteBtn) {
+                header.insertBefore(badge, deleteBtn);
+            } else {
+                header.appendChild(badge);
+            }
+        }
+        
+        // Apply collapsed state
+        if (task.collapsed) {
+            block.classList.add('task-collapsed');
+        }
+    }
+    
     // Add event listeners
     setTimeout(() => {
+        // Collapse toggle
+        const collapseToggle = block.querySelector('.task-collapse-toggle');
+        if (collapseToggle) {
+            collapseToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].collapsed = !tempTasks[idx].collapsed;
+                renderTaskSequence();
+            });
+        }
+        
         // Delete button
         const deleteBtn = block.querySelector('.task-delete');
         if (deleteBtn) {
@@ -6993,6 +7301,8 @@ function createTaskBlock(task, index) {
             varSelect.addEventListener('change', (e) => {
                 const idx = parseInt(e.target.dataset.index);
                 tempTasks[idx].varName = e.target.value;
+                // Re-render so the static input type matches the selected variable's type
+                renderTaskSequence();
             });
         }
         
@@ -7555,15 +7865,117 @@ function createTaskBlock(task, index) {
                 tempTasks[idx].columnIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
             });
         }
+        
+        // Print static text input
+        const printStaticText = block.querySelector('.task-print-static-text');
+        if (printStaticText) {
+            printStaticText.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].staticText = e.target.value;
+            });
+        }
+        
+        // Image browse button
+        block.querySelectorAll('.task-img-browse').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.addEventListener('change', (fe) => {
+                    const file = fe.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        tempTasks[idx].imgPath = file.name;
+                        tempTasks[idx].imgPreview = re.target.result;
+                        tempTasks[idx].imgData = re.target.result;
+                        renderTaskSequence();
+                    };
+                    reader.readAsDataURL(file);
+                });
+                fileInput.click();
+            });
+        });
+        
+        // Image name input
+        const imgName = block.querySelector('.task-img-name');
+        if (imgName) {
+            imgName.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].imgName = e.target.value;
+            });
+        }
+        
+        // Image position/size inputs
+        const imgX = block.querySelector('.task-img-x');
+        if (imgX) {
+            imgX.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].imgX = parseInt(e.target.value) || 0;
+            });
+        }
+        const imgY = block.querySelector('.task-img-y');
+        if (imgY) {
+            imgY.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].imgY = parseInt(e.target.value) || 0;
+            });
+        }
+        const imgW = block.querySelector('.task-img-w');
+        if (imgW) {
+            imgW.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].imgW = Math.max(1, parseInt(e.target.value) || 1);
+            });
+        }
+        const imgH = block.querySelector('.task-img-h');
+        if (imgH) {
+            imgH.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].imgH = Math.max(1, parseInt(e.target.value) || 1);
+            });
+        }
+        
+        // Image name select (for change/remove)
+        const imgNameSelect = block.querySelector('.task-img-name-select');
+        if (imgNameSelect) {
+            imgNameSelect.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                tempTasks[idx].imgName = e.target.value;
+            });
+        }
     }, 0);
     
     return block;
 }
 
+// Helper to build options for event images already placed on canvas
+function getEventImageOptions(selectedName) {
+    return eventImages.map(img =>
+        `<option value="${img.name}" ${selectedName === img.name ? 'selected' : ''}>${img.name}</option>`
+    ).join('');
+}
+
 function getSourceInput(task, index) {
     switch (task.sourceType) {
-        case 'static':
+        case 'static': {
+            // Determine variable type for variable-targeting tasks
+            const varType = resolveTargetVarType(task);
+            if (varType === 'string') {
+                const escaped = ((task.staticValue != null ? task.staticValue : '') + '').replace(/"/g, '&quot;');
+                return `<input type="text" class="task-static-string" data-index="${index}" value="${escaped}" placeholder="Enter text...">`;
+            } else if (varType === 'boolean') {
+                const boolVal = (task.staticValue === true || task.staticValue === 'true');
+                return `
+                    <select class="task-source-bool-select" data-index="${index}">
+                        <option value="true" ${boolVal ? 'selected' : ''}>True</option>
+                        <option value="false" ${!boolVal ? 'selected' : ''}>False</option>
+                    </select>
+                `;
+            }
             return `<input type="number" class="task-static-value" data-index="${index}" value="${task.staticValue || 0}">`;
+        }
         case 'lastRng':
             return `<span class="task-source-label">Uses the last RNG result</span>`;
         case 'numberEntry':
@@ -7592,6 +8004,24 @@ function getSourceInput(task, index) {
         default:
             return `<input type="number" class="task-static-value" data-index="${index}" value="${task.staticValue || 0}">`;
     }
+}
+
+// Resolve the target variable's type for tasks that target a variable (set-var, add-var, subtract-var)
+function resolveTargetVarType(task) {
+    if (task.type !== 'set-var' && task.type !== 'add-var' && task.type !== 'subtract-var') {
+        return 'number'; // Non-variable tasks always use numeric static
+    }
+    const varName = task.varName;
+    if (!varName) return 'number';
+    // Check create-var tasks in tempTasks first
+    if (tempTasks) {
+        const createTask = tempTasks.find(t => t.type === 'create-var' && t.varName === varName);
+        if (createTask) return createTask.varType || 'integer';
+    }
+    // Then check global eventVariables
+    const ev = eventVariables.find(v => v.name === varName);
+    if (ev) return ev.varType || 'integer';
+    return 'number';
 }
 
 // Helper to get variable options from both eventVariables and create-var tasks in the current sequence
@@ -8783,6 +9213,36 @@ function createNewTaskFromType(type) {
                 columnIndex: 0,
                 outputVarName: ''
             };
+        case 'list-clear':
+            return {
+                type: 'list-clear',
+                listBoxIndex: null
+            };
+        case 'img-add':
+            return {
+                type: 'img-add',
+                imgPath: '',
+                imgData: '',
+                imgPreview: '',
+                imgName: '',
+                imgX: 0,
+                imgY: 0,
+                imgW: 100,
+                imgH: 100
+            };
+        case 'img-change':
+            return {
+                type: 'img-change',
+                imgName: '',
+                imgPath: '',
+                imgData: '',
+                imgPreview: ''
+            };
+        case 'img-remove':
+            return {
+                type: 'img-remove',
+                imgName: ''
+            };
         default:
             return {
                 type: type,
@@ -9289,7 +9749,12 @@ function executeTask(task) {
             break;
         }
         case 'func-print': {
-            const val = getTaskSourceValue(task);
+            let val;
+            if (task.sourceType === 'staticText') {
+                val = task.staticText || '';
+            } else {
+                val = getTaskSourceValue(task);
+            }
             eventPrintResults.push({ label: task.printLabel || '', value: val });
             break;
         }
@@ -9618,6 +10083,71 @@ function executeTask(task) {
                 }
                 if (task.outputVarName) {
                     setVariableValue(task.outputVarName, cellValue);
+                }
+            }
+            break;
+        }
+        // ===== CLEAR LIST BOX =====
+        case 'list-clear': {
+            if (task.listBoxIndex !== null && listBoxElements[task.listBoxIndex]) {
+                const lb = listBoxElements[task.listBoxIndex];
+                lb.items = [];
+                renderListBoxItems(lb);
+            }
+            break;
+        }
+        // ===== IMAGE TASKS =====
+        case 'img-add': {
+            if (task.imgData && task.imgName) {
+                // Remove existing image with same name
+                const existingIdx = eventImages.findIndex(img => img.name === task.imgName);
+                if (existingIdx !== -1) {
+                    if (eventImages[existingIdx].element) {
+                        eventImages[existingIdx].element.remove();
+                    }
+                    eventImages.splice(existingIdx, 1);
+                }
+                const imgEl = document.createElement('img');
+                imgEl.src = task.imgData;
+                imgEl.style.position = 'absolute';
+                imgEl.style.left = (task.imgX || 0) + 'px';
+                imgEl.style.top = (task.imgY || 0) + 'px';
+                imgEl.style.width = (task.imgW || 100) + 'px';
+                imgEl.style.height = (task.imgH || 100) + 'px';
+                imgEl.style.zIndex = '500';
+                imgEl.style.pointerEvents = 'none';
+                imgEl.draggable = false;
+                document.body.appendChild(imgEl);
+                eventImages.push({
+                    name: task.imgName,
+                    src: task.imgData,
+                    x: task.imgX || 0,
+                    y: task.imgY || 0,
+                    width: task.imgW || 100,
+                    height: task.imgH || 100,
+                    element: imgEl
+                });
+            }
+            break;
+        }
+        case 'img-change': {
+            if (task.imgName && task.imgData) {
+                const existing = eventImages.find(img => img.name === task.imgName);
+                if (existing && existing.element) {
+                    existing.element.src = task.imgData;
+                    existing.src = task.imgData;
+                }
+            }
+            break;
+        }
+        case 'img-remove': {
+            if (task.imgName) {
+                const idx = eventImages.findIndex(img => img.name === task.imgName);
+                if (idx !== -1) {
+                    if (eventImages[idx].element) {
+                        eventImages[idx].element.remove();
+                    }
+                    eventImages.splice(idx, 1);
                 }
             }
             break;
@@ -9982,6 +10512,14 @@ document.getElementById('save-map').addEventListener('click', () => {
             varType: v.varType,
             value: v.value
         })),
+        eventImages: eventImages.map(img => ({
+            name: img.name,
+            src: img.src,
+            x: img.x,
+            y: img.y,
+            width: img.width,
+            height: img.height
+        })),
         checkboxElements: checkboxElements.map(cb => ({
             name: cb.name || null,
             label: cb.label,
@@ -10113,6 +10651,9 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
             selectedWidgetIndex = -1;
             eventVariables = [];
             nextVariableId = 1;
+            // Remove event images from canvas
+            eventImages.forEach(img => { if (img.element) img.element.remove(); });
+            eventImages = [];
             if (drawingCtx) {
                 drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
             }
@@ -10591,6 +11132,35 @@ document.getElementById('import-map-file').addEventListener('change', (e) => {
                     value: v.value
                 }));
                 nextVariableId = Math.max(...eventVariables.map(v => v.id), 0) + 1;
+            }
+            
+            // Load event images
+            if (data.eventImages) {
+                // Remove any existing event images from canvas
+                eventImages.forEach(img => { if (img.element) img.element.remove(); });
+                eventImages = [];
+                data.eventImages.forEach(imgData => {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = imgData.src;
+                    imgEl.style.position = 'absolute';
+                    imgEl.style.left = (imgData.x || 0) + 'px';
+                    imgEl.style.top = (imgData.y || 0) + 'px';
+                    imgEl.style.width = (imgData.width || 100) + 'px';
+                    imgEl.style.height = (imgData.height || 100) + 'px';
+                    imgEl.style.zIndex = '500';
+                    imgEl.style.pointerEvents = 'none';
+                    imgEl.draggable = false;
+                    document.body.appendChild(imgEl);
+                    eventImages.push({
+                        name: imgData.name,
+                        src: imgData.src,
+                        x: imgData.x || 0,
+                        y: imgData.y || 0,
+                        width: imgData.width || 100,
+                        height: imgData.height || 100,
+                        element: imgEl
+                    });
+                });
             }
             
             // Load checkbox elements

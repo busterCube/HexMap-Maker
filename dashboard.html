@@ -1519,6 +1519,56 @@
         .task-block-header .delete-btn:hover {
             color: #ef4444;
         }
+        /* Task block collapse/expand */
+        .task-collapse-toggle {
+            cursor: pointer;
+            font-size: 10px;
+            color: #6b7280;
+            user-select: none;
+            padding: 2px 4px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .task-collapse-toggle:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .task-block.task-collapsed {
+            padding: 8px 12px;
+        }
+        .task-block.task-collapsed .task-block-header {
+            margin-bottom: 0;
+        }
+        .task-block.task-collapsed .task-block-config {
+            display: none !important;
+        }
+        .task-summary {
+            font-size: 12px;
+            color: #9ca3af;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+        .task-block:not(.task-collapsed) .task-summary {
+            display: none;
+        }
+        .task-block.task-group-hidden {
+            display: none !important;
+        }
+        .task-group-count {
+            font-size: 11px;
+            color: #8b5cf6;
+            background: #ede9fe;
+            border-radius: 10px;
+            padding: 1px 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .task-block:not(.task-collapsed) .task-group-count {
+            display: none;
+        }
         .task-block-config {
             display: flex;
             flex-direction: column;
@@ -1543,6 +1593,25 @@
         }
         .task-block-row > div {
             flex: 1;
+        }
+        .task-img-browse {
+            padding: 6px 12px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .task-img-browse:hover {
+            background: #4f46e5;
+        }
+        .task-img-path {
+            flex: 1;
+            background: #f9fafb !important;
+            cursor: default !important;
         }
         .task-editor-footer {
             padding: 16px 20px;
