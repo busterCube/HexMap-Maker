@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hex Map Maker</title>
+    <title>HexMap Maker - Home</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         :root {
@@ -26,1100 +26,245 @@
             --radius: 8px;
             --radius-lg: 12px;
         }
-        body { 
-            margin: 0; 
-            overflow: hidden; 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             color: var(--text);
+            background: var(--bg-panel);
+            min-height: 100vh;
         }
-        #canvas { display: block; width: 100%; height: 100%; }
-        #menu-toggle {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
+        header {
             background: var(--bg-dark);
             color: white;
-            border: none;
-            padding: 12px 16px;
-            cursor: pointer;
-            border-radius: var(--radius);
-            font-weight: 500;
+            padding: 24px 40px;
+            box-shadow: var(--shadow-lg);
+        }
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        header p {
+            color: var(--primary-light);
+            margin-top: 4px;
             font-size: 14px;
-            box-shadow: var(--shadow);
-            transition: all 0.2s ease;
         }
-        #menu-toggle:hover {
-            background: #334155;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-lg);
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            max-width: 1280px;
+            margin: 32px auto;
+            padding: 0 24px;
         }
-        #system-toggle {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1000;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 16px;
-            cursor: pointer;
-            border-radius: var(--radius);
-            font-weight: 500;
-            font-size: 14px;
-            box-shadow: var(--shadow);
-            transition: all 0.2s ease;
-        }
-        #system-toggle:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-lg);
-        }
-        #system-menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 320px;
-            height: 100%;
-            background: var(--bg-panel);
-            border-right: 1px solid var(--border);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
-            z-index: 999;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            transform: translateX(-100%);
-            visibility: hidden;
-        }
-        #system-menu.open {
-            transform: translateX(0);
-            visibility: visible;
-        }
-        #menu {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 320px;
-            height: 100%;
-            background: var(--bg-panel);
-            border-left: 1px solid var(--border);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
-            z-index: 999;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            transform: translateX(100%);
-            visibility: hidden;
-        }
-        #menu.open {
-            transform: translateX(0);
-            visibility: visible;
-        }
-        /* Custom scrollbar */
-        #menu::-webkit-scrollbar,
-        #system-menu::-webkit-scrollbar {
-            width: 6px;
-        }
-        #menu::-webkit-scrollbar-track,
-        #system-menu::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        #menu::-webkit-scrollbar-thumb,
-        #system-menu::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-        #menu::-webkit-scrollbar-thumb:hover,
-        #system-menu::-webkit-scrollbar-thumb:hover {
-            background: var(--text-light);
-        }
-        .tool-section {
-            margin-bottom: 12px;
+        .left-column { display: flex; flex-direction: column; gap: 20px; }
+        .right-column { display: flex; flex-direction: column; gap: 20px; }
+
+        .card {
+            background: var(--bg-section);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            overflow: hidden;
-            background: var(--bg-section);
-            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
         }
-        .tool-section h3 {
-            margin: 0;
-            padding: 14px 16px;
-            background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-            font-size: 14px;
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        .card h2 {
+            font-size: 20px;
             font-weight: 600;
-            color: var(--text);
-            border-bottom: 1px solid var(--border);
-            transition: background 0.2s ease;
+            margin-bottom: 8px;
+            color: var(--bg-dark);
         }
-        .tool-section h3:hover {
-            background: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
+        .card .badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .tool-section h3::after {
-            content: '▼';
-            font-size: 10px;
+        .badge-hex { background: #ede9fe; color: #6d28d9; }
+        .badge-dungeon { background: #fef3c7; color: #b45309; }
+        .badge-dashboard { background: #d1fae5; color: #065f46; }
+        .card p {
+            font-size: 14px;
             color: var(--text-light);
-            transition: transform 0.3s ease;
+            line-height: 1.6;
+            margin-bottom: 16px;
         }
-        .tool-section.collapsed h3 {
-            border-bottom: none;
-        }
-        .tool-section.collapsed h3::after {
-            transform: rotate(-90deg);
-        }
-        .tool-section-content {
-            padding: 16px;
-            max-height: 1000px;
-            overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
-        }
-        .tool-section.collapsed .tool-section-content {
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-        .color-picker {
+        .card-actions {
             display: flex;
-            align-items: center;
-            margin-bottom: 12px;
+            gap: 10px;
         }
-        .color-picker input[type="color"] {
-            margin-right: 10px;
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--border);
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border: none;
             border-radius: var(--radius);
-            cursor: pointer;
-            padding: 2px;
-            background: var(--bg-section);
-            transition: border-color 0.2s ease;
-        }
-        .color-picker input[type="color"]:hover {
-            border-color: var(--primary);
-        }
-        /* Palette styles */
-        .palette-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        .palette-header h4 {
-            margin: 0;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text);
-        }
-        .palette-add-btn {
-            width: 32px;
-            height: 32px;
-            border: 2px dashed var(--border);
-            background: var(--bg-section);
             cursor: pointer;
-            font-size: 18px;
-            line-height: 1;
-            border-radius: var(--radius);
-            color: var(--text-light);
+            text-decoration: none;
             transition: all 0.2s ease;
         }
-        .palette-add-btn:hover {
-            background: var(--bg-panel);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        .palette-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 4px;
-        }
-        .palette-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 50px;
-        }
-        .palette-color {
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-sm);
-        }
-        .palette-color:hover {
-            border-color: var(--primary);
-            transform: scale(1.05);
-        }
-        .palette-color.selected {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .palette-color .delete-btn {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 18px;
-            height: 18px;
-            background: var(--danger);
+        .btn-primary {
+            background: var(--primary);
             color: white;
-            border: 2px solid white;
-            border-radius: 50%;
-            font-size: 10px;
-            cursor: pointer;
-            display: none;
-            line-height: 1;
-            transition: background 0.2s ease;
         }
-        .palette-color .delete-btn:hover {
-            background: var(--danger-hover);
-        }
-        .palette-color:hover .delete-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .palette-name {
-            font-size: 10px;
-            text-align: center;
-            max-width: 50px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
-            color: var(--text-light);
-            margin-top: 4px;
-        }
-        .palette-name:hover {
-            text-decoration: underline;
-            color: var(--primary);
-        }
-        .text-input {
-            position: absolute;
-            background: white;
-            border: 1px solid var(--border);
-            padding: 5px;
-            cursor: move;
-            z-index: 800;
-            border-radius: var(--radius);
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
             box-shadow: var(--shadow);
         }
-        .text-input .resize-handles {
-            display: none;
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
         }
-        .text-input .resize-handle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border: 2px solid white;
-            border-radius: 3px;
-            box-shadow: var(--shadow-sm);
-        }
-        .text-input .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
-        .text-input .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
-        .text-input .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-        .text-input .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
-        .text-input .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
-        .text-input .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
-        .text-input .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
-        .text-input .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
-        #context-menu {
-            position: absolute;
-            background: var(--bg-section);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            z-index: 2000;
-            display: none;
-            min-width: 160px;
-            overflow: hidden;
-        }
-        #context-menu.visible {
-            display: block;
+        .btn-outline:hover {
+            background: #eef2ff;
+            transform: translateY(-1px);
         }
 
-        .context-menu-item {
-            padding: 10px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-            color: var(--text);
-            transition: background 0.15s ease;
-        }
-        .context-menu-item:last-child {
-            border-bottom: none;
-        }
-        .context-menu-item:hover {
-            background: var(--bg-panel);
-            color: var(--primary);
-        }
-        #icon-context-menu {
-            position: absolute;
-            background: var(--bg-section);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            z-index: 2000;
-            display: none;
-            min-width: 160px;
-            overflow: hidden;
-        }
-        #icon-context-menu.visible {
-            display: block;
-        }
-        /* Icon list styles */
-        .icon-container {
+        /* Right column cards */
+        .card-header {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 4px;
-        }
-        .icon-item {
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            width: 50px;
+            gap: 10px;
+            margin-bottom: 12px;
         }
-        .icon-preview {
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--border);
+        .card-header .icon {
+            width: 36px;
+            height: 36px;
             border-radius: var(--radius);
-            cursor: pointer;
-            position: relative;
-            background: var(--bg-panel);
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            font-size: 18px;
         }
-        .icon-preview:hover {
-            border-color: #007bff;
-        }
-        .icon-preview.selected {
-            border-color: #007bff;
-            box-shadow: 0 0 5px #007bff;
-        }
-        .icon-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .icon-preview .delete-btn {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 18px;
-            height: 18px;
-            background: var(--danger);
-            color: white;
-            border: 2px solid white;
-            border-radius: 50%;
-            font-size: 10px;
-            cursor: pointer;
-            display: none;
-            line-height: 1;
-            transition: background 0.2s ease;
-        }
-        .icon-preview .delete-btn:hover {
-            background: var(--danger-hover);
-        }
-        .icon-preview:hover .delete-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .icon-name {
-            font-size: 10px;
-            text-align: center;
-            max-width: 50px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
-            color: var(--text-light);
-            margin-top: 4px;
-        }
-        .icon-name:hover {
-            text-decoration: underline;
-            color: var(--primary);
-        }
-        /* RNG item styles */
-        .rng-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-        .rng-item {
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px;
-            background: var(--bg-section);
-            box-shadow: var(--shadow-sm);
-            transition: box-shadow 0.2s ease;
-        }
-        .rng-item:hover {
-            box-shadow: var(--shadow);
-        }
-        .rng-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .rng-name {
+        .icon-announcements { background: #fef3c7; }
+        .icon-counter { background: #ede9fe; }
+        .card-header h3 {
+            font-size: 16px;
             font-weight: 600;
-            font-size: 13px;
-            flex: 1;
-            cursor: pointer;
-            color: var(--text);
+            color: var(--bg-dark);
         }
-        .rng-name:hover {
-            text-decoration: underline;
-            color: var(--primary);
-        }
-        .rng-delete-btn {
-            width: 22px;
-            height: 22px;
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 12px;
-            cursor: pointer;
-            line-height: 1;
+        .announcements-link {
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: background 0.2s ease;
-        }
-        .rng-delete-btn:hover {
-            background: var(--danger-hover);
-        }
-        .rng-inputs {
-            display: flex;
-            flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        .rng-inputs label {
-            font-size: 11px;
-            margin-right: 3px;
-            white-space: nowrap;
-            color: var(--text-light);
+            padding: 14px 16px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: var(--text);
+            font-size: 14px;
             font-weight: 500;
-        }
-        .rng-inputs input[type="number"] {
-            width: 55px;
-            padding: 6px 8px;
-            box-sizing: border-box;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 12px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .rng-inputs input[type="number"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .rng-result-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .rng-result {
-            flex: 1;
-            padding: 10px;
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            text-align: center;
-            font-weight: 700;
-            font-size: 20px;
-            color: var(--text);
-        }
-        .rng-generate-btn {
-            padding: 10px 18px;
-            background: var(--success);
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
             transition: all 0.2s ease;
         }
-        .rng-generate-btn:hover {
-            background: var(--success-hover);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-        .rng-link-checkbox {
-            margin-left: 8px;
-            accent-color: var(--primary);
-        }
-        /* Map icon (placed on canvas) styles */
-        .map-icon {
-            position: absolute;
-            z-index: 500;
-            cursor: move;
-            user-select: none;
-        }
-        .map-icon img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        .map-icon .resize-handles {
-            display: none;
-        }
-        .map-icon.active .resize-handles {
-            display: block;
-        }
-        .map-icon .resize-handle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border: 2px solid white;
-            border-radius: 3px;
-            box-shadow: var(--shadow-sm);
-        }
-        .map-icon .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
-        .map-icon .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
-        .map-icon .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-        .map-icon .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
-        .map-icon .resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
-        .map-icon .resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
-        .map-icon .resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
-        .map-icon .resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
-        .hex-tag {
-            position: absolute;
-            pointer-events: none;
-            text-align: center;
-            font-weight: bold;
-            z-index: 50;
-        }
-        /* Tag Dialog */
-        .tag-dialog-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        .tag-dialog-overlay.visible {
-            display: flex;
-        }
-        .tag-dialog {
-            background: var(--bg-section);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            width: 420px;
-            max-width: 90vw;
-            box-shadow: var(--shadow-lg);
-        }
-        .tag-dialog h3 {
-            margin: 0 0 16px 0;
-            color: var(--text);
-        }
-        .tag-dialog label {
-            display: block;
-            margin-bottom: 4px;
-            font-weight: 500;
-            color: var(--text);
-            font-size: 13px;
-        }
-        .tag-dialog input[type="text"] {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 14px;
-            margin-bottom: 12px;
-            box-sizing: border-box;
-        }
-        .tag-dialog textarea {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 14px;
-            margin-bottom: 12px;
-            box-sizing: border-box;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 60px;
-        }
-        .tag-dialog .hint {
-            font-size: 11px;
-            color: var(--text-light);
-            margin: -8px 0 12px 0;
-        }
-        .tag-dialog .btn-row {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 16px;
-        }
-        .tag-dialog .btn-row button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 13px;
-        }
-        .tag-dialog .btn-confirm {
-            background: var(--primary);
-            color: white;
-        }
-        .tag-dialog .btn-confirm:hover {
-            background: var(--primary-hover);
-        }
-        .tag-dialog .btn-cancel {
-            background: var(--border);
-            color: var(--text);
-        }
-        /* Tag Catalog Window */
-        .tag-catalog-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        .tag-catalog-overlay.visible {
-            display: flex;
-        }
-        .tag-catalog {
-            background: var(--bg-section);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            width: 580px;
-            max-width: 90vw;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--shadow-lg);
-        }
-        .tag-catalog h3 {
-            margin: 0 0 12px 0;
-            color: var(--text);
-        }
-        .tag-catalog-search {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 14px;
-            margin-bottom: 12px;
-            box-sizing: border-box;
-        }
-        .tag-catalog-list {
-            flex: 1;
-            overflow-y: auto;
-            max-height: 400px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-        }
-        .tag-catalog-entry {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        .tag-catalog-entry:last-child {
-            border-bottom: none;
-        }
-        .tag-catalog-entry .tag-info {
-            flex: 1;
-        }
-        .tag-catalog-entry .tag-display {
-            font-weight: bold;
+        .announcements-link:hover {
+            background: #eef2ff;
+            border-color: var(--primary-light);
             color: var(--primary);
-            font-size: 14px;
         }
-        .tag-catalog-entry .tag-name {
-            font-weight: 500;
-            margin-top: 2px;
-            font-size: 13px;
-        }
-        .tag-catalog-entry .tag-meta {
-            font-size: 12px;
+        .announcements-link .arrow {
+            margin-left: auto;
             color: var(--text-light);
-            margin-top: 2px;
+            transition: transform 0.2s ease;
         }
-        .tag-catalog-entry .tag-location {
-            font-size: 11px;
-            color: var(--text-light);
-            margin-top: 2px;
+        .announcements-link:hover .arrow {
+            transform: translateX(3px);
+            color: var(--primary);
         }
-        .tag-catalog-entry .tag-actions {
-            display: flex;
-            gap: 4px;
-            margin-left: 8px;
-        }
-        .tag-catalog-entry .tag-actions button {
-            padding: 4px 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-        .tag-catalog-entry .tag-actions .btn-edit {
-            background: var(--primary);
-            color: white;
-        }
-        .tag-catalog-entry .tag-actions .btn-edit:hover {
-            background: var(--primary-hover);
-        }
-        .tag-catalog-entry .tag-actions .btn-delete {
-            background: var(--danger);
-            color: white;
-        }
-        .tag-catalog-entry .tag-actions .btn-delete:hover {
-            background: var(--danger-hover);
-        }
-        .tag-catalog-entry .tag-notes {
-            font-size: 12px;
-            color: var(--text-light);
-            margin-top: 2px;
-            font-style: italic;
-        }
-        .tag-catalog .catalog-btn-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-        .tag-catalog .catalog-btn-row button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 13px;
-        }
-        .tag-catalog .btn-close {
-            background: var(--border);
-            color: var(--text);
-        }
-        .tag-catalog .btn-export {
-            background: var(--success);
-            color: white;
-        }
-        .tag-catalog .btn-export:hover {
-            background: var(--success-hover);
-        }
-        .tag-catalog .btn-import {
-            background: var(--primary);
-            color: white;
-        }
-        .tag-catalog .btn-import:hover {
-            background: var(--primary-hover);
-        }
-        .tag-catalog-empty {
-            padding: 20px;
+
+        .visit-counter-display {
             text-align: center;
-            color: var(--text-light);
-            font-size: 13px;
+            padding: 20px;
         }
-        /* Scrollbars */
-        .scrollbar {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.1);
-            z-index: 100;
-            display: none;
-        }
-        .scrollbar.visible {
-            display: block;
-        }
-        #scrollbar-h {
-            left: 60px;
-            bottom: 10px;
-            right: 60px;
-            height: 12px;
-            border-radius: 6px;
-        }
-        #scrollbar-v {
-            top: 60px;
-            right: 10px;
-            bottom: 60px;
-            width: 12px;
-            border-radius: 6px;
-        }
-        .scrollbar-thumb {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.6);
-        }
-        #scrollbar-h .scrollbar-thumb {
-            height: 100%;
-            min-width: 30px;
-        }
-        #scrollbar-v .scrollbar-thumb {
-            width: 100%;
-            min-height: 30px;
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="bg-image-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;">
-        <img id="bg-image" style="display: none; width: 100%; height: 100%; object-fit: cover;">
-    </div>
-    <canvas id="canvas"></canvas>
-    <div id="scrollbar-h" class="scrollbar"><div class="scrollbar-thumb" id="scrollbar-h-thumb"></div></div>
-    <div id="scrollbar-v" class="scrollbar"><div class="scrollbar-thumb" id="scrollbar-v-thumb"></div></div>
-    <div id="context-menu">
-        <div class="context-menu-item" id="ctx-clear-hex">Clear Hex</div>
-        <div class="context-menu-item" id="ctx-clear-fill">Clear Fill</div>
-        <div class="context-menu-item" id="ctx-add-tag">Add Tag</div>
-        <div class="context-menu-item" id="ctx-edit-tag" style="display:none;">Edit Tag</div>
-    </div>
+    <header>
+        <h1>HexMap Maker</h1>
+        <p>Tabletop Mapping &amp; Campaign Management Suite</p>
+    </header>
 
-    <div id="icon-context-menu">
-        <div class="context-menu-item" id="ctx-remove-icon">Remove Icon</div>
-    </div>
+    <div class="container">
+        <div class="left-column">
+            <!-- Hex Map System -->
+            <div class="card">
+                <span class="badge badge-hex">Hex Map System</span>
+                <h2>HexMap Maker</h2>
+                <p>Create, paint, and export hex-based overworld maps for your tabletop campaigns. Features a full color palette, icon library, tag catalog, freehand drawing, and background image support with save/load capabilities.</p>
+                <div class="card-actions">
+                    <a href="hexmap-maker.html" class="btn btn-primary">Open HexMap Maker</a>
+                    <a href="https://github.com/busterCube/HexMap-Maker/wiki/HexMap-Maker-System" target="_blank" rel="noopener noreferrer" class="btn btn-outline">Wiki &#8599;</a>
+                </div>
+            </div>
 
-    <!-- Tag Entry Dialog -->
-    <div class="tag-dialog-overlay" id="tag-dialog-overlay">
-        <div class="tag-dialog">
-            <h3 id="tag-dialog-title">Add Tag</h3>
-            <label for="tag-display-text">Short Display Text</label>
-            <input type="text" id="tag-display-text" placeholder="e.g. A1">
-            <label for="tag-name">Name</label>
-            <input type="text" id="tag-name" placeholder="e.g. Kitchen Room">
-            <label for="tag-meta">Meta Tags</label>
-            <input type="text" id="tag-meta" placeholder="e.g. Floor;1,Type;Normal">
-            <p class="hint">Format: TagName;TagValue separated by commas</p>
-            <label for="tag-notes">Notes</label>
-            <textarea id="tag-notes" placeholder="Add any notes about this tag..." rows="3"></textarea>
-            <div class="btn-row">
-                <button class="btn-cancel" id="tag-dialog-cancel">Cancel</button>
-                <button class="btn-confirm" id="tag-dialog-confirm">Add Tag</button>
+            <!-- Dungeon Map System -->
+            <div class="card">
+                <span class="badge badge-dungeon">Dungeon Map System</span>
+                <h2>Dungeon Maker</h2>
+                <p>Design detailed dungeon layouts with a square-grid editor. Place walls, doors, traps, and room features. Supports tile painting, element catalogs, and full save/load for reusable dungeon modules.</p>
+                <div class="card-actions">
+                    <a href="dungeon-maker.html" class="btn btn-primary">Open Dungeon Maker</a>
+                    <a href="https://github.com/busterCube/HexMap-Maker/wiki/Dungeon-Maker-System" target="_blank" rel="noopener noreferrer" class="btn btn-outline">Wiki &#8599;</a>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Tag Catalog Window -->
-    <div class="tag-catalog-overlay" id="tag-catalog-overlay">
-        <div class="tag-catalog">
-            <h3>Tag Catalog</h3>
-            <input type="text" class="tag-catalog-search" id="tag-catalog-search" placeholder="Search tags... (use Key +Value for meta filter)">
-            <div class="tag-catalog-list" id="tag-catalog-list"></div>
-            <div class="catalog-btn-row">
-                <div>
-                    <button class="btn-export" id="tag-catalog-export">Export Catalog</button>
-                    <button class="btn-import" id="tag-catalog-import">Import Catalog</button>
-                    <input type="file" id="tag-catalog-import-file" accept=".json" style="display: none;">
+            <!-- Dashboard System -->
+            <div class="card">
+                <span class="badge badge-dashboard">Dashboard System</span>
+                <h2>Dashboard</h2>
+                <p>Manage characters, track inventory, and organize campaign notes all in one place. Build custom character sheets, interactive dashboards, and build custom widgets, make random tables, and setup data fields to fit any RPG system.</p>
+                <div class="card-actions">
+                    <a href="dashboard.html" class="btn btn-primary">Open Dashboard</a>
+                    <a href="https://github.com/busterCube/HexMap-Maker/wiki/Dashboard-System" target="_blank" rel="noopener noreferrer" class="btn btn-outline">Wiki &#8599;</a>
                 </div>
-                <button class="btn-close" id="tag-catalog-close">Close</button>
-            </div>
-        </div>
-    </div>
-    <button id="menu-toggle">☰ Tools</button>
-    <button id="system-toggle">☰ System</button>
-    <div id="system-menu">
-        <h2>System</h2>
-        <div class="tool-section collapsed">
-            <h3>Appearance</h3>
-            <div class="tool-section-content">
-                <button id="toggle-dark-mode">Enable Dark Mode</button>
-                <p>Toggle between light and dark appearance.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Navigation</h3>
-            <div class="tool-section-content">
-                <button id="nav-hexmap" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Hex Map Maker</button>
-                <button id="nav-dungeon" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">Dungeon Maker</button>
-                <button id="nav-character" style="width: 100%; padding: 10px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">Dashboard</button>
-                <p>Switch between different map maker systems.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Grid Size</h3>
-            <div class="tool-section-content">
-                <label>Width (1-300): <input type="number" id="grid-width" min="1" max="300" value="20"></label><br><br>
-                <label>Height (1-300): <input type="number" id="grid-height" min="1" max="300" value="20"></label><br><br>
-                <button id="apply-grid-size">Apply Grid Size</button>
-                <p>Set the number of hexes across and down.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Hex Size</h3>
-            <div class="tool-section-content">
-                <label>Size (10-100 px): <input type="number" id="hex-size" min="10" max="100" value="50"></label><br><br>
-                <button id="apply-hex-size">Apply Hex Size</button>
-                <p>Set the visual size of each hex in pixels.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Hex Orientation</h3>
-            <div class="tool-section-content">
-                <label><input type="radio" name="hex-orientation" id="hex-pointy" value="pointy"> Pointy Top</label><br>
-                <label><input type="radio" name="hex-orientation" id="hex-flat" value="flat" checked> Flat Top</label>
-                <p>Choose whether hexes have a point or flat edge at the top.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Background</h3>
-            <div class="tool-section-content">
-                <label>Background Color:</label>
-                <div class="color-picker">
-                    <input type="color" id="bg-color" value="#ffffff">
-                    <input type="text" id="bg-color-text" value="#ffffff" maxlength="7">
-                </div>
-                <button id="apply-bg-color">Apply Color</button><br><br>
-                <label>Or use an image:</label><br>
-                <button id="import-bg-image">Import Image</button>
-                <input type="file" id="bg-image-file" accept="image/*" style="display: none;"><br>
-                <button id="clear-bg-image">Clear Image</button>
-                <p>Set a background color or image for the map.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Save / Load</h3>
-            <div class="tool-section-content">
-                <button id="save-map">Save Map</button><br><br>
-                <button id="import-map">Import Map</button>
-                <input type="file" id="import-file" accept=".json" style="display: none;">
-                <p>Save your map as JSON or import a previously saved map.</p>
-            </div>
-        </div>
-        <p style="text-align: center; color: #94a3b8; font-size: 11px; margin-top: 20px;">Version 1.0 — 2/28/2026</p>
-    </div>
-    <div id="menu">
-        <h2>Tools</h2>
-        <div class="tool-section collapsed">
-            <h3>Hex Fill Color</h3>
-            <div class="tool-section-content">
-                <div class="color-picker">
-                    <input type="color" id="hex-color" value="#888888">
-                    <input type="text" id="hex-color-text" value="#888888" maxlength="7">
-                </div>
-                <p>Click on a hex to fill it with the selected color.</p>
-                <div class="palette-section">
-                    <div class="palette-header">
-                        <h4>Palette</h4>
-                        <button class="palette-add-btn" id="palette-add" title="Add color to palette">+</button>
-                    </div>
-                    <div class="palette-container" id="palette-container"></div>
-                    <div class="palette-actions" style="margin-top: 10px;">
-                        <button id="save-palette" style="margin-right: 5px;">Save Palette</button>
-                        <button id="import-palette">Import Palette</button>
-                        <input type="file" id="import-palette-file" accept=".json" style="display: none;">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Free Hand Drawing</h3>
-            <div class="tool-section-content">
-                <label>Thickness: <input type="range" id="line-thickness" min="1" max="10" value="2"></label>
-                <div class="color-picker">
-                    <input type="color" id="line-color" value="#000000">
-                    <input type="text" id="line-color-text" value="#000000" maxlength="7">
-                </div>
-                <button id="toggle-drawing">Enable Drawing</button>
-                <button id="toggle-eraser">Enable Eraser</button><br><br>
-                <button id="clear-all-drawing">Clear All Drawing</button>
-                <p>Click and drag to draw lines on the map. Use eraser to remove drawings.</p>
             </div>
         </div>
 
-        <div class="tool-section collapsed">            <h3>Border Tool</h3>
-            <div class="tool-section-content">
-                <label>Border Color:</label>
-                <div class="color-picker">
-                    <input type="color" id="border-color" value="#000000">
-                    <input type="text" id="border-color-text" value="#000000" maxlength="7">
+        <div class="right-column">
+            <!-- Announcements -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon icon-announcements">&#128227;</div>
+                    <h3>Message Board &amp; Announcements</h3>
                 </div>
-                <label>Thickness: <input type="range" id="border-thickness" min="1" max="10" value="3"></label>
-                <span id="border-thickness-value">3</span><br><br>
-                <button id="toggle-border">Enable Border Tool</button><br><br>
-                <button id="toggle-remove-border">Enable Remove Border</button><br><br>
-                <button id="clear-all-borders">Clear All Borders</button>
-                <p>Click on hex edges to customize individual borders. Selected borders will use your chosen color and thickness.</p>
-                <div class="palette-section">
-                    <div class="palette-header">
-                        <h4>Border Palette</h4>
-                        <button class="palette-add-btn" id="border-palette-add" title="Add color to border palette">+</button>
-                    </div>
-                    <div class="palette-container" id="border-palette-container"></div>
-                    <div class="palette-actions" style="margin-top: 10px;">
-                        <button id="save-border-palette" style="margin-right: 5px;">Save Palette</button>
-                        <button id="import-border-palette">Import Palette</button>
-                        <input type="file" id="import-border-palette-file" accept=".json" style="display: none;">
-                    </div>
-                </div>
+                <p>Stay up to date with the latest news, updates, and community discussions.</p>
+                <a href="https://github.com/busterCube/HexMap-Maker/discussions/categories/announcements" target="_blank" rel="noopener noreferrer" class="announcements-link">
+                    View Announcements on GitHub
+                    <span class="arrow">&#8594;</span>
+                </a>
             </div>
-        </div>
-        <div class="tool-section collapsed">            <h3>Icons</h3>
-            <div class="tool-section-content">
-                <div class="palette-header">
-                    <h4>Icon Library</h4>
-                    <button class="palette-add-btn" id="icon-add" title="Add icon">+</button>
+
+            <!-- Visit Counter -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="icon icon-counter">&#128200;</div>
+                    <h3>Visit Counter</h3>
                 </div>
-                <input type="file" id="icon-file" accept="image/*" style="display: none;">
-                <div class="icon-container" id="icon-container"></div>
-                <p style="margin-top: 10px;">Click + to add icons (max 40). Click an icon to place it on the map.</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>RNG</h3>
-            <div class="tool-section-content">
-                <div class="palette-header">
-                    <h4>Random Number Generators</h4>
-                    <button class="palette-add-btn" id="rng-add" title="Add RNG">+</button>
+                <div class="visit-counter-display">
+                    <img src="https://hitscounter.dev/api/hit?url=https%3A%2F%2Fbustercube.github.io%2FHexMap-Maker%2F&label=Visits&icon=emoji-laughing-fill&color=%23084298&message=&style=flat&tz=UTC" alt="Visit Counter">
                 </div>
-                <div class="rng-container" id="rng-container"></div>
-                <div class="palette-actions" style="margin-top: 10px;">
-                    <button id="save-rng" style="margin-right: 5px;">Save RNGs</button>
-                    <button id="import-rng">Import RNGs</button>
-                    <input type="file" id="import-rng-file" accept=".json" style="display: none;">
-                </div>
-                <p style="margin-top: 10px;">Click + to add random number generators (max 20).</p>
-            </div>
-        </div>
-        <div class="tool-section collapsed">
-            <h3>Tag Catalog</h3>
-            <div class="tool-section-content">
-                <button id="open-tag-catalog" style="width: 100%;">Open Tag Catalog</button>
-                <p style="margin-top: 10px;">View, search, and manage all tags placed on the map. Right-click a hex and select "Add Tag" to create entries.</p>
             </div>
         </div>
     </div>
-    <script type="module" src="main.js"></script>
+
 </body>
 </html>

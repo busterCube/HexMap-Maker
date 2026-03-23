@@ -177,12 +177,12 @@ document.getElementById('clear-bg-image').addEventListener('click', () => {
     renderer.setClearColor(bgColor);
 });
 
-document.getElementById('square-color').addEventListener('input', (e) => {
-    document.getElementById('square-color-text').value = e.target.value;
+document.getElementById('hex-color').addEventListener('input', (e) => {
+    document.getElementById('hex-color-text').value = e.target.value;
 });
 
-document.getElementById('square-color-text').addEventListener('input', (e) => {
-    document.getElementById('square-color').value = e.target.value;
+document.getElementById('hex-color-text').addEventListener('input', (e) => {
+    document.getElementById('hex-color').value = e.target.value;
 });
 
 // Palette functionality
@@ -202,9 +202,9 @@ function renderPalette() {
         colorDiv.style.backgroundColor = item.color;
         colorDiv.title = item.name + ' (' + item.color + ')';
         colorDiv.addEventListener('click', () => {
-            // Set the square fill color to this palette color
-            document.getElementById('square-color').value = item.color;
-            document.getElementById('square-color-text').value = item.color;
+            // Set the hex fill color to this palette color
+            document.getElementById('hex-color').value = item.color;
+            document.getElementById('hex-color-text').value = item.color;
             // Update selection visual
             document.querySelectorAll('.palette-color').forEach(el => el.classList.remove('selected'));
             colorDiv.classList.add('selected');
@@ -246,7 +246,7 @@ paletteAddBtn.addEventListener('click', () => {
         alert('Palette is full! Maximum ' + MAX_PALETTE_SIZE + ' colors allowed.');
         return;
     }
-    const currentColor = document.getElementById('square-color').value;
+    const currentColor = document.getElementById('hex-color').value;
     const name = prompt('Enter a name for this color:', 'Color ' + (palette.length + 1));
     if (name !== null) {
         palette.push({ color: currentColor, name: name.trim() || 'Color ' + (palette.length + 1) });
@@ -271,7 +271,7 @@ document.getElementById('save-palette').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'dungeon_palette_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'hexmap_palette_' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -410,7 +410,7 @@ document.getElementById('save-border-palette').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'dungeon_border_palette_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'hexmap_border_palette_' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -539,16 +539,17 @@ document.getElementById('clear-all-borders').addEventListener('click', () => {
 // Helper to get world-space vertices of a border edge (for duplicate detection)
 function getBorderEdgeVertices(row, col, edge) {
     const index = row * gridWidth + col;
-    if (index < 0 || index >= squareCenters.length) return null;
-    const center = squareCenters[index];
-    const hs = squareSize / 2;
-    const edgeVerts = [
-        {x1: center.x - hs, y1: center.y + hs, x2: center.x + hs, y2: center.y + hs},
-        {x1: center.x + hs, y1: center.y + hs, x2: center.x + hs, y2: center.y - hs},
-        {x1: center.x + hs, y1: center.y - hs, x2: center.x - hs, y2: center.y - hs},
-        {x1: center.x - hs, y1: center.y - hs, x2: center.x - hs, y2: center.y + hs}
-    ];
-    return edgeVerts[edge] || null;
+    if (index < 0 || index >= hexCenters.length) return null;
+    const center = hexCenters[index];
+    const sa = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
+    const angle1 = sa + (edge * Math.PI / 3);
+    const angle2 = sa + ((edge + 1) * Math.PI / 3);
+    return {
+        x1: center.x + hexRadius * Math.cos(angle1),
+        y1: center.y + hexRadius * Math.sin(angle1),
+        x2: center.x + hexRadius * Math.cos(angle2),
+        y2: center.y + hexRadius * Math.sin(angle2)
+    };
 }
 
 function renderCustomBorders() {
@@ -562,29 +563,30 @@ function renderCustomBorders() {
     
     const linePoints = [];
     const colors = [];
+    const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
     
     customBorders.forEach(border => {
         const index = border.row * gridWidth + border.col;
-        if (index >= squareCenters.length) return;
+        if (index >= hexCenters.length) return;
         
-        const center = squareCenters[index];
+        const center = hexCenters[index];
         const cx = center.x;
         const cy = center.y;
-        const halfSize = squareSize / 2;
         
-        // Define square edges: 0=top, 1=right, 2=bottom, 3=left
-        const edges = [
-            [{x: cx - halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy + halfSize}], // top
-            [{x: cx + halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy - halfSize}], // right
-            [{x: cx + halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy - halfSize}], // bottom
-            [{x: cx - halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy + halfSize}]  // left
-        ];
+        // Calculate vertices for this hex
+        const vertices = [];
+        for (let i = 0; i < 6; i++) {
+            const angle = startAngle + (i * Math.PI / 3);
+            vertices.push({
+                x: cx + hexRadius * Math.cos(angle),
+                y: cy + hexRadius * Math.sin(angle)
+            });
+        }
         
-        const edge = edges[border.edge];
-        if (!edge) return;
-        
-        const v1 = edge[0];
-        const v2 = edge[1];
+        // Get the edge endpoints
+        const edge = border.edge;
+        const v1 = vertices[edge];
+        const v2 = vertices[(edge + 1) % 6];
         
         // Calculate perpendicular offset direction for thickness
         const dx = v2.x - v1.x;
@@ -620,153 +622,225 @@ function renderCustomBorders() {
     }
 }
 
+// Create hex grid - configurable orientation
+let hexOrientation = 'flat'; // 'pointy' or 'flat'
+let hexSizePx = 50; // hex size in pixels (10-100)
+let hexRadius = 0.5; // distance from center to vertex (will be recalculated based on hexSizePx)
+let hexWidth = hexRadius * Math.sqrt(3); // flat-to-flat width
+let hexHeight = hexRadius * 2; // point-to-point height
+let horizSpacing = hexWidth; // horizontal spacing between hex centers
+let vertSpacing = hexRadius * 1.5; // vertical spacing (3/4 of height)
 
-// Create square grid
-let squareSizePx = 50; // square size in pixels (10-100)
-let squareSize = 0.5; // size in world units (will be recalculated based on squareSizePx)
-
-function updateSquareMetrics() {
-    // Convert pixel size to world units (50px = 0.5 as default)
-    squareSize = squareSizePx / 100;
+function updateHexMetrics() {
+    // Convert pixel size to world units (50px = 0.5 radius as default)
+    hexRadius = hexSizePx / 100;
+    
+    if (hexOrientation === 'pointy') {
+        // Pointy-top: width is flat-to-flat, height is point-to-point
+        hexWidth = hexRadius * Math.sqrt(3);
+        hexHeight = hexRadius * 2;
+        horizSpacing = hexWidth;
+        vertSpacing = hexRadius * 1.5;
+    } else {
+        // Flat-top: width is point-to-point, height is flat-to-flat
+        hexWidth = hexRadius * 2;
+        hexHeight = hexRadius * Math.sqrt(3);
+        horizSpacing = hexRadius * 1.5;
+        vertSpacing = hexHeight;
+    }
 }
 
-function createSquare(x, y, z, color = 0xffffff) {
+function createHex(x, y, z, color = 0xffffff) {
     const shape = new THREE.Shape();
-    const halfSize = squareSize / 2;
-    
-    // Create square shape
-    shape.moveTo(-halfSize, -halfSize);
-    shape.lineTo(halfSize, -halfSize);
-    shape.lineTo(halfSize, halfSize);
-    shape.lineTo(-halfSize, halfSize);
+    // Starting angle: 90° for pointy-top, 0° for flat-top
+    const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
+    for (let i = 0; i < 6; i++) {
+        const angle = startAngle + (i * Math.PI / 3); // increment by 60°
+        const px = hexRadius * Math.cos(angle);
+        const py = hexRadius * Math.sin(angle);
+        if (i === 0) shape.moveTo(px, py);
+        else shape.lineTo(px, py);
+    }
     shape.closePath();
-    
     const geometry = new THREE.ShapeGeometry(shape);
     const material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0 });
-    const square = new THREE.Mesh(geometry, material);
-    square.position.set(x, y, z);
-    square.userData.originalColor = color;
+    const hex = new THREE.Mesh(geometry, material);
+    hex.position.set(x, y, z);
+    hex.userData.originalColor = color;
 
-    return square;
+    return hex;
 }
 
 let gridWidth = 20;
 let gridHeight = 20;
-let squares = [];
-let squareCenters = [];
+let hexes = [];
+let hexCenters = [];
 let gridLines = null;
 
 function generateGrid() {
-    // Remove existing tag DOM elements (they reference old square objects)
-    document.querySelectorAll('.square-tag').forEach(el => el.remove());
-    squares.forEach(square => {
-        square.userData.tagElement = null;
-        square.userData.tag = null;
-        square.userData.tagData = null;
+    // Remove existing tag DOM elements (they reference old hex objects)
+    document.querySelectorAll('.hex-tag').forEach(el => el.remove());
+    hexes.forEach(hex => {
+        hex.userData.tagElement = null;
+        hex.userData.tag = null;
+        hex.userData.tagData = null;
     });
 
-    // Remove existing squares
-    squares.forEach(square => scene.remove(square));
-    squares = [];
-    squareCenters = [];
+    // Remove existing hexes
+    hexes.forEach(hex => scene.remove(hex));
+    hexes = [];
+    hexCenters = [];
     
-    // Remove existing grid lines and border lines
+    // Remove existing grid lines
     if (gridLines) {
-        // Remove border lines if they exist
-        if (gridLines.userData.borderLines) {
-            scene.remove(gridLines.userData.borderLines);
-        }
         scene.remove(gridLines);
         gridLines = null;
     }
     
-    // Create squares
+    // Create hexes
     for (let row = 0; row < gridHeight; row++) {
         for (let col = 0; col < gridWidth; col++) {
-            const x = (col - gridWidth / 2 + 0.5) * squareSize;
-            const y = (row - gridHeight / 2 + 0.5) * squareSize;
-            const square = createSquare(x, y, 0);
-            scene.add(square);
-            squares.push(square);
-            squareCenters.push({ row, col, x, y });
+            let x, y;
+            if (hexOrientation === 'pointy') {
+                // Pointy-top: offset odd rows
+                x = (col - gridWidth / 2 + 0.5) * horizSpacing + (row % 2) * (horizSpacing / 2);
+                y = (row - gridHeight / 2 + 0.5) * vertSpacing;
+            } else {
+                // Flat-top: offset odd columns
+                x = (col - gridWidth / 2 + 0.5) * horizSpacing;
+                y = (row - gridHeight / 2 + 0.5) * vertSpacing + (col % 2) * (vertSpacing / 2);
+            }
+            const hex = createHex(x, y, 0);
+            scene.add(hex);
+            hexes.push(hex);
+            hexCenters.push({ row, col, x, y });
         }
     }
     
-    // Draw grid lines with darker, thicker borders
+    // Draw grid lines once (no duplicates)
     const linePoints = [];
-    const borderLinePoints = []; // Separate array for outer borders
-    const halfSize = squareSize / 2;
+    const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
     
     for (let row = 0; row < gridHeight; row++) {
         for (let col = 0; col < gridWidth; col++) {
-            const cx = (col - gridWidth / 2 + 0.5) * squareSize;
-            const cy = (row - gridHeight / 2 + 0.5) * squareSize;
-            
-            // Define the four corners of the square
-            const topLeft = { x: cx - halfSize, y: cy + halfSize };
-            const topRight = { x: cx + halfSize, y: cy + halfSize };
-            const bottomLeft = { x: cx - halfSize, y: cy - halfSize };
-            const bottomRight = { x: cx + halfSize, y: cy - halfSize };
-            
-            // Check if this square is on the border
-            const isTopEdge = row === gridHeight - 1;
-            const isBottomEdge = row === 0;
-            const isLeftEdge = col === 0;
-            const isRightEdge = col === gridWidth - 1;
-            
-            // Top edge
-            if (isTopEdge) {
-                borderLinePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
-                borderLinePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
+            let cx, cy;
+            if (hexOrientation === 'pointy') {
+                cx = (col - gridWidth / 2 + 0.5) * horizSpacing + (row % 2) * (horizSpacing / 2);
+                cy = (row - gridHeight / 2 + 0.5) * vertSpacing;
             } else {
-                linePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
-                linePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
+                cx = (col - gridWidth / 2 + 0.5) * horizSpacing;
+                cy = (row - gridHeight / 2 + 0.5) * vertSpacing + (col % 2) * (vertSpacing / 2);
             }
             
-            // Right edge
-            if (isRightEdge) {
-                borderLinePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
-                borderLinePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
-            } else {
-                linePoints.push(new THREE.Vector3(topRight.x, topRight.y, 0));
-                linePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
+            // Get all 6 vertices of this hex
+            const vertices = [];
+            for (let i = 0; i < 6; i++) {
+                const angle = startAngle + (i * Math.PI / 3);
+                vertices.push({
+                    x: cx + hexRadius * Math.cos(angle),
+                    y: cy + hexRadius * Math.sin(angle)
+                });
             }
             
-            // Bottom edge
-            if (isBottomEdge) {
-                borderLinePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
-                borderLinePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
+            if (hexOrientation === 'pointy') {
+                // Pointy-top hex vertices:
+                // 0=TOP, 1=TOP-LEFT, 2=BOTTOM-LEFT, 3=BOTTOM, 4=BOTTOM-RIGHT, 5=TOP-RIGHT
+                //
+                // Each hex always draws its upper-right (5→0), upper-left (0→1), and left (1→2) edges.
+                // The lower-left (2→3), lower-right (3→4), and right (4→5) edges are normally
+                // covered by the corresponding neighbor's always-drawn edges:
+                //   2→3 ← lower-left neighbor's 5→0
+                //   3→4 ← lower-right neighbor's 0→1
+                //   4→5 ← right neighbor's 1→2
+                // Boundary hexes with missing neighbors must draw those edges explicitly.
+                
+                // Always draw upper-right edge (vertex 5 to vertex 0)
+                linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
+                linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
+                
+                // Always draw upper-left edge (vertex 0 to vertex 1)
+                linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
+                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
+                
+                // Always draw left edge (vertex 1 to vertex 2)
+                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
+                linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
+                
+                // Draw lower-left edge (2→3) when no lower-left neighbor:
+                //   Even rows: neighbor at (row-1, col-1) — missing when row=0 or col=0
+                //   Odd rows:  neighbor at (row-1, col)   — missing when row=0
+                if (row === 0 || (row % 2 === 0 && col === 0)) {
+                    linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
+                    linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
+                }
+                
+                // Draw lower-right edge (3→4) when no lower-right neighbor:
+                //   Even rows: neighbor at (row-1, col)   — missing when row=0
+                //   Odd rows:  neighbor at (row-1, col+1) — missing when row=0 or col=last
+                if (row === 0 || (row % 2 === 1 && col === gridWidth - 1)) {
+                    linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
+                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
+                }
+                
+                // Draw right edge (4→5) when no right neighbor at (row, col+1)
+                if (col === gridWidth - 1) {
+                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
+                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
+                }
             } else {
-                linePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
-                linePoints.push(new THREE.Vector3(bottomRight.x, bottomRight.y, 0));
-            }
-            
-            // Left edge
-            if (isLeftEdge) {
-                borderLinePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
-                borderLinePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
-            } else {
-                linePoints.push(new THREE.Vector3(topLeft.x, topLeft.y, 0));
-                linePoints.push(new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0));
+                // Flat-top hex vertices:
+                // 0=RIGHT, 1=UPPER-RIGHT, 2=UPPER-LEFT, 3=LEFT, 4=LOWER-LEFT, 5=LOWER-RIGHT
+                //
+                // Each hex always draws its right-upper (0→1), top (1→2), and left-upper (2→3) edges.
+                // The left-lower (3→4), bottom (4→5), and right-lower (5→0) edges are normally
+                // covered by the corresponding neighbor's always-drawn edges:
+                //   3→4 ← lower-left neighbor's 0→1
+                //   4→5 ← bottom neighbor's 1→2
+                //   5→0 ← lower-right neighbor's 2→3
+                // Boundary hexes with missing neighbors must draw those edges explicitly.
+                
+                // Always draw right-upper edge (vertex 0 to vertex 1)
+                linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
+                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
+                
+                // Always draw top edge (vertex 1 to vertex 2)
+                linePoints.push(new THREE.Vector3(vertices[1].x, vertices[1].y, 0));
+                linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
+                
+                // Always draw left-upper edge (vertex 2 to vertex 3)
+                linePoints.push(new THREE.Vector3(vertices[2].x, vertices[2].y, 0));
+                linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
+                
+                // Draw left-lower edge (3→4) when no lower-left neighbor:
+                //   Even cols: neighbor at (row-1, col-1) — missing when row=0 or col=0
+                //   Odd cols:  neighbor at (row, col-1)   — missing when col=0
+                if (col === 0 || (col % 2 === 0 && row === 0)) {
+                    linePoints.push(new THREE.Vector3(vertices[3].x, vertices[3].y, 0));
+                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
+                }
+                
+                // Draw bottom edge (4→5) when no bottom neighbor at (row-1, col)
+                if (row === 0) {
+                    linePoints.push(new THREE.Vector3(vertices[4].x, vertices[4].y, 0));
+                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
+                }
+                
+                // Draw right-lower edge (5→0) when no lower-right neighbor:
+                //   Even cols: neighbor at (row-1, col+1) — missing when row=0 or col=last
+                //   Odd cols:  neighbor at (row, col+1)   — missing when col=last
+                if (col === gridWidth - 1 || (col % 2 === 0 && row === 0)) {
+                    linePoints.push(new THREE.Vector3(vertices[5].x, vertices[5].y, 0));
+                    linePoints.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
+                }
             }
         }
     }
     
-    // Create regular grid lines (thinner, lighter)
     const gridGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
     const lineColor = isDarkMode ? 0xffffff : 0x000000;
-    const gridMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: 1 });
+    const gridMaterial = new THREE.LineBasicMaterial({ color: lineColor });
     gridLines = new THREE.LineSegments(gridGeometry, gridMaterial);
     scene.add(gridLines);
-    
-    // Create border lines (thicker, darker)
-    const borderGeometry = new THREE.BufferGeometry().setFromPoints(borderLinePoints);
-    const borderMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: 3 });
-    const borderLines = new THREE.LineSegments(borderGeometry, borderMaterial);
-    scene.add(borderLines);
-    
-    // Store reference to border lines for later removal
-    gridLines.userData.borderLines = borderLines;
     
     // Calculate grid bounds for scrolling
     calculateGridBounds();
@@ -775,9 +849,9 @@ function generateGrid() {
 
 // Calculate the bounds of the grid
 function calculateGridBounds() {
-    const totalWidth = gridWidth * squareSize;
-    const totalHeight = gridHeight * squareSize;
-    const padding = squareSize * 2; // Add some padding
+    const totalWidth = gridWidth * horizSpacing;
+    const totalHeight = gridHeight * vertSpacing;
+    const padding = hexRadius * 2; // Add some padding
     
     gridBounds.minX = -totalWidth / 2 - padding;
     gridBounds.maxX = totalWidth / 2 + padding;
@@ -936,7 +1010,7 @@ document.getElementById('canvas').addEventListener('wheel', (e) => {
 }, { passive: false });
 
 // Initial grid generation
-updateSquareMetrics(); // Initialize metrics
+updateHexMetrics(); // Initialize metrics for default orientation
 generateGrid();
 reapplyTagsFromCatalog();
 
@@ -959,13 +1033,13 @@ document.getElementById('apply-grid-size').addEventListener('click', () => {
     reapplyTagsFromCatalog();
 });
 
-document.getElementById('apply-square-size').addEventListener('click', () => {
-    const newSize = Math.min(100, Math.max(10, parseInt(document.getElementById('square-size').value) || 50));
-    document.getElementById('square-size').value = newSize;
-    squareSizePx = newSize;
-    updateSquareMetrics();
+document.getElementById('apply-hex-size').addEventListener('click', () => {
+    const newSize = Math.min(100, Math.max(10, parseInt(document.getElementById('hex-size').value) || 50));
+    document.getElementById('hex-size').value = newSize;
+    hexSizePx = newSize;
+    updateHexMetrics();
     
-    // Reset camera position when square size changes
+    // Reset camera position when hex size changes
     cameraOffsetX = 0;
     cameraOffsetY = 0;
     camera.position.set(0, 0, 10);
@@ -973,6 +1047,23 @@ document.getElementById('apply-square-size').addEventListener('click', () => {
     
     generateGrid();
     reapplyTagsFromCatalog();
+});
+
+// Hex orientation controls
+document.querySelectorAll('input[name="hex-orientation"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        hexOrientation = e.target.value;
+        updateHexMetrics();
+        
+        // Reset camera position when orientation changes
+        cameraOffsetX = 0;
+        cameraOffsetY = 0;
+        camera.position.set(0, 0, 10);
+        camera.lookAt(0, 0, 0);
+        
+        generateGrid();
+        reapplyTagsFromCatalog();
+    });
 });
 
 // Animation loop
@@ -1031,45 +1122,41 @@ function onMouseClick(event) {
     
     // Handle border mode
     if (isBorderMode || isRemovingBorder) {
-        const intersects = raycaster.intersectObjects(squares);
+        const intersects = raycaster.intersectObjects(hexes);
         if (intersects.length > 0) {
-            const square = intersects[0].object;
-            const squareIndex = squares.indexOf(square);
-            if (squareIndex === -1) return;
+            const hex = intersects[0].object;
+            const hexIndex = hexes.indexOf(hex);
+            if (hexIndex === -1) return;
             
-            const center = squareCenters[squareIndex];
+            const center = hexCenters[hexIndex];
             const cx = center.x;
             const cy = center.y;
-            const halfSize = squareSize / 2;
             
             // Get click position in world coordinates
             const worldPos = screenToWorld(event.clientX, event.clientY);
             const clickX = worldPos.x;
             const clickY = worldPos.y;
             
-            // Define square edges: 0=top, 1=right, 2=bottom, 3=left
-            const edges = [
-                [{x: cx - halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy + halfSize}], // top
-                [{x: cx + halfSize, y: cy + halfSize}, {x: cx + halfSize, y: cy - halfSize}], // right
-                [{x: cx + halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy - halfSize}], // bottom
-                [{x: cx - halfSize, y: cy - halfSize}, {x: cx - halfSize, y: cy + halfSize}]  // left
-            ];
-            
             // Find closest edge
+            const startAngle = hexOrientation === 'pointy' ? Math.PI / 2 : 0;
             let closestEdge = 0;
             let minDist = Infinity;
             
-            for (let i = 0; i < 4; i++) {
-                const v1 = edges[i][0];
-                const v2 = edges[i][1];
+            for (let i = 0; i < 6; i++) {
+                const angle1 = startAngle + (i * Math.PI / 3);
+                const angle2 = startAngle + ((i + 1) * Math.PI / 3);
+                const v1x = cx + hexRadius * Math.cos(angle1);
+                const v1y = cy + hexRadius * Math.sin(angle1);
+                const v2x = cx + hexRadius * Math.cos(angle2);
+                const v2y = cy + hexRadius * Math.sin(angle2);
                 
                 // Distance from point to line segment
-                const dx = v2.x - v1.x;
-                const dy = v2.y - v1.y;
+                const dx = v2x - v1x;
+                const dy = v2y - v1y;
                 const len = Math.sqrt(dx * dx + dy * dy);
-                const t = Math.max(0, Math.min(1, ((clickX - v1.x) * dx + (clickY - v1.y) * dy) / (len * len)));
-                const projX = v1.x + t * dx;
-                const projY = v1.y + t * dy;
+                const t = Math.max(0, Math.min(1, ((clickX - v1x) * dx + (clickY - v1y) * dy) / (len * len)));
+                const projX = v1x + t * dx;
+                const projY = v1y + t * dy;
                 const dist = Math.sqrt((clickX - projX) * (clickX - projX) + (clickY - projY) * (clickY - projY));
                 
                 if (dist < minDist) {
@@ -1079,7 +1166,7 @@ function onMouseClick(event) {
             }
             
             // Only add/remove border if click was close to an edge
-            if (minDist < squareSize * 0.25) {
+            if (minDist < hexRadius * 0.3) {
                 const borderColor = document.getElementById('border-color').value;
                 const borderThickness = parseInt(document.getElementById('border-thickness').value);
                 
@@ -1132,16 +1219,16 @@ function onContextMenu(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(squares);
+    const intersects = raycaster.intersectObjects(hexes);
     
     if (intersects.length > 0) {
-        const square = intersects[0].object;
-        selectedSquare = square;
+        const hex = intersects[0].object;
+        selectedHex = hex;
         
         // Update Add Tag / Clear Tag option
         const addTagItem = document.getElementById('ctx-add-tag');
         const editTagItem = document.getElementById('ctx-edit-tag');
-        if (square.userData.tag) {
+        if (hex.userData.tag) {
             addTagItem.textContent = 'Clear Tag';
             editTagItem.style.display = '';
         } else {
@@ -1157,13 +1244,13 @@ function onContextMenu(event) {
     }
 }
 
-let selectedSquare = null;
+let selectedHex = null;
 
 function hideContextMenu() {
     const contextMenu = document.getElementById('context-menu');
     if (contextMenu.classList.contains('visible')) {
         contextMenu.classList.remove('visible');
-        contextMenuOpen = true; // Flag to prevent square fill on next click
+        contextMenuOpen = true; // Flag to prevent hex fill on next click
     }
 }
 
@@ -1175,23 +1262,23 @@ window.addEventListener('click', (e) => {
 });
 
 // Context menu actions
-document.getElementById('ctx-clear-square').addEventListener('click', (e) => {
+document.getElementById('ctx-clear-hex').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedSquare) {
+    if (selectedHex) {
         // Clear fill
-        selectedSquare.material.opacity = 0;
+        selectedHex.material.opacity = 0;
         // Clear tag and remove from catalog
-        if (selectedSquare.userData.tagElement) {
-            const sqIndex = squares.indexOf(selectedSquare);
-            if (sqIndex >= 0) {
-                const center = squareCenters[sqIndex];
+        if (selectedHex.userData.tagElement) {
+            const hexIndex = hexes.indexOf(selectedHex);
+            if (hexIndex >= 0) {
+                const center = hexCenters[hexIndex];
                 const catIdx = tagCatalog.findIndex(t => t.row === center.row && t.col === center.col);
                 if (catIdx >= 0) tagCatalog.splice(catIdx, 1);
             }
-            selectedSquare.userData.tagElement.remove();
-            selectedSquare.userData.tagElement = null;
-            selectedSquare.userData.tag = null;
-            selectedSquare.userData.tagData = null;
+            selectedHex.userData.tagElement.remove();
+            selectedHex.userData.tagElement = null;
+            selectedHex.userData.tag = null;
+            selectedHex.userData.tagData = null;
         }
     }
     hideContextMenu();
@@ -1199,32 +1286,32 @@ document.getElementById('ctx-clear-square').addEventListener('click', (e) => {
 
 document.getElementById('ctx-clear-fill').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedSquare) {
-        selectedSquare.material.opacity = 0;
+    if (selectedHex) {
+        selectedHex.material.opacity = 0;
     }
     hideContextMenu();
 });
 
 document.getElementById('ctx-add-tag').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedSquare) {
-        if (selectedSquare.userData.tag) {
+    if (selectedHex) {
+        if (selectedHex.userData.tag) {
             // Clear tag - remove from catalog and tile
-            const sqIndex = squares.indexOf(selectedSquare);
-            if (sqIndex >= 0) {
-                const center = squareCenters[sqIndex];
+            const hexIndex = hexes.indexOf(selectedHex);
+            if (hexIndex >= 0) {
+                const center = hexCenters[hexIndex];
                 const catIdx = tagCatalog.findIndex(t => t.row === center.row && t.col === center.col);
                 if (catIdx >= 0) tagCatalog.splice(catIdx, 1);
             }
-            if (selectedSquare.userData.tagElement) {
-                selectedSquare.userData.tagElement.remove();
-                selectedSquare.userData.tagElement = null;
-                selectedSquare.userData.tag = null;
-                selectedSquare.userData.tagData = null;
+            if (selectedHex.userData.tagElement) {
+                selectedHex.userData.tagElement.remove();
+                selectedHex.userData.tagElement = null;
+                selectedHex.userData.tag = null;
+                selectedHex.userData.tagData = null;
             }
         } else {
             // Open Add Tag dialog
-            openTagDialog(selectedSquare);
+            openTagDialog(selectedHex);
         }
     }
     hideContextMenu();
@@ -1232,8 +1319,8 @@ document.getElementById('ctx-add-tag').addEventListener('click', (e) => {
 
 document.getElementById('ctx-edit-tag').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (selectedSquare && selectedSquare.userData.tagData) {
-        openTagDialog(selectedSquare, selectedSquare.userData.tagData);
+    if (selectedHex && selectedHex.userData.tagData) {
+        openTagDialog(selectedHex, selectedHex.userData.tagData);
     }
     hideContextMenu();
 });
@@ -1253,8 +1340,8 @@ function formatMetaString(metaArr) {
     return metaArr.map(m => m.key + ';' + m.value).join(', ');
 }
 
-// Open tag entry dialog for a square (optionally pre-fill for editing)
-function openTagDialog(square, existingEntry) {
+// Open tag entry dialog for a hex (optionally pre-fill for editing)
+function openTagDialog(hex, existingEntry) {
     const overlay = document.getElementById('tag-dialog-overlay');
     const titleEl = document.getElementById('tag-dialog-title');
     const confirmBtn = document.getElementById('tag-dialog-confirm');
@@ -1281,15 +1368,15 @@ function openTagDialog(square, existingEntry) {
 
     overlay.classList.add('visible');
 
-    // Store reference to target square
-    overlay._targetSquare = square;
+    // Store reference to target hex
+    overlay._targetHex = hex;
 }
 
 // Tag dialog confirm
 document.getElementById('tag-dialog-confirm').addEventListener('click', () => {
     const overlay = document.getElementById('tag-dialog-overlay');
-    const square = overlay._targetSquare;
-    if (!square) return;
+    const hex = overlay._targetHex;
+    if (!hex) return;
 
     const displayText = document.getElementById('tag-display-text').value.trim();
     const name = document.getElementById('tag-name').value.trim();
@@ -1302,8 +1389,8 @@ document.getElementById('tag-dialog-confirm').addEventListener('click', () => {
     }
 
     const meta = parseMetaString(metaStr);
-    const sqIndex = squares.indexOf(square);
-    const center = sqIndex >= 0 ? squareCenters[sqIndex] : { row: -1, col: -1 };
+    const hexIndex = hexes.indexOf(hex);
+    const center = hexIndex >= 0 ? hexCenters[hexIndex] : { row: -1, col: -1 };
 
     const editingEntry = overlay._editingEntry;
 
@@ -1330,15 +1417,15 @@ document.getElementById('tag-dialog-confirm').addEventListener('click', () => {
         if (existingIdx >= 0) tagCatalog.splice(existingIdx, 1);
 
         tagCatalog.push(entry);
-        square.userData.tagData = entry;
+        hex.userData.tagData = entry;
     }
 
-    // Apply tag to square (updates display text on tile)
-    addTagToSquare(square, displayText, editingEntry || square.userData.tagData);
+    // Apply tag to hex (updates display text on tile)
+    addTagToHex(hex, displayText, editingEntry || hex.userData.tagData);
 
     // Close dialog
     overlay.classList.remove('visible');
-    overlay._targetSquare = null;
+    overlay._targetHex = null;
     overlay._editingEntry = null;
 });
 
@@ -1346,7 +1433,7 @@ document.getElementById('tag-dialog-confirm').addEventListener('click', () => {
 document.getElementById('tag-dialog-cancel').addEventListener('click', () => {
     const overlay = document.getElementById('tag-dialog-overlay');
     overlay.classList.remove('visible');
-    overlay._targetSquare = null;
+    overlay._targetHex = null;
     overlay._editingEntry = null;
 });
 
@@ -1354,41 +1441,41 @@ document.getElementById('tag-dialog-cancel').addEventListener('click', () => {
 document.getElementById('tag-dialog-overlay').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) {
         e.currentTarget.classList.remove('visible');
-        e.currentTarget._targetSquare = null;
+        e.currentTarget._targetHex = null;
         e.currentTarget._editingEntry = null;
     }
 });
 
-function addTagToSquare(square, text, tagData) {
+function addTagToHex(hex, text, tagData) {
     // Remove existing tag if any
-    if (square.userData.tagElement) {
-        square.userData.tagElement.remove();
+    if (hex.userData.tagElement) {
+        hex.userData.tagElement.remove();
     }
     
-    // Get square screen position
-    const squarePos = new THREE.Vector3(square.position.x, square.position.y, square.position.z);
-    squarePos.project(camera);
-    const screenX = (squarePos.x * 0.5 + 0.5) * window.innerWidth;
-    const screenY = (-squarePos.y * 0.5 + 0.5) * window.innerHeight;
+    // Get hex screen position
+    const hexPos = new THREE.Vector3(hex.position.x, hex.position.y, hex.position.z);
+    hexPos.project(camera);
+    const screenX = (hexPos.x * 0.5 + 0.5) * window.innerWidth;
+    const screenY = (-hexPos.y * 0.5 + 0.5) * window.innerHeight;
     
-    // Calculate square size on screen
-    const squareEdgePos = new THREE.Vector3(square.position.x + squareSize * 0.4, square.position.y, square.position.z);
-    squareEdgePos.project(camera);
-    const edgeScreenX = (squareEdgePos.x * 0.5 + 0.5) * window.innerWidth;
-    const squareScreenHalfSize = Math.abs(edgeScreenX - screenX);
+    // Calculate hex size on screen
+    const hexEdgePos = new THREE.Vector3(hex.position.x + hexRadius * 0.8, hex.position.y, hex.position.z);
+    hexEdgePos.project(camera);
+    const edgeScreenX = (hexEdgePos.x * 0.5 + 0.5) * window.innerWidth;
+    const hexScreenRadius = Math.abs(edgeScreenX - screenX);
     
     // Create tag element
     const tagElement = document.createElement('div');
-    tagElement.className = 'square-tag';
+    tagElement.className = 'hex-tag';
     tagElement.textContent = text;
     tagElement.style.left = screenX + 'px';
     tagElement.style.top = screenY + 'px';
     tagElement.style.transform = 'translate(-50%, -50%)';
     
-    // Size font to fit inside square
-    const maxWidth = squareScreenHalfSize * 1.8;
+    // Size font to fit inside hex
+    const maxWidth = hexScreenRadius * 1.6;
     tagElement.style.maxWidth = maxWidth + 'px';
-    tagElement.style.fontSize = Math.max(8, Math.min(16, squareScreenHalfSize * 0.6)) + 'px';
+    tagElement.style.fontSize = Math.max(8, Math.min(16, hexScreenRadius * 0.6)) + 'px';
     tagElement.style.overflow = 'hidden';
     tagElement.style.textOverflow = 'ellipsis';
     tagElement.style.whiteSpace = 'nowrap';
@@ -1396,18 +1483,18 @@ function addTagToSquare(square, text, tagData) {
     document.body.appendChild(tagElement);
     
     // Store reference
-    square.userData.tag = text;
-    square.userData.tagElement = tagElement;
-    square.userData.tagData = tagData || null;
+    hex.userData.tag = text;
+    hex.userData.tagElement = tagElement;
+    hex.userData.tagData = tagData || null;
 }
 
-// Re-apply all tags from catalog to current square meshes (after grid regeneration)
+// Re-apply all tags from catalog to current hex meshes (after grid regeneration)
 function reapplyTagsFromCatalog() {
     tagCatalog.forEach(entry => {
         const tileIndex = entry.row * gridWidth + entry.col;
-        if (tileIndex >= 0 && tileIndex < squares.length) {
-            const square = squares[tileIndex];
-            addTagToSquare(square, entry.displayText, entry);
+        if (tileIndex >= 0 && tileIndex < hexes.length) {
+            const hex = hexes[tileIndex];
+            addTagToHex(hex, entry.displayText, entry);
         }
     });
 }
@@ -1473,7 +1560,7 @@ function renderTagCatalog() {
 
     if (filtered.length === 0) {
         list.innerHTML = '<div class="tag-catalog-empty">No tags found.' +
-            (tagCatalog.length === 0 ? ' Right-click a square and select "Add Tag" to create one.' : '') +
+            (tagCatalog.length === 0 ? ' Right-click a hex and select "Add Tag" to create one.' : '') +
             '</div>';
         return;
     }
@@ -1532,13 +1619,13 @@ function deleteTagById(tagId) {
 
     // Remove tag from the tile
     const tileIndex = entry.row * gridWidth + entry.col;
-    if (tileIndex >= 0 && tileIndex < squares.length) {
-        const square = squares[tileIndex];
-        if (square.userData.tagElement) {
-            square.userData.tagElement.remove();
-            square.userData.tagElement = null;
-            square.userData.tag = null;
-            square.userData.tagData = null;
+    if (tileIndex >= 0 && tileIndex < hexes.length) {
+        const hex = hexes[tileIndex];
+        if (hex.userData.tagElement) {
+            hex.userData.tagElement.remove();
+            hex.userData.tagElement = null;
+            hex.userData.tag = null;
+            hex.userData.tagData = null;
         }
     }
 
@@ -1549,13 +1636,13 @@ function editTagFromCatalog(tagId) {
     const entry = tagCatalog.find(t => t.id === tagId);
     if (!entry) return;
 
-    // Find the square for this entry
+    // Find the hex for this entry
     const tileIndex = entry.row * gridWidth + entry.col;
-    if (tileIndex >= 0 && tileIndex < squares.length) {
-        const square = squares[tileIndex];
+    if (tileIndex >= 0 && tileIndex < hexes.length) {
+        const hex = hexes[tileIndex];
         // Close catalog then open edit dialog
         document.getElementById('tag-catalog-overlay').classList.remove('visible');
-        openTagDialog(square, entry);
+        openTagDialog(hex, entry);
     }
 }
 
@@ -1620,8 +1707,8 @@ function importTagCatalog(tags) {
 
         // Apply to tile if it exists
         const tileIndex = imported.row * gridWidth + imported.col;
-        if (tileIndex >= 0 && tileIndex < squares.length) {
-            addTagToSquare(squares[tileIndex], imported.displayText, imported);
+        if (tileIndex >= 0 && tileIndex < hexes.length) {
+            addTagToHex(hexes[tileIndex], imported.displayText, imported);
         }
     });
 }
@@ -1648,23 +1735,23 @@ function worldToScreen(worldX, worldY) {
 
 // Update tag positions on camera change
 function updateTagPositions() {
-    squares.forEach(square => {
-        if (square.userData.tagElement) {
-            const squarePos = new THREE.Vector3(square.position.x, square.position.y, square.position.z);
-            squarePos.project(camera);
-            const screenX = (squarePos.x * 0.5 + 0.5) * window.innerWidth;
-            const screenY = (-squarePos.y * 0.5 + 0.5) * window.innerHeight;
-            square.userData.tagElement.style.left = screenX + 'px';
-            square.userData.tagElement.style.top = screenY + 'px';
+    hexes.forEach(hex => {
+        if (hex.userData.tagElement) {
+            const hexPos = new THREE.Vector3(hex.position.x, hex.position.y, hex.position.z);
+            hexPos.project(camera);
+            const screenX = (hexPos.x * 0.5 + 0.5) * window.innerWidth;
+            const screenY = (-hexPos.y * 0.5 + 0.5) * window.innerHeight;
+            hex.userData.tagElement.style.left = screenX + 'px';
+            hex.userData.tagElement.style.top = screenY + 'px';
             
-            // Update font size based on square size
-            const squareEdgePos = new THREE.Vector3(square.position.x + squareSize * 0.4, square.position.y, square.position.z);
-            squareEdgePos.project(camera);
-            const edgeScreenX = (squareEdgePos.x * 0.5 + 0.5) * window.innerWidth;
-            const squareScreenHalfSize = Math.abs(edgeScreenX - screenX);
-            const maxWidth = squareScreenHalfSize * 1.8;
-            square.userData.tagElement.style.maxWidth = maxWidth + 'px';
-            square.userData.tagElement.style.fontSize = Math.max(8, Math.min(16, squareScreenHalfSize * 0.6)) + 'px';
+            // Update font size based on hex size
+            const hexEdgePos = new THREE.Vector3(hex.position.x + hexRadius * 0.8, hex.position.y, hex.position.z);
+            hexEdgePos.project(camera);
+            const edgeScreenX = (hexEdgePos.x * 0.5 + 0.5) * window.innerWidth;
+            const hexScreenRadius = Math.abs(edgeScreenX - screenX);
+            const maxWidth = hexScreenRadius * 1.6;
+            hex.userData.tagElement.style.maxWidth = maxWidth + 'px';
+            hex.userData.tagElement.style.fontSize = Math.max(8, Math.min(16, hexScreenRadius * 0.6)) + 'px';
         }
     });
 }
@@ -1732,16 +1819,16 @@ function onMouseDown(event) {
         if (contextMenuOpen) return; // don't fill right after closing context menu
         if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon') || event.target.closest('.tag-dialog-overlay') || event.target.closest('.tag-catalog-overlay')) return;
         isLeftFilling = true;
-        // Fill square under cursor immediately
+        // Fill hex under cursor immediately
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(squares);
+        const intersects = raycaster.intersectObjects(hexes);
         if (intersects.length > 0) {
-            const square = intersects[0].object;
-            const color = document.getElementById('square-color').value;
-            square.material.color.setStyle(color);
-            square.material.opacity = 0.8;
+            const hex = intersects[0].object;
+            const color = document.getElementById('hex-color').value;
+            hex.material.color.setStyle(color);
+            hex.material.opacity = 0.8;
         }
         return;
     }
@@ -1775,12 +1862,12 @@ function onMouseMove(event) {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(squares);
+        const intersects = raycaster.intersectObjects(hexes);
         if (intersects.length > 0) {
-            const square = intersects[0].object;
-            const color = document.getElementById('square-color').value;
-            square.material.color.setStyle(color);
-            square.material.opacity = 0.8;
+            const hex = intersects[0].object;
+            const color = document.getElementById('hex-color').value;
+            hex.material.color.setStyle(color);
+            hex.material.opacity = 0.8;
         }
         return;
     }
@@ -2510,15 +2597,15 @@ document.getElementById('import-rng-file').addEventListener('change', (e) => {
 
 // Save Map functionality
 document.getElementById('save-map').addEventListener('click', () => {
-    // Collect all square data
-    const squareData = squares.map((square, index) => {
-        const center = squareCenters[index];
+    // Collect all hex data
+    const hexData = hexes.map((hex, index) => {
+        const center = hexCenters[index];
         return {
             row: center.row,
             col: center.col,
-            color: '#' + square.material.color.getHexString(),
-            opacity: square.material.opacity,
-            tag: square.userData.tag || null
+            color: '#' + hex.material.color.getHexString(),
+            opacity: hex.material.opacity,
+            tag: hex.userData.tag || null
         };
     });
     
@@ -2543,13 +2630,13 @@ document.getElementById('save-map').addEventListener('click', () => {
     // Build save object
     const saveData = {
         version: 1,
-        type: 'dungeon',
         gridWidth: gridWidth,
         gridHeight: gridHeight,
-        squareSizePx: squareSizePx,
+        hexSizePx: hexSizePx,
+        hexOrientation: hexOrientation,
         bgColor: bgColor,
         bgImageData: bgImageData,
-        squares: squareData,
+        hexes: hexData,
         drawingData: drawingData,
         mapIcons: mapIconsData,
         iconLibrary: iconLibrary,
@@ -2563,7 +2650,7 @@ document.getElementById('save-map').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'dungeon_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'hexmap_' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -2584,16 +2671,17 @@ document.getElementById('import-file').addEventListener('change', (e) => {
         try {
             const saveData = JSON.parse(event.target.result);
             
-            // Validate version and type
-            if (!saveData.version || saveData.type !== 'dungeon') {
-                alert('Invalid dungeon file format.');
+            // Validate version
+            if (!saveData.version) {
+                alert('Invalid map file format.');
                 return;
             }
             
             // Restore settings
             gridWidth = saveData.gridWidth || 20;
             gridHeight = saveData.gridHeight || 20;
-            squareSizePx = saveData.squareSizePx || 50;
+            hexSizePx = saveData.hexSizePx || 50;
+            hexOrientation = saveData.hexOrientation || 'flat';
             
             // Restore background
             bgColor = saveData.bgColor || '#ffffff';
@@ -2614,10 +2702,12 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             // Update UI
             document.getElementById('grid-width').value = gridWidth;
             document.getElementById('grid-height').value = gridHeight;
-            document.getElementById('square-size').value = squareSizePx;
+            document.getElementById('hex-size').value = hexSizePx;
+            document.getElementById('hex-pointy').checked = hexOrientation === 'pointy';
+            document.getElementById('hex-flat').checked = hexOrientation === 'flat';
             
             // Update metrics and regenerate grid
-            updateSquareMetrics();
+            updateHexMetrics();
             
             // Reset camera
             cameraOffsetX = 0;
@@ -2627,16 +2717,16 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             
             generateGrid();
             
-            // Restore square colors and tags
-            if (saveData.squares) {
-                saveData.squares.forEach(squareData => {
-                    const index = squareData.row * gridWidth + squareData.col;
-                    if (index < squares.length) {
-                        const square = squares[index];
-                        square.material.color.setStyle(squareData.color);
-                        square.material.opacity = squareData.opacity;
-                        if (squareData.tag) {
-                            addTagToSquare(square, squareData.tag);
+            // Restore hex colors and tags
+            if (saveData.hexes) {
+                saveData.hexes.forEach(hexData => {
+                    const index = hexData.row * gridWidth + hexData.col;
+                    if (index < hexes.length) {
+                        const hex = hexes[index];
+                        hex.material.color.setStyle(hexData.color);
+                        hex.material.opacity = hexData.opacity;
+                        if (hexData.tag) {
+                            addTagToHex(hex, hexData.tag);
                         }
                     }
                 });
@@ -2673,16 +2763,28 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             mapIcons.length = 0;
             if (saveData.mapIcons) {
                 saveData.mapIcons.forEach(iconData => {
-                    const screenPos = worldToScreen(iconData.worldX, iconData.worldY);
-                    const icon = placeIconOnMap(
-                        iconData.imageData, 
-                        screenPos.x,
-                        screenPos.y,
-                        parseInt(iconData.width),
-                        parseInt(iconData.height),
-                        iconData.worldX,
-                        iconData.worldY
-                    );
+                    // Check if saved with world coordinates (new format) or screen coordinates (old format)
+                    if (iconData.worldX !== undefined && iconData.worldY !== undefined) {
+                        const screenPos = worldToScreen(iconData.worldX, iconData.worldY);
+                        const icon = placeIconOnMap(
+                            iconData.imageData, 
+                            screenPos.x,
+                            screenPos.y,
+                            parseInt(iconData.width),
+                            parseInt(iconData.height),
+                            iconData.worldX,
+                            iconData.worldY
+                        );
+                    } else {
+                        // Legacy format with screen coordinates
+                        const icon = placeIconOnMap(
+                            iconData.imageData, 
+                            parseInt(iconData.left) + parseInt(iconData.width) / 2,
+                            parseInt(iconData.top) + parseInt(iconData.height) / 2,
+                            parseInt(iconData.width),
+                            parseInt(iconData.height)
+                        );
+                    }
                 });
                 setActiveMapIcon(null); // Deselect all after restore
             }
@@ -2703,24 +2805,25 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                 // Re-apply tags to tiles from catalog (they may have richer data than the simple tag string)
                 tagCatalog.forEach(entry => {
                     const tileIndex = entry.row * gridWidth + entry.col;
-                    if (tileIndex >= 0 && tileIndex < squares.length) {
-                        const square = squares[tileIndex];
-                        if (!square.userData.tagData) {
-                            square.userData.tagData = entry;
+                    if (tileIndex >= 0 && tileIndex < hexes.length) {
+                        const hex = hexes[tileIndex];
+                        // Only apply if hex doesn't already have a tag (it may have been set by hexData restore above)
+                        if (!hex.userData.tagData) {
+                            hex.userData.tagData = entry;
                         }
                     }
                 });
             } else {
-                // Build catalog from square tags for legacy maps that don't have a catalog
+                // Build catalog from hex tags for legacy maps that don't have a catalog
                 tagCatalog = [];
                 nextTagId = 1;
-                squares.forEach((square, index) => {
-                    if (square.userData.tag) {
-                        const center = squareCenters[index];
+                hexes.forEach((hex, index) => {
+                    if (hex.userData.tag) {
+                        const center = hexCenters[index];
                         tagCatalog.push({
                             id: nextTagId++,
-                            displayText: square.userData.tag,
-                            name: square.userData.tag,
+                            displayText: hex.userData.tag,
+                            name: hex.userData.tag,
                             meta: [],
                             row: center.row,
                             col: center.col
@@ -2729,9 +2832,9 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                 });
             }
             
-            alert('Dungeon imported successfully!');
+            alert('Map imported successfully!');
         } catch (err) {
-            alert('Error importing dungeon: ' + err.message);
+            alert('Error importing map: ' + err.message);
         }
     };
     reader.readAsText(file);
