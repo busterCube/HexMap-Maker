@@ -1,0 +1,983 @@
+{
+  "name": "SVG Icon Set",
+  "version": "1.0",
+  "description": "Collection of hex map terrain and feature icons with customizable colors",
+  "globalScale": {
+    "width": 220,
+    "height": 250,
+    "viewBox": "0 0 220 250"
+  },
+  "globalColorVariables": {
+    "--hex-stroke": "#555",
+    "--hex-fill": "none"
+  },
+  "icons": [
+    {
+      "id": 1,
+      "name": "Evergreen Tree",
+      "colorVariables": {
+        "--evergreen-trunk": "#6B3A1F",
+        "--evergreen-dark": "#1B5E20",
+        "--evergreen-mid": "#2E7D32",
+        "--evergreen-light": "#388E3C"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n<!-- Trunk -->\r\n      <rect x=\"105\" y=\"170\" width=\"10\" height=\"55\" fill=\"var(--evergreen-trunk)\" rx=\"2\"/>\r\n      <!-- Tree layers (bottom to top) -->\r\n      <polygon points=\"110,50 150,140 70,140\" fill=\"var(--evergreen-dark)\"/>\r\n      <polygon points=\"110,70 145,130 75,130\" fill=\"var(--evergreen-mid)\"/>\r\n      <polygon points=\"110,90 140,120 80,120\" fill=\"var(--evergreen-light)\"/>\r\n      <!-- Triangular conifer shape -->\r\n      <polygon points=\"110,45 160,170 60,170\" fill=\"var(--evergreen-dark)\" opacity=\"0.9\"/>\r\n      <polygon points=\"110,65 150,155 70,155\" fill=\"var(--evergreen-mid)\" opacity=\"0.9\"/>\r\n      <polygon points=\"110,85 140,140 80,140\" fill=\"var(--evergreen-light)\" opacity=\"0.9\"/>\r\n    </svg>"
+    },
+    {
+      "id": 2,
+      "name": "Jungle Tree",
+      "colorVariables": {
+        "--jungle-trunk": "#5D4037",
+        "--jungle-canopy-dark": "#1B5E20",
+        "--jungle-canopy-mid": "#2E7D32",
+        "--jungle-canopy-light": "#43A047",
+        "--jungle-vine": "#66BB6A"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Trunk -->\r\n      <rect x=\"106\" y=\"130\" width=\"8\" height=\"90\" fill=\"var(--jungle-trunk)\" rx=\"2\"/>\r\n      <!-- Dense round canopy -->\r\n      <circle cx=\"110\" cy=\"115\" r=\"45\" fill=\"var(--jungle-canopy-dark)\"/>\r\n      <circle cx=\"95\" cy=\"105\" r=\"30\" fill=\"var(--jungle-canopy-mid)\"/>\r\n      <circle cx=\"130\" cy=\"108\" r=\"28\" fill=\"var(--jungle-canopy-mid)\"/>\r\n      <circle cx=\"110\" cy=\"95\" r=\"25\" fill=\"var(--jungle-canopy-light)\"/>\r\n      <!-- Hanging vines -->\r\n      <path d=\"M80 130 C 78 150, 82 170, 75 185\" stroke=\"var(--jungle-vine)\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <path d=\"M140 125 C 142 145, 138 160, 145 180\" stroke=\"var(--jungle-vine)\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <path d=\"M95 140 C 90 155, 93 170, 88 190\" stroke=\"var(--jungle-vine)\" stroke-width=\"1.5\" fill=\"none\" stroke-linecap=\"round\"/>\r\n    </svg>"
+    },
+    {
+      "id": 3,
+      "name": "Tropical Tree",
+      "colorVariables": {
+        "--palm-trunk": "#A86B32",
+        "--palm-trunk-ring": "#8C5325",
+        "--palm-crown": "#2F7F3A",
+        "--palm-frond-a": "#2F9F4A",
+        "--palm-frond-b": "#33B357",
+        "--palm-frond-c": "#2F8F46"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Trunk -->\r\n      <rect x=\"104\" y=\"110\" width=\"12\" height=\"110\" fill=\"var(--palm-trunk)\" rx=\"4\"/>\r\n      <!-- Trunk rings -->\r\n      <line x1=\"104\" y1=\"130\" x2=\"116\" y2=\"130\" stroke=\"var(--palm-trunk-ring)\" stroke-width=\"2\" opacity=\"0.7\"/>\r\n      <line x1=\"104\" y1=\"150\" x2=\"116\" y2=\"150\" stroke=\"var(--palm-trunk-ring)\" stroke-width=\"2\" opacity=\"0.7\"/>\r\n      <line x1=\"104\" y1=\"170\" x2=\"116\" y2=\"170\" stroke=\"var(--palm-trunk-ring)\" stroke-width=\"2\" opacity=\"0.7\"/>\r\n      <line x1=\"104\" y1=\"190\" x2=\"116\" y2=\"190\" stroke=\"var(--palm-trunk-ring)\" stroke-width=\"2\" opacity=\"0.7\"/>\r\n      <line x1=\"104\" y1=\"210\" x2=\"116\" y2=\"210\" stroke=\"var(--palm-trunk-ring)\" stroke-width=\"2\" opacity=\"0.7\"/>\r\n      <!-- Crown center -->\r\n      <circle cx=\"110\" cy=\"110\" r=\"8\" fill=\"var(--palm-crown)\"/>\r\n      <!-- Fronds arching out then drooping -->\r\n      <path d=\"M110 110 C 85 80, 50 55, 35 70\" stroke=\"var(--palm-frond-a)\" stroke-width=\"7\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 110 C 80 95, 40 92, 28 115\" stroke=\"var(--palm-frond-b)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 110 C 85 108, 55 118, 40 148\" stroke=\"var(--palm-frond-c)\" stroke-width=\"7\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 110 C 135 80, 170 55, 185 70\" stroke=\"var(--palm-frond-a)\" stroke-width=\"7\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 110 C 140 95, 180 92, 192 115\" stroke=\"var(--palm-frond-b)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 110 C 135 108, 165 118, 180 148\" stroke=\"var(--palm-frond-c)\" stroke-width=\"7\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 4,
+      "name": "Tree Stump",
+      "colorVariables": {
+        "--stump-bark": "#6B3A1F",
+        "--stump-bark-dark": "#4E2B15",
+        "--stump-top": "#A0785A",
+        "--stump-rings": "#8B6543",
+        "--stump-root": "#5D3A1A"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Stump body -->\r\n      <rect x=\"85\" y=\"140\" width=\"50\" height=\"60\" fill=\"var(--stump-bark)\" rx=\"5\"/>\r\n      <!-- Bark texture lines -->\r\n      <line x1=\"92\" y1=\"145\" x2=\"92\" y2=\"200\" stroke=\"var(--stump-bark-dark)\" stroke-width=\"1.5\" opacity=\"0.5\"/>\r\n      <line x1=\"102\" y1=\"145\" x2=\"102\" y2=\"200\" stroke=\"var(--stump-bark-dark)\" stroke-width=\"1.5\" opacity=\"0.5\"/>\r\n      <line x1=\"118\" y1=\"145\" x2=\"118\" y2=\"200\" stroke=\"var(--stump-bark-dark)\" stroke-width=\"1.5\" opacity=\"0.5\"/>\r\n      <line x1=\"128\" y1=\"145\" x2=\"128\" y2=\"200\" stroke=\"var(--stump-bark-dark)\" stroke-width=\"1.5\" opacity=\"0.5\"/>\r\n      <!-- Top surface (ellipse) -->\r\n      <ellipse cx=\"110\" cy=\"140\" rx=\"28\" ry=\"12\" fill=\"var(--stump-top)\"/>\r\n      <!-- Tree rings on top -->\r\n      <ellipse cx=\"110\" cy=\"140\" rx=\"20\" ry=\"8\" fill=\"none\" stroke=\"var(--stump-rings)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <ellipse cx=\"110\" cy=\"140\" rx=\"12\" ry=\"5\" fill=\"none\" stroke=\"var(--stump-rings)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <ellipse cx=\"110\" cy=\"140\" rx=\"5\" ry=\"2\" fill=\"none\" stroke=\"var(--stump-rings)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <!-- Roots -->\r\n      <path d=\"M85 195 C 75 200, 60 205, 55 215\" stroke=\"var(--stump-root)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M135 195 C 145 200, 160 205, 165 215\" stroke=\"var(--stump-root)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M100 200 C 95 210, 90 215, 85 220\" stroke=\"var(--stump-root)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 5,
+      "name": "Grass Low",
+      "colorVariables": {
+        "--grass-low-a": "#7CB342",
+        "--grass-low-b": "#8BC34A",
+        "--grass-low-c": "#9CCC65"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Short grass tufts scattered -->\r\n      <path d=\"M60 190 C 58 180, 62 175, 60 170\" stroke=\"var(--grass-low-a)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M55 190 C 50 183, 48 178, 50 172\" stroke=\"var(--grass-low-b)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M66 190 C 70 183, 72 178, 68 173\" stroke=\"var(--grass-low-c)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M100 185 C 98 177, 102 172, 100 167\" stroke=\"var(--grass-low-a)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M95 185 C 90 178, 92 173, 93 168\" stroke=\"var(--grass-low-b)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M106 185 C 110 178, 108 173, 106 169\" stroke=\"var(--grass-low-c)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M140 188 C 138 180, 142 175, 140 170\" stroke=\"var(--grass-low-a)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M135 188 C 130 181, 133 176, 134 171\" stroke=\"var(--grass-low-b)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M146 188 C 150 181, 148 176, 145 172\" stroke=\"var(--grass-low-c)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M80 193 C 78 186, 82 181, 80 177\" stroke=\"var(--grass-low-b)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M125 190 C 123 183, 127 178, 125 174\" stroke=\"var(--grass-low-a)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M160 192 C 162 185, 158 180, 160 176\" stroke=\"var(--grass-low-c)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 6,
+      "name": "Grass Medium",
+      "colorVariables": {
+        "--grass-med-a": "#558B2F",
+        "--grass-med-b": "#689F38",
+        "--grass-med-c": "#7CB342"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Medium grass blades -->\r\n      <path d=\"M60 200 C 55 178, 58 160, 55 150\" stroke=\"var(--grass-med-a)\" stroke-width=\"3.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M52 200 C 45 180, 42 165, 45 152\" stroke=\"var(--grass-med-b)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M68 200 C 74 180, 72 165, 68 155\" stroke=\"var(--grass-med-c)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M100 195 C 97 175, 100 158, 97 145\" stroke=\"var(--grass-med-a)\" stroke-width=\"3.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M93 195 C 87 178, 90 162, 90 148\" stroke=\"var(--grass-med-b)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M108 195 C 114 178, 112 162, 108 150\" stroke=\"var(--grass-med-c)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M145 198 C 142 178, 145 160, 143 148\" stroke=\"var(--grass-med-a)\" stroke-width=\"3.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M138 198 C 132 180, 135 165, 136 150\" stroke=\"var(--grass-med-b)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M153 198 C 158 180, 155 165, 152 153\" stroke=\"var(--grass-med-c)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M78 198 C 75 182, 78 168, 76 155\" stroke=\"var(--grass-med-b)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M125 197 C 122 180, 126 165, 124 152\" stroke=\"var(--grass-med-a)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 7,
+      "name": "Grass Tall",
+      "colorVariables": {
+        "--grass-tall-a": "#33691E",
+        "--grass-tall-b": "#558B2F",
+        "--grass-tall-c": "#689F38",
+        "--grass-tall-tip": "#7CB342"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Tall grass blades with slight curve -->\r\n      <path d=\"M55 210 C 50 175, 45 140, 40 110\" stroke=\"var(--grass-tall-a)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M48 210 C 40 178, 35 148, 38 115\" stroke=\"var(--grass-tall-b)\" stroke-width=\"3.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M63 210 C 68 178, 70 145, 65 115\" stroke=\"var(--grass-tall-c)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M95 205 C 92 170, 88 138, 85 105\" stroke=\"var(--grass-tall-a)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M88 205 C 82 175, 80 145, 82 108\" stroke=\"var(--grass-tall-b)\" stroke-width=\"3.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M103 205 C 108 172, 106 140, 102 110\" stroke=\"var(--grass-tall-c)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 205 C 115 168, 118 135, 112 105\" stroke=\"var(--grass-tall-tip)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M140 208 C 137 172, 135 140, 138 108\" stroke=\"var(--grass-tall-a)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M133 208 C 127 178, 128 148, 132 112\" stroke=\"var(--grass-tall-b)\" stroke-width=\"3.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M148 208 C 155 175, 152 142, 148 112\" stroke=\"var(--grass-tall-c)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M170 210 C 168 180, 172 150, 168 120\" stroke=\"var(--grass-tall-b)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 8,
+      "name": "Mountain (Snow)",
+      "colorVariables": {
+        "--mtn-rock": "#757575",
+        "--mtn-rock-dark": "#616161",
+        "--mtn-snow": "#ECEFF1",
+        "--mtn-snow-shade": "#CFD8DC"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Mountain body -->\r\n      <polygon points=\"110,40 180,210 40,210\" fill=\"var(--mtn-rock)\"/>\r\n      <!-- Shaded side -->\r\n      <polygon points=\"110,40 40,210 110,210\" fill=\"var(--mtn-rock-dark)\" opacity=\"0.5\"/>\r\n      <!-- Snow cap -->\r\n      <polygon points=\"110,40 130,90 90,90\" fill=\"var(--mtn-snow)\"/>\r\n      <!-- Snow shadow -->\r\n      <polygon points=\"110,40 90,90 100,90\" fill=\"var(--mtn-snow-shade)\" opacity=\"0.5\"/>\r\n      <!-- Snow drip line -->\r\n      <path d=\"M90 90 C 95 95, 100 88, 108 95 C 115 88, 122 95, 130 90\"\r\n            stroke=\"var(--mtn-snow)\" stroke-width=\"3\" fill=\"var(--mtn-snow)\" stroke-linecap=\"round\"/>\r\n    </svg>"
+    },
+    {
+      "id": 9,
+      "name": "Mountain (Bare)",
+      "colorVariables": {
+        "--mtn-bare-rock": "#6D6D6D",
+        "--mtn-bare-dark": "#555555",
+        "--mtn-bare-peak": "#808080"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Mountain body -->\r\n      <polygon points=\"110,50 175,210 45,210\" fill=\"var(--mtn-bare-rock)\"/>\r\n      <!-- Shaded side -->\r\n      <polygon points=\"110,50 45,210 110,210\" fill=\"var(--mtn-bare-dark)\" opacity=\"0.5\"/>\r\n      <!-- Peak highlight -->\r\n      <polygon points=\"110,50 120,75 100,75\" fill=\"var(--mtn-bare-peak)\" opacity=\"0.6\"/>\r\n      <!-- Ridge lines -->\r\n      <line x1=\"110\" y1=\"50\" x2=\"145\" y2=\"140\" stroke=\"var(--mtn-bare-dark)\" stroke-width=\"1.5\" opacity=\"0.3\"/>\r\n      <line x1=\"110\" y1=\"50\" x2=\"75\" y2=\"150\" stroke=\"var(--mtn-bare-dark)\" stroke-width=\"1\" opacity=\"0.2\"/>\r\n    </svg>"
+    },
+    {
+      "id": 10,
+      "name": "Mountain (Cave)",
+      "colorVariables": {
+        "--mtn-cave-rock": "#757575",
+        "--mtn-cave-dark": "#616161",
+        "--mtn-cave-opening": "#1a1a1a",
+        "--mtn-cave-shadow": "#333"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Mountain body -->\r\n      <polygon points=\"110,45 180,210 40,210\" fill=\"var(--mtn-cave-rock)\"/>\r\n      <!-- Shaded side -->\r\n      <polygon points=\"110,45 40,210 110,210\" fill=\"var(--mtn-cave-dark)\" opacity=\"0.5\"/>\r\n      <!-- Cave opening (arch) -->\r\n      <path d=\"M90 210 C 90 170, 130 170, 130 210 Z\" fill=\"var(--mtn-cave-opening)\"/>\r\n      <!-- Cave inner shadow -->\r\n      <path d=\"M95 210 C 95 180, 125 180, 125 210 Z\" fill=\"var(--mtn-cave-shadow)\" opacity=\"0.5\"/>\r\n      <!-- Cave highlight rim -->\r\n      <path d=\"M90 210 C 90 170, 130 170, 130 210\"\r\n            stroke=\"var(--mtn-cave-rock)\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/>\r\n    </svg>"
+    },
+    {
+      "id": 11,
+      "name": "Hills (Grass)",
+      "colorVariables": {
+        "--hill-body": "#6B8E23",
+        "--hill-body-light": "#8FBC3A",
+        "--hill-grass-a": "#7CB342",
+        "--hill-grass-b": "#9CCC65",
+        "--hill-grass-c": "#8FBC3A"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Back hill -->\r\n      <ellipse cx=\"140\" cy=\"195\" rx=\"60\" ry=\"40\" fill=\"var(--hill-body)\" opacity=\"0.7\"/>\r\n      <!-- Front hill -->\r\n      <ellipse cx=\"90\" cy=\"195\" rx=\"65\" ry=\"45\" fill=\"var(--hill-body-light)\"/>\r\n      <!-- Grass on hills -->\r\n      <path d=\"M55 180 C 53 172, 57 168, 55 162\" stroke=\"var(--hill-grass-a)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M60 178 C 63 170, 62 165, 63 160\" stroke=\"var(--hill-grass-b)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M80 168 C 78 160, 82 156, 80 150\" stroke=\"var(--hill-grass-a)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M86 166 C 89 158, 87 153, 88 148\" stroke=\"var(--hill-grass-b)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M105 165 C 103 158, 107 153, 105 147\" stroke=\"var(--hill-grass-a)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M130 165 C 128 157, 132 152, 130 146\" stroke=\"var(--hill-grass-b)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M150 170 C 148 162, 152 157, 150 152\" stroke=\"var(--hill-grass-a)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M165 178 C 163 170, 167 165, 165 160\" stroke=\"var(--hill-grass-b)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <!-- Foreground rect to mask bottom of hill ellipses -->\r\n      <rect x=\"15\" y=\"195\" width=\"190\" height=\"45\" fill=\"var(--hill-grass-c)\"/>\r\n    </svg>"
+    },
+    {
+      "id": 12,
+      "name": "Hills (Grass & Trees)",
+      "colorVariables": {
+        "--hill-mix-body": "#6B8E23",
+        "--hill-mix-light": "#8FBC3A",
+        "--hill-mix-trunk": "#5D4037",
+        "--hill-mix-tree": "#2E7D32",
+        "--hill-mix-tree-light": "#43A047",
+        "--hill-mix-grass": "#7CB342",
+        "--hill-rect-clr": "#8FBC3A"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Back hill -->\r\n      <ellipse cx=\"135\" cy=\"195\" rx=\"60\" ry=\"38\" fill=\"var(--hill-mix-body)\" opacity=\"0.7\"/>\r\n      <!-- Front hill -->\r\n      <ellipse cx=\"90\" cy=\"195\" rx=\"65\" ry=\"42\" fill=\"var(--hill-mix-light)\"/>\r\n      <!-- Small trees on hills -->\r\n      <rect x=\"58\" y=\"140\" width=\"5\" height=\"25\" fill=\"var(--hill-mix-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"60,115 75,145 45,145\" fill=\"var(--hill-mix-tree)\"/>\r\n      <polygon points=\"60,125 72,140 48,140\" fill=\"var(--hill-mix-tree-light)\" opacity=\"0.8\"/>\r\n\r\n      <rect x=\"108\" y=\"130\" width=\"5\" height=\"28\" fill=\"var(--hill-mix-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"110,102 126,135 94,135\" fill=\"var(--hill-mix-tree)\"/>\r\n      <polygon points=\"110,112 123,132 97,132\" fill=\"var(--hill-mix-tree-light)\" opacity=\"0.8\"/>\r\n\r\n      <rect x=\"148\" y=\"140\" width=\"5\" height=\"22\" fill=\"var(--hill-mix-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"150,118 163,142 137,142\" fill=\"var(--hill-mix-tree)\"/>\r\n      <polygon points=\"150,126 160,140 140,140\" fill=\"var(--hill-mix-tree-light)\" opacity=\"0.8\"/>\r\n      <!-- Grass patches -->\r\n      <path d=\"M80 178 C 78 171, 82 166, 80 161\" stroke=\"var(--hill-mix-grass)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M130 175 C 128 168, 132 163, 130 158\" stroke=\"var(--hill-mix-grass)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M170 180 C 168 174, 172 170, 170 165\" stroke=\"var(--hill-mix-grass)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <!-- Foreground rect to mask bottom of hill ellipses -->\r\n      <rect x=\"15\" y=\"195\" width=\"190\" height=\"45\" fill=\"var(--hill-rect-clr)\"/>\r\n    </svg>"
+    },
+    {
+      "id": 13,
+      "name": "Hills (Stones)",
+      "colorVariables": {
+        "--hill-stone-body": "#7A8B5A",
+        "--hill-stone-light": "#97A876",
+        "--hill-stone-rock-a": "#9E9E9E",
+        "--hill-stone-rock-b": "#757575",
+        "--hill-stone-rock-c": "#BDBDBD",
+        "--hill-stone-rect-clr": "#97A876"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Back hill -->\r\n      <ellipse cx=\"140\" cy=\"195\" rx=\"55\" ry=\"38\" fill=\"var(--hill-stone-body)\" opacity=\"0.7\"/>\r\n      <!-- Front hill -->\r\n      <ellipse cx=\"85\" cy=\"195\" rx=\"62\" ry=\"42\" fill=\"var(--hill-stone-light)\"/>\r\n      <!-- Stones and rocks scattered -->\r\n      <ellipse cx=\"65\" cy=\"185\" rx=\"12\" ry=\"8\" fill=\"var(--hill-stone-rock-a)\"/>\r\n      <ellipse cx=\"60\" cy=\"183\" rx=\"10\" ry=\"6\" fill=\"var(--hill-stone-rock-c)\" opacity=\"0.6\"/>\r\n\r\n      <ellipse cx=\"105\" cy=\"180\" rx=\"10\" ry=\"7\" fill=\"var(--hill-stone-rock-b)\"/>\r\n      <ellipse cx=\"102\" cy=\"178\" rx=\"8\" ry=\"5\" fill=\"var(--hill-stone-rock-c)\" opacity=\"0.6\"/>\r\n\r\n      <ellipse cx=\"140\" cy=\"185\" rx=\"14\" ry=\"9\" fill=\"var(--hill-stone-rock-a)\"/>\r\n      <ellipse cx=\"137\" cy=\"183\" rx=\"11\" ry=\"7\" fill=\"var(--hill-stone-rock-c)\" opacity=\"0.6\"/>\r\n\r\n      <ellipse cx=\"85\" cy=\"192\" rx=\"8\" ry=\"5\" fill=\"var(--hill-stone-rock-b)\"/>\r\n      <ellipse cx=\"160\" cy=\"182\" rx=\"7\" ry=\"5\" fill=\"var(--hill-stone-rock-b)\"/>\r\n      <ellipse cx=\"120\" cy=\"190\" rx=\"9\" ry=\"6\" fill=\"var(--hill-stone-rock-a)\"/>\r\n\r\n      <!-- Small pebbles -->\r\n      <circle cx=\"75\" cy=\"190\" r=\"3\" fill=\"var(--hill-stone-rock-b)\" opacity=\"0.7\"/>\r\n      <circle cx=\"130\" cy=\"190\" r=\"2.5\" fill=\"var(--hill-stone-rock-a)\" opacity=\"0.7\"/>\r\n      <circle cx=\"95\" cy=\"193\" r=\"2\" fill=\"var(--hill-stone-rock-c)\" opacity=\"0.5\"/>\r\n      <circle cx=\"150\" cy=\"188\" r=\"2.5\" fill=\"var(--hill-stone-rock-b)\" opacity=\"0.6\"/>\r\n      <!-- Foreground rect to mask bottom of hill ellipses -->\r\n      <rect x=\"15\" y=\"195\" width=\"190\" height=\"45\" fill=\"var(--hill-stone-rect-clr)\"/>\r\n    </svg>"
+    },
+    {
+      "id": 14,
+      "name": "Desert Sands",
+      "colorVariables": {
+        "--desert-sand": "#EDC9AF",
+        "--desert-sand-light": "#F5DEB3",
+        "--desert-sand-dark": "#D2A679",
+        "--desert-dune-shadow": "#C49A6C",
+        "--desert-highlight": "#FAE8D0"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Sand base -->\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"85\" ry=\"40\" fill=\"var(--desert-sand)\"/>\r\n      <!-- Back dune -->\r\n      <path d=\"M25 175 C 55 130, 95 125, 130 140 C 155 150, 185 135, 200 155 L 200 200 C 170 185, 130 190, 90 195 C 60 198, 35 195, 25 195 Z\"\r\n            fill=\"var(--desert-sand-dark)\" opacity=\"0.7\"/>\r\n      <!-- Front dune -->\r\n      <path d=\"M20 200 C 40 160, 80 150, 120 165 C 150 175, 175 158, 200 175 L 200 215 C 160 210, 120 215, 80 218 C 50 220, 30 215, 20 210 Z\"\r\n            fill=\"var(--desert-sand-light)\"/>\r\n      <!-- Dune highlight -->\r\n      <path d=\"M40 172 C 65 155, 95 152, 118 162\"\r\n            stroke=\"var(--desert-highlight)\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.6\"/>\r\n      <!-- Dune shadow lines -->\r\n      <path d=\"M55 190 C 80 182, 110 180, 140 185\"\r\n            stroke=\"var(--desert-dune-shadow)\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <path d=\"M70 205 C 95 198, 125 196, 155 200\"\r\n            stroke=\"var(--desert-dune-shadow)\" stroke-width=\"1.5\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.4\"/>\r\n      <!-- Wind ripple marks -->\r\n      <line x1=\"50\" y1=\"210\" x2=\"65\" y2=\"208\" stroke=\"var(--desert-dune-shadow)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"80\" y1=\"212\" x2=\"100\" y2=\"210\" stroke=\"var(--desert-dune-shadow)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"120\" y1=\"210\" x2=\"142\" y2=\"208\" stroke=\"var(--desert-dune-shadow)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"150\" y1=\"208\" x2=\"170\" y2=\"205\" stroke=\"var(--desert-dune-shadow)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n    </svg>"
+    },
+    {
+      "id": 15,
+      "name": "Desert Oasis",
+      "colorVariables": {
+        "--oasis-water": "#2196F3",
+        "--oasis-water-light": "#64B5F6",
+        "--oasis-sand": "#EDC9AF",
+        "--oasis-sand-dark": "#D2A679",
+        "--oasis-palm-trunk": "#A86B32",
+        "--oasis-palm-frond": "#2E7D32",
+        "--oasis-palm-frond-light": "#43A047",
+        "--oasis-grass": "#7CB342"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Sand ground -->\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"80\" ry=\"35\" fill=\"var(--oasis-sand)\"/>\r\n      <ellipse cx=\"110\" cy=\"200\" rx=\"70\" ry=\"20\" fill=\"var(--oasis-sand-dark)\" opacity=\"0.5\"/>\r\n      <!-- Water pool -->\r\n      <ellipse cx=\"110\" cy=\"185\" rx=\"40\" ry=\"18\" fill=\"var(--oasis-water)\"/>\r\n      <ellipse cx=\"105\" cy=\"182\" rx=\"25\" ry=\"10\" fill=\"var(--oasis-water-light)\" opacity=\"0.5\"/>\r\n      <!-- Grass ring around water -->\r\n      <path d=\"M68 185 C 66 178, 70 174, 68 168\" stroke=\"var(--oasis-grass)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M75 180 C 73 173, 77 169, 75 163\" stroke=\"var(--oasis-grass)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M145 183 C 147 176, 143 172, 145 166\" stroke=\"var(--oasis-grass)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M152 186 C 154 179, 150 175, 152 169\" stroke=\"var(--oasis-grass)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <!-- Palm tree left -->\r\n      <rect x=\"74\" y=\"120\" width=\"6\" height=\"60\" fill=\"var(--oasis-palm-trunk)\" rx=\"2\"/>\r\n      <path d=\"M77 120 C 60 95, 35 85, 28 98\" stroke=\"var(--oasis-palm-frond)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M77 120 C 65 108, 42 108, 35 125\" stroke=\"var(--oasis-palm-frond-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M77 120 C 90 95, 110 90, 118 100\" stroke=\"var(--oasis-palm-frond)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M77 120 C 88 108, 105 108, 112 122\" stroke=\"var(--oasis-palm-frond-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <!-- Palm tree right -->\r\n      <rect x=\"137\" y=\"125\" width=\"6\" height=\"55\" fill=\"var(--oasis-palm-trunk)\" rx=\"2\"/>\r\n      <path d=\"M140 125 C 155 100, 175 92, 182 105\" stroke=\"var(--oasis-palm-frond)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M140 125 C 150 112, 170 112, 178 128\" stroke=\"var(--oasis-palm-frond-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M140 125 C 125 100, 105 95, 98 108\" stroke=\"var(--oasis-palm-frond)\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M140 125 C 128 112, 112 115, 105 128\" stroke=\"var(--oasis-palm-frond-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 16,
+      "name": "Swamp (Trees)",
+      "colorVariables": {
+        "--swamp-water": "#4A6741",
+        "--swamp-water-dark": "#3B5334",
+        "--swamp-mud": "#5D4E37",
+        "--swamp-moss": "#6B8E23",
+        "--swamp-trunk": "#4E3B2A",
+        "--swamp-canopy": "#3B6B2A",
+        "--swamp-canopy-light": "#4E8B3A",
+        "--swamp-reed": "#8B9A6B",
+        "--swamp-lily": "#558B2F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Murky water base -->\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"85\" ry=\"40\" fill=\"var(--swamp-water)\"/>\r\n      <ellipse cx=\"100\" cy=\"190\" rx=\"60\" ry=\"25\" fill=\"var(--swamp-water-dark)\" opacity=\"0.5\"/>\r\n      <!-- Mud banks -->\r\n      <ellipse cx=\"70\" cy=\"200\" rx=\"25\" ry=\"10\" fill=\"var(--swamp-mud)\" opacity=\"0.6\"/>\r\n      <ellipse cx=\"155\" cy=\"198\" rx=\"20\" ry=\"8\" fill=\"var(--swamp-mud)\" opacity=\"0.6\"/>\r\n      <!-- Dead/swamp trees -->\r\n      <rect x=\"58\" y=\"110\" width=\"7\" height=\"80\" fill=\"var(--swamp-trunk)\" rx=\"2\"/>\r\n      <circle cx=\"62\" cy=\"100\" r=\"22\" fill=\"var(--swamp-canopy)\"/>\r\n      <circle cx=\"55\" cy=\"95\" r=\"15\" fill=\"var(--swamp-canopy-light)\" opacity=\"0.7\"/>\r\n      <path d=\"M55 120 C 50 140, 52 160, 48 175\" stroke=\"var(--swamp-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <rect x=\"128\" y=\"115\" width=\"7\" height=\"75\" fill=\"var(--swamp-trunk)\" rx=\"2\"/>\r\n      <circle cx=\"132\" cy=\"105\" r=\"20\" fill=\"var(--swamp-canopy)\"/>\r\n      <circle cx=\"138\" cy=\"100\" r=\"14\" fill=\"var(--swamp-canopy-light)\" opacity=\"0.7\"/>\r\n      <path d=\"M138 118 C 142 138, 140 158, 144 175\" stroke=\"var(--swamp-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <!-- Reeds -->\r\n      <path d=\"M90 195 C 88 180, 92 170, 90 160\" stroke=\"var(--swamp-reed)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M96 193 C 98 178, 94 168, 96 158\" stroke=\"var(--swamp-reed)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 192 C 108 180, 112 170, 110 162\" stroke=\"var(--swamp-reed)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <!-- Lily pads -->\r\n      <ellipse cx=\"80\" cy=\"192\" rx=\"6\" ry=\"3\" fill=\"var(--swamp-lily)\" opacity=\"0.7\"/>\r\n      <ellipse cx=\"140\" cy=\"190\" rx=\"5\" ry=\"2.5\" fill=\"var(--swamp-lily)\" opacity=\"0.7\"/>\r\n    </svg>"
+    },
+    {
+      "id": 17,
+      "name": "Swamp (Open)",
+      "colorVariables": {
+        "--swamp-water": "#4A6741",
+        "--swamp-water-dark": "#3B5334",
+        "--swamp-mud": "#5D4E37",
+        "--swamp-moss": "#6B8E23",
+        "--swamp-reed": "#8B9A6B",
+        "--swamp-lily": "#558B2F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Murky water -->\r\n      <ellipse cx=\"110\" cy=\"185\" rx=\"85\" ry=\"45\" fill=\"var(--swamp-water)\"/>\r\n      <ellipse cx=\"105\" cy=\"180\" rx=\"65\" ry=\"30\" fill=\"var(--swamp-water-dark)\" opacity=\"0.5\"/>\r\n      <!-- Mud patches -->\r\n      <ellipse cx=\"60\" cy=\"190\" rx=\"28\" ry=\"12\" fill=\"var(--swamp-mud)\" opacity=\"0.7\"/>\r\n      <ellipse cx=\"160\" cy=\"188\" rx=\"22\" ry=\"10\" fill=\"var(--swamp-mud)\" opacity=\"0.7\"/>\r\n      <ellipse cx=\"110\" cy=\"200\" rx=\"30\" ry=\"10\" fill=\"var(--swamp-mud)\" opacity=\"0.5\"/>\r\n      <!-- Reeds -->\r\n      <path d=\"M50 190 C 48 175, 52 165, 50 150\" stroke=\"var(--swamp-reed)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M56 188 C 58 173, 54 163, 56 148\" stroke=\"var(--swamp-reed)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M90 185 C 88 172, 92 162, 90 150\" stroke=\"var(--swamp-reed)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M96 183 C 98 170, 94 160, 96 148\" stroke=\"var(--swamp-reed)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M130 184 C 128 170, 132 160, 130 148\" stroke=\"var(--swamp-reed)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M136 186 C 138 172, 134 162, 136 150\" stroke=\"var(--swamp-reed)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M165 188 C 163 175, 167 165, 165 155\" stroke=\"var(--swamp-reed)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <!-- Lily pads -->\r\n      <ellipse cx=\"75\" cy=\"182\" rx=\"7\" ry=\"3.5\" fill=\"var(--swamp-lily)\" opacity=\"0.7\"/>\r\n      <ellipse cx=\"110\" cy=\"178\" rx=\"6\" ry=\"3\" fill=\"var(--swamp-lily)\" opacity=\"0.7\"/>\r\n      <ellipse cx=\"148\" cy=\"180\" rx=\"7\" ry=\"3.5\" fill=\"var(--swamp-lily)\" opacity=\"0.7\"/>\r\n      <!-- Moss patches -->\r\n      <ellipse cx=\"65\" cy=\"195\" rx=\"10\" ry=\"4\" fill=\"var(--swamp-moss)\" opacity=\"0.4\"/>\r\n      <ellipse cx=\"150\" cy=\"193\" rx=\"8\" ry=\"3\" fill=\"var(--swamp-moss)\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 18,
+      "name": "Forest",
+      "colorVariables": {
+        "--forest-trunk": "#5D4037",
+        "--forest-tree-dark": "#1B5E20",
+        "--forest-tree-mid": "#2E7D32",
+        "--forest-tree-light": "#388E3C",
+        "--forest-floor": "#3E2723"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Forest floor -->\r\n      <ellipse cx=\"110\" cy=\"210\" rx=\"80\" ry=\"15\" fill=\"var(--forest-floor)\" opacity=\"0.4\"/>\r\n      <!-- Back row trees -->\r\n      <rect x=\"55\" y=\"120\" width=\"6\" height=\"50\" fill=\"var(--forest-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"58,75 82,125 34,125\" fill=\"var(--forest-tree-dark)\"/>\r\n      <polygon points=\"58,90 78,120 38,120\" fill=\"var(--forest-tree-mid)\" opacity=\"0.8\"/>\r\n\r\n      <rect x=\"87\" y=\"110\" width=\"6\" height=\"55\" fill=\"var(--forest-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"90,60 118,115 62,115\" fill=\"var(--forest-tree-dark)\"/>\r\n      <polygon points=\"90,78 114,112 66,112\" fill=\"var(--forest-tree-mid)\" opacity=\"0.8\"/>\r\n\r\n      <rect x=\"120\" y=\"115\" width=\"6\" height=\"52\" fill=\"var(--forest-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"123,68 150,120 96,120\" fill=\"var(--forest-tree-dark)\"/>\r\n      <polygon points=\"123,82 146,118 100,118\" fill=\"var(--forest-tree-mid)\" opacity=\"0.8\"/>\r\n\r\n      <rect x=\"152\" y=\"120\" width=\"6\" height=\"48\" fill=\"var(--forest-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"155,78 178,125 132,125\" fill=\"var(--forest-tree-dark)\"/>\r\n      <polygon points=\"155,92 174,122 136,122\" fill=\"var(--forest-tree-light)\" opacity=\"0.8\"/>\r\n\r\n      <!-- Front row trees -->\r\n      <rect x=\"70\" y=\"140\" width=\"7\" height=\"58\" fill=\"var(--forest-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"73,90 102,145 44,145\" fill=\"var(--forest-tree-mid)\"/>\r\n      <polygon points=\"73,105 98,140 48,140\" fill=\"var(--forest-tree-light)\" opacity=\"0.8\"/>\r\n\r\n      <rect x=\"107\" y=\"135\" width=\"7\" height=\"62\" fill=\"var(--forest-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"110,82 142,140 78,140\" fill=\"var(--forest-tree-mid)\"/>\r\n      <polygon points=\"110,98 138,138 82,138\" fill=\"var(--forest-tree-light)\" opacity=\"0.8\"/>\r\n\r\n      <rect x=\"140\" y=\"140\" width=\"7\" height=\"56\" fill=\"var(--forest-trunk)\" rx=\"1\"/>\r\n      <polygon points=\"143,92 172,145 114,145\" fill=\"var(--forest-tree-mid)\"/>\r\n      <polygon points=\"143,108 168,142 118,142\" fill=\"var(--forest-tree-light)\" opacity=\"0.8\"/>\r\n    </svg>"
+    },
+    {
+      "id": 19,
+      "name": "Jungle",
+      "colorVariables": {
+        "--jungle-dense-trunk": "#4E342E",
+        "--jungle-dense-canopy-a": "#1B5E20",
+        "--jungle-dense-canopy-b": "#2E7D32",
+        "--jungle-dense-canopy-c": "#33691E",
+        "--jungle-dense-vine": "#558B2F",
+        "--jungle-dense-floor": "#2E3B1F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Dark floor -->\r\n      <ellipse cx=\"110\" cy=\"210\" rx=\"80\" ry=\"15\" fill=\"var(--jungle-dense-floor)\" opacity=\"0.5\"/>\r\n      <!-- Dense canopy mass -->\r\n      <circle cx=\"60\" cy=\"120\" r=\"35\" fill=\"var(--jungle-dense-canopy-a)\"/>\r\n      <circle cx=\"110\" cy=\"105\" r=\"40\" fill=\"var(--jungle-dense-canopy-b)\"/>\r\n      <circle cx=\"160\" cy=\"118\" r=\"35\" fill=\"var(--jungle-dense-canopy-a)\"/>\r\n      <circle cx=\"85\" cy=\"100\" r=\"30\" fill=\"var(--jungle-dense-canopy-c)\"/>\r\n      <circle cx=\"135\" cy=\"95\" r=\"32\" fill=\"var(--jungle-dense-canopy-c)\"/>\r\n      <circle cx=\"110\" cy=\"85\" r=\"28\" fill=\"var(--jungle-dense-canopy-b)\" opacity=\"0.8\"/>\r\n      <!-- Trunks peeking through -->\r\n      <rect x=\"57\" y=\"145\" width=\"6\" height=\"50\" fill=\"var(--jungle-dense-trunk)\" rx=\"1\"/>\r\n      <rect x=\"88\" y=\"135\" width=\"6\" height=\"60\" fill=\"var(--jungle-dense-trunk)\" rx=\"1\"/>\r\n      <rect x=\"127\" y=\"138\" width=\"6\" height=\"55\" fill=\"var(--jungle-dense-trunk)\" rx=\"1\"/>\r\n      <rect x=\"155\" y=\"142\" width=\"6\" height=\"48\" fill=\"var(--jungle-dense-trunk)\" rx=\"1\"/>\r\n      <!-- Hanging vines -->\r\n      <path d=\"M50 145 C 48 165, 52 180, 46 200\" stroke=\"var(--jungle-dense-vine)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M80 148 C 76 168, 80 185, 74 205\" stroke=\"var(--jungle-dense-vine)\" stroke-width=\"1.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M140 142 C 144 162, 140 178, 146 198\" stroke=\"var(--jungle-dense-vine)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M170 148 C 174 165, 170 182, 176 200\" stroke=\"var(--jungle-dense-vine)\" stroke-width=\"1.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 20,
+      "name": "Savanna",
+      "colorVariables": {
+        "--savanna-grass": "#C8B560",
+        "--savanna-grass-light": "#D4C36A",
+        "--savanna-grass-dark": "#A89840",
+        "--savanna-trunk": "#8D6E4C",
+        "--savanna-canopy": "#6B8E23",
+        "--savanna-ground": "#B8A060"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Ground -->\r\n      <ellipse cx=\"110\" cy=\"200\" rx=\"85\" ry=\"30\" fill=\"var(--savanna-ground)\" opacity=\"0.5\"/>\r\n      <!-- Dry grass tufts -->\r\n      <path d=\"M40 205 C 38 195, 42 188, 40 180\" stroke=\"var(--savanna-grass)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M46 204 C 48 194, 44 187, 46 179\" stroke=\"var(--savanna-grass-light)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M70 200 C 68 190, 72 183, 70 175\" stroke=\"var(--savanna-grass)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M150 202 C 148 192, 152 185, 150 177\" stroke=\"var(--savanna-grass)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M170 205 C 172 195, 168 188, 170 180\" stroke=\"var(--savanna-grass-light)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M180 207 C 178 198, 182 192, 180 185\" stroke=\"var(--savanna-grass-dark)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <!-- Flat-topped acacia tree -->\r\n      <rect x=\"107\" y=\"130\" width=\"7\" height=\"68\" fill=\"var(--savanna-trunk)\" rx=\"2\"/>\r\n      <!-- Wide flat canopy -->\r\n      <ellipse cx=\"110\" cy=\"120\" rx=\"50\" ry=\"18\" fill=\"var(--savanna-canopy)\"/>\r\n      <ellipse cx=\"110\" cy=\"118\" rx=\"42\" ry=\"12\" fill=\"var(--savanna-canopy)\" opacity=\"0.7\"/>\r\n      <!-- Branch lines to canopy -->\r\n      <path d=\"M110 140 C 90 135, 70 128, 65 120\" stroke=\"var(--savanna-trunk)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M110 140 C 130 135, 150 128, 155 120\" stroke=\"var(--savanna-trunk)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 21,
+      "name": "Tundra",
+      "colorVariables": {
+        "--tundra-snow": "#E8EAF0",
+        "--tundra-snow-shade": "#C5CAD0",
+        "--tundra-rock": "#90A4AE",
+        "--tundra-ice": "#B3E5FC",
+        "--tundra-moss": "#7B8B6F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Snow ground -->\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"85\" ry=\"40\" fill=\"var(--tundra-snow)\"/>\r\n      <ellipse cx=\"100\" cy=\"190\" rx=\"65\" ry=\"25\" fill=\"var(--tundra-snow-shade)\" opacity=\"0.4\"/>\r\n      <!-- Exposed rocks -->\r\n      <ellipse cx=\"65\" cy=\"185\" rx=\"15\" ry=\"8\" fill=\"var(--tundra-rock)\"/>\r\n      <ellipse cx=\"145\" cy=\"188\" rx=\"12\" ry=\"7\" fill=\"var(--tundra-rock)\"/>\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"10\" ry=\"5\" fill=\"var(--tundra-rock)\" opacity=\"0.7\"/>\r\n      <!-- Ice patches -->\r\n      <ellipse cx=\"85\" cy=\"178\" rx=\"18\" ry=\"6\" fill=\"var(--tundra-ice)\" opacity=\"0.4\"/>\r\n      <ellipse cx=\"135\" cy=\"175\" rx=\"14\" ry=\"5\" fill=\"var(--tundra-ice)\" opacity=\"0.4\"/>\r\n      <!-- Sparse low moss/lichen -->\r\n      <path d=\"M55 190 C 53 185, 57 182, 55 178\" stroke=\"var(--tundra-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M95 185 C 93 180, 97 177, 95 173\" stroke=\"var(--tundra-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M130 183 C 128 178, 132 175, 130 171\" stroke=\"var(--tundra-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M165 190 C 163 186, 167 183, 165 179\" stroke=\"var(--tundra-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <!-- Wind lines -->\r\n      <line x1=\"40\" y1=\"160\" x2=\"80\" y2=\"158\" stroke=\"var(--tundra-snow-shade)\" stroke-width=\"1\" opacity=\"0.4\"/>\r\n      <line x1=\"100\" y1=\"155\" x2=\"150\" y2=\"152\" stroke=\"var(--tundra-snow-shade)\" stroke-width=\"1\" opacity=\"0.4\"/>\r\n      <line x1=\"130\" y1=\"165\" x2=\"180\" y2=\"162\" stroke=\"var(--tundra-snow-shade)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n    </svg>"
+    },
+    {
+      "id": 22,
+      "name": "Grassland",
+      "colorVariables": {
+        "--grassland-a": "#7CB342",
+        "--grassland-b": "#8BC34A",
+        "--grassland-c": "#9CCC65",
+        "--grassland-d": "#689F38",
+        "--grassland-ground": "#8B7D3C"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Ground -->\r\n      <ellipse cx=\"110\" cy=\"200\" rx=\"85\" ry=\"30\" fill=\"var(--grassland-ground)\" opacity=\"0.3\"/>\r\n      <!-- Flowing grass blades in clusters -->\r\n      <path d=\"M35 210 C 33 195, 37 185, 35 175\" stroke=\"var(--grassland-a)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M41 208 C 43 193, 39 183, 41 173\" stroke=\"var(--grassland-b)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M48 210 C 46 196, 50 186, 48 178\" stroke=\"var(--grassland-c)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M68 205 C 66 190, 70 180, 68 168\" stroke=\"var(--grassland-d)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M74 203 C 76 188, 72 178, 74 166\" stroke=\"var(--grassland-a)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M80 205 C 78 192, 82 182, 80 172\" stroke=\"var(--grassland-b)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M100 202 C 98 186, 102 175, 100 162\" stroke=\"var(--grassland-a)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M106 200 C 108 184, 104 173, 106 160\" stroke=\"var(--grassland-c)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M113 202 C 111 188, 115 178, 113 167\" stroke=\"var(--grassland-d)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M135 204 C 133 189, 137 179, 135 167\" stroke=\"var(--grassland-b)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M141 202 C 143 187, 139 177, 141 165\" stroke=\"var(--grassland-a)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M148 204 C 146 190, 150 180, 148 170\" stroke=\"var(--grassland-c)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n\r\n      <path d=\"M165 208 C 163 193, 167 183, 165 172\" stroke=\"var(--grassland-d)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M172 206 C 174 191, 170 181, 172 170\" stroke=\"var(--grassland-b)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M178 208 C 176 195, 180 185, 178 176\" stroke=\"var(--grassland-a)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\r\n    </svg>"
+    },
+    {
+      "id": 23,
+      "name": "Farmhouse",
+      "colorVariables": {
+        "--farmhouse-wall": "#D7CCC8",
+        "--farmhouse-wall-shade": "#BCAAA4",
+        "--farmhouse-roof": "#8D4925",
+        "--farmhouse-roof-dark": "#6D3319",
+        "--farmhouse-door": "#5D4037",
+        "--farmhouse-window": "#FFEE58",
+        "--farmhouse-chimney": "#757575"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- House body -->\r\n      <rect x=\"70\" y=\"140\" width=\"80\" height=\"60\" fill=\"var(--farmhouse-wall)\"/>\r\n      <rect x=\"70\" y=\"140\" width=\"40\" height=\"60\" fill=\"var(--farmhouse-wall-shade)\" opacity=\"0.4\"/>\r\n      <!-- Roof -->\r\n      <polygon points=\"110,95 160,140 60,140\" fill=\"var(--farmhouse-roof)\"/>\r\n      <polygon points=\"110,95 60,140 110,140\" fill=\"var(--farmhouse-roof-dark)\" opacity=\"0.4\"/>\r\n      <!-- Chimney -->\r\n      <rect x=\"132\" y=\"102\" width=\"10\" height=\"30\" fill=\"var(--farmhouse-chimney)\"/>\r\n      <!-- Door -->\r\n      <rect x=\"100\" y=\"170\" width=\"18\" height=\"30\" fill=\"var(--farmhouse-door)\" rx=\"2\"/>\r\n      <!-- Windows -->\r\n      <rect x=\"78\" y=\"155\" width=\"14\" height=\"12\" fill=\"var(--farmhouse-window)\" rx=\"1\"/>\r\n      <rect x=\"128\" y=\"155\" width=\"14\" height=\"12\" fill=\"var(--farmhouse-window)\" rx=\"1\"/>\r\n      <!-- Window cross -->\r\n      <line x1=\"85\" y1=\"155\" x2=\"85\" y2=\"167\" stroke=\"var(--farmhouse-wall)\" stroke-width=\"1.5\"/>\r\n      <line x1=\"78\" y1=\"161\" x2=\"92\" y2=\"161\" stroke=\"var(--farmhouse-wall)\" stroke-width=\"1.5\"/>\r\n      <line x1=\"135\" y1=\"155\" x2=\"135\" y2=\"167\" stroke=\"var(--farmhouse-wall)\" stroke-width=\"1.5\"/>\r\n      <line x1=\"128\" y1=\"161\" x2=\"142\" y2=\"161\" stroke=\"var(--farmhouse-wall)\" stroke-width=\"1.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 24,
+      "name": "Village",
+      "colorVariables": {
+        "--village-wall-a": "#D7CCC8",
+        "--village-wall-b": "#C8B99A",
+        "--village-roof-a": "#8D4925",
+        "--village-roof-b": "#6D4C41",
+        "--village-door": "#5D4037"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- House 1 (left, back) -->\r\n      <rect x=\"40\" y=\"135\" width=\"45\" height=\"35\" fill=\"var(--village-wall-a)\"/>\r\n      <polygon points=\"62,110 92,135 32,135\" fill=\"var(--village-roof-a)\"/>\r\n      <rect x=\"55\" y=\"150\" width=\"10\" height=\"20\" fill=\"var(--village-door)\" rx=\"1\"/>\r\n      <!-- House 2 (right, back) -->\r\n      <rect x=\"130\" y=\"130\" width=\"50\" height=\"38\" fill=\"var(--village-wall-b)\"/>\r\n      <polygon points=\"155,105 188,130 122,130\" fill=\"var(--village-roof-b)\"/>\r\n      <rect x=\"148\" y=\"148\" width=\"10\" height=\"20\" fill=\"var(--village-door)\" rx=\"1\"/>\r\n      <!-- House 3 (center, front) -->\r\n      <rect x=\"75\" y=\"155\" width=\"55\" height=\"40\" fill=\"var(--village-wall-a)\"/>\r\n      <rect x=\"75\" y=\"155\" width=\"28\" height=\"40\" fill=\"var(--village-wall-b)\" opacity=\"0.3\"/>\r\n      <polygon points=\"102,125 138,155 67,155\" fill=\"var(--village-roof-a)\"/>\r\n      <polygon points=\"102,125 67,155 102,155\" fill=\"var(--village-roof-b)\" opacity=\"0.3\"/>\r\n      <rect x=\"95\" y=\"173\" width=\"12\" height=\"22\" fill=\"var(--village-door)\" rx=\"1\"/>\r\n    </svg>"
+    },
+    {
+      "id": 25,
+      "name": "Farm",
+      "colorVariables": {
+        "--farm-field-a": "#8B7D3C",
+        "--farm-field-b": "#7CB342",
+        "--farm-fence": "#8D6E4C",
+        "--farm-barn-wall": "#C62828",
+        "--farm-barn-roof": "#5D4037",
+        "--farm-barn-door": "#3E2723"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Fields -->\r\n      <rect x=\"30\" y=\"160\" width=\"70\" height=\"50\" fill=\"var(--farm-field-a)\" rx=\"2\"/>\r\n      <rect x=\"35\" y=\"165\" width=\"60\" height=\"40\" fill=\"var(--farm-field-b)\" opacity=\"0.5\"/>\r\n      <!-- Field rows -->\r\n      <line x1=\"35\" y1=\"175\" x2=\"95\" y2=\"175\" stroke=\"var(--farm-field-a)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <line x1=\"35\" y1=\"185\" x2=\"95\" y2=\"185\" stroke=\"var(--farm-field-a)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <line x1=\"35\" y1=\"195\" x2=\"95\" y2=\"195\" stroke=\"var(--farm-field-a)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <!-- Fence -->\r\n      <line x1=\"28\" y1=\"158\" x2=\"28\" y2=\"212\" stroke=\"var(--farm-fence)\" stroke-width=\"2\"/>\r\n      <line x1=\"103\" y1=\"158\" x2=\"103\" y2=\"212\" stroke=\"var(--farm-fence)\" stroke-width=\"2\"/>\r\n      <line x1=\"28\" y1=\"168\" x2=\"103\" y2=\"168\" stroke=\"var(--farm-fence)\" stroke-width=\"1.5\"/>\r\n      <line x1=\"28\" y1=\"200\" x2=\"103\" y2=\"200\" stroke=\"var(--farm-fence)\" stroke-width=\"1.5\"/>\r\n      <!-- Barn -->\r\n      <rect x=\"120\" y=\"130\" width=\"55\" height=\"50\" fill=\"var(--farm-barn-wall)\"/>\r\n      <polygon points=\"147,105 180,130 115,130\" fill=\"var(--farm-barn-roof)\"/>\r\n      <!-- Barn door -->\r\n      <rect x=\"137\" y=\"155\" width=\"20\" height=\"25\" fill=\"var(--farm-barn-door)\" rx=\"1\"/>\r\n      <line x1=\"147\" y1=\"155\" x2=\"147\" y2=\"180\" stroke=\"var(--farm-barn-wall)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 26,
+      "name": "Road (Cobblestone)",
+      "colorVariables": {
+        "--road-cobble-a": "#9E9E9E",
+        "--road-cobble-b": "#BDBDBD",
+        "--road-cobble-c": "#757575",
+        "--road-cobble-line": "#616161"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Road surface -->\r\n      <rect x=\"80\" y=\"30\" width=\"60\" height=\"210\" fill=\"var(--road-cobble-a)\" rx=\"3\"/>\r\n      <!-- Cobblestone pattern -->\r\n      <rect x=\"84\" y=\"35\" width=\"18\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"106\" y=\"35\" width=\"16\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"126\" y=\"35\" width=\"10\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"51\" width=\"12\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"100\" y=\"51\" width=\"18\" height=\"14\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"122\" y=\"51\" width=\"14\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"69\" width=\"16\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"104\" y=\"69\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"122\" y=\"69\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"85\" width=\"14\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"102\" y=\"85\" width=\"18\" height=\"14\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"124\" y=\"85\" width=\"12\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"103\" width=\"18\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"106\" y=\"103\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"124\" y=\"103\" width=\"12\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"119\" width=\"12\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"100\" y=\"119\" width=\"16\" height=\"14\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"120\" y=\"119\" width=\"16\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"137\" width=\"16\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"104\" y=\"137\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"122\" y=\"137\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"153\" width=\"14\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"102\" y=\"153\" width=\"18\" height=\"14\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"124\" y=\"153\" width=\"12\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"171\" width=\"18\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"106\" y=\"171\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"124\" y=\"171\" width=\"12\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"187\" width=\"12\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"100\" y=\"187\" width=\"18\" height=\"14\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"122\" y=\"187\" width=\"14\" height=\"14\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"205\" width=\"16\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"104\" y=\"205\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"122\" y=\"205\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n\r\n      <rect x=\"84\" y=\"221\" width=\"14\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"102\" y=\"221\" width=\"18\" height=\"12\" fill=\"var(--road-cobble-b)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n      <rect x=\"124\" y=\"221\" width=\"12\" height=\"12\" fill=\"var(--road-cobble-c)\" rx=\"2\" stroke=\"var(--road-cobble-line)\" stroke-width=\"0.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 27,
+      "name": "Road (Gravel)",
+      "colorVariables": {
+        "--road-gravel": "#A1887F",
+        "--road-gravel-light": "#BCAAA4",
+        "--road-gravel-dark": "#8D6E63",
+        "--road-gravel-stone": "#9E9E9E"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Road surface -->\r\n      <rect x=\"82\" y=\"30\" width=\"56\" height=\"210\" fill=\"var(--road-gravel)\" rx=\"3\"/>\r\n      <!-- Gravel edges -->\r\n      <rect x=\"82\" y=\"30\" width=\"10\" height=\"210\" fill=\"var(--road-gravel-dark)\" opacity=\"0.3\" rx=\"2\"/>\r\n      <rect x=\"128\" y=\"30\" width=\"10\" height=\"210\" fill=\"var(--road-gravel-dark)\" opacity=\"0.3\" rx=\"2\"/>\r\n      <!-- Scattered gravel stones -->\r\n      <circle cx=\"95\" cy=\"50\" r=\"2\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n      <circle cx=\"115\" cy=\"55\" r=\"2.5\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"125\" cy=\"48\" r=\"1.5\" fill=\"var(--road-gravel-stone)\" opacity=\"0.5\"/>\r\n      <circle cx=\"105\" cy=\"75\" r=\"2\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n      <circle cx=\"90\" cy=\"82\" r=\"2.5\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"120\" cy=\"78\" r=\"1.5\" fill=\"var(--road-gravel-stone)\" opacity=\"0.5\"/>\r\n      <circle cx=\"130\" cy=\"90\" r=\"2\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n      <circle cx=\"100\" cy=\"105\" r=\"2\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"118\" cy=\"112\" r=\"2.5\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n      <circle cx=\"88\" cy=\"115\" r=\"1.5\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"110\" cy=\"135\" r=\"2\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n      <circle cx=\"95\" cy=\"142\" r=\"2.5\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"128\" cy=\"140\" r=\"1.5\" fill=\"var(--road-gravel-stone)\" opacity=\"0.5\"/>\r\n      <circle cx=\"105\" cy=\"165\" r=\"2\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"122\" cy=\"170\" r=\"2.5\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n      <circle cx=\"90\" cy=\"175\" r=\"1.5\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"115\" cy=\"195\" r=\"2\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n      <circle cx=\"98\" cy=\"200\" r=\"2.5\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"130\" cy=\"198\" r=\"1.5\" fill=\"var(--road-gravel-stone)\" opacity=\"0.5\"/>\r\n      <circle cx=\"108\" cy=\"220\" r=\"2\" fill=\"var(--road-gravel-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"125\" cy=\"225\" r=\"2.5\" fill=\"var(--road-gravel-stone)\" opacity=\"0.6\"/>\r\n    </svg>"
+    },
+    {
+      "id": 28,
+      "name": "Road (Dirt)",
+      "colorVariables": {
+        "--grassland-a": "#7CB342",
+        "--grassland-b": "#8BC34A",
+        "--road-dirt": "#8D6E4C",
+        "--road-dirt-light": "#A1887F",
+        "--road-dirt-dark": "#6D4C41",
+        "--road-dirt-track": "#5D4037"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Road surface -->\r\n      <rect x=\"84\" y=\"30\" width=\"52\" height=\"210\" fill=\"var(--road-dirt)\" rx=\"3\"/>\r\n      <!-- Wheel ruts -->\r\n      <line x1=\"96\" y1=\"30\" x2=\"96\" y2=\"240\" stroke=\"var(--road-dirt-track)\" stroke-width=\"3\" opacity=\"0.4\"/>\r\n      <line x1=\"124\" y1=\"30\" x2=\"124\" y2=\"240\" stroke=\"var(--road-dirt-track)\" stroke-width=\"3\" opacity=\"0.4\"/>\r\n      <!-- Lighter center -->\r\n      <rect x=\"100\" y=\"30\" width=\"20\" height=\"210\" fill=\"var(--road-dirt-light)\" opacity=\"0.3\"/>\r\n      <!-- Dirt texture -->\r\n      <circle cx=\"95\" cy=\"60\" r=\"1.5\" fill=\"var(--road-dirt-dark)\" opacity=\"0.3\"/>\r\n      <circle cx=\"115\" cy=\"80\" r=\"1\" fill=\"var(--road-dirt-dark)\" opacity=\"0.3\"/>\r\n      <circle cx=\"125\" cy=\"110\" r=\"1.5\" fill=\"var(--road-dirt-dark)\" opacity=\"0.3\"/>\r\n      <circle cx=\"100\" cy=\"140\" r=\"1\" fill=\"var(--road-dirt-dark)\" opacity=\"0.3\"/>\r\n      <circle cx=\"120\" cy=\"170\" r=\"1.5\" fill=\"var(--road-dirt-dark)\" opacity=\"0.3\"/>\r\n      <circle cx=\"92\" cy=\"195\" r=\"1\" fill=\"var(--road-dirt-dark)\" opacity=\"0.3\"/>\r\n      <circle cx=\"110\" cy=\"220\" r=\"1.5\" fill=\"var(--road-dirt-dark)\" opacity=\"0.3\"/>\r\n      <!-- Edge grass -->\r\n      <path d=\"M82 120 C 78 115, 76 110, 78 105\" stroke=\"var(--grassland-a)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M138 150 C 142 145, 144 140, 142 135\" stroke=\"var(--grassland-a)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M80 190 C 76 185, 74 180, 76 175\" stroke=\"var(--grassland-b)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 29,
+      "name": "River (N→S)",
+      "colorVariables": {
+        "--river-water": "#1E88E5",
+        "--river-water-light": "#42A5F5",
+        "--river-bank": "#6D4C21",
+        "--river-foam": "#BBDEFB"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- River banks -->\r\n      <path d=\"M85 5 C 80 60, 78 120, 85 180 C 88 210, 82 230, 85 245\"\r\n            stroke=\"var(--river-bank)\" stroke-width=\"48\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.3\"/>\r\n      <!-- River water -->\r\n      <path d=\"M95 5 C 90 60, 88 120, 95 180 C 98 210, 92 230, 95 245\"\r\n            stroke=\"var(--river-water)\" stroke-width=\"30\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <!-- Water highlights -->\r\n      <path d=\"M100 5 C 95 60, 93 120, 100 180 C 103 210, 97 230, 100 245\"\r\n            stroke=\"var(--river-water-light)\" stroke-width=\"14\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <!-- Flow lines -->\r\n      <path d=\"M98 40 C 95 55, 97 70, 95 85\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n      <path d=\"M102 120 C 99 135, 101 150, 99 165\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n      <path d=\"M97 190 C 95 205, 98 215, 96 230\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 30,
+      "name": "River (E→W)",
+      "colorVariables": {
+        "--river-water": "#1E88E5",
+        "--river-water-light": "#42A5F5",
+        "--river-bank": "#6D4C21",
+        "--river-foam": "#BBDEFB"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- River banks -->\r\n      <path d=\"M15 120 C 60 115, 120 118, 180 112 C 195 110, 205 115, 210 118\"\r\n            stroke=\"var(--river-bank)\" stroke-width=\"48\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.3\"/>\r\n      <!-- River water -->\r\n      <path d=\"M15 125 C 60 120, 120 123, 180 117 C 195 115, 205 120, 210 123\"\r\n            stroke=\"var(--river-water)\" stroke-width=\"30\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <!-- Water highlights -->\r\n      <path d=\"M15 125 C 60 122, 120 125, 180 119 C 195 117, 205 121, 210 123\"\r\n            stroke=\"var(--river-water-light)\" stroke-width=\"14\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <!-- Flow lines -->\r\n      <path d=\"M30 122 C 50 120, 70 123, 90 121\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n      <path d=\"M110 120 C 130 118, 150 121, 170 119\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 31,
+      "name": "River (N→E)",
+      "colorVariables": {
+        "--river-water": "#1E88E5",
+        "--river-water-light": "#42A5F5",
+        "--river-bank": "#6D4C21",
+        "--river-foam": "#BBDEFB"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- River bank -->\r\n      <path d=\"M100 5 C 95 50, 92 90, 100 120 C 115 145, 150 140, 205 135\"\r\n            stroke=\"var(--river-bank)\" stroke-width=\"48\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.3\"/>\r\n      <!-- River water -->\r\n      <path d=\"M100 5 C 95 50, 92 90, 100 120 C 115 145, 150 140, 205 135\"\r\n            stroke=\"var(--river-water)\" stroke-width=\"30\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <!-- Water highlights -->\r\n      <path d=\"M100 5 C 95 50, 92 90, 100 120 C 115 145, 150 140, 205 135\"\r\n            stroke=\"var(--river-water-light)\" stroke-width=\"14\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <!-- Flow line -->\r\n      <path d=\"M103 30 C 100 60, 98 95, 105 118 C 118 140, 155 137, 195 133\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 32,
+      "name": "River (N→W)",
+      "colorVariables": {
+        "--river-water": "#1E88E5",
+        "--river-water-light": "#42A5F5",
+        "--river-bank": "#6D4C21",
+        "--river-foam": "#BBDEFB"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- River bank -->\r\n      <path d=\"M120 5 C 125 50, 128 90, 120 120 C 105 145, 70 140, 15 135\"\r\n            stroke=\"var(--river-bank)\" stroke-width=\"48\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.3\"/>\r\n      <!-- River water -->\r\n      <path d=\"M120 5 C 125 50, 128 90, 120 120 C 105 145, 70 140, 15 135\"\r\n            stroke=\"var(--river-water)\" stroke-width=\"30\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <!-- Water highlights -->\r\n      <path d=\"M120 5 C 125 50, 128 90, 120 120 C 105 145, 70 140, 15 135\"\r\n            stroke=\"var(--river-water-light)\" stroke-width=\"14\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <!-- Flow line -->\r\n      <path d=\"M117 30 C 120 60, 122 95, 115 118 C 102 140, 65 137, 25 133\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 33,
+      "name": "River (S→E)",
+      "colorVariables": {
+        "--river-water": "#1E88E5",
+        "--river-water-light": "#42A5F5",
+        "--river-bank": "#6D4C21",
+        "--river-foam": "#BBDEFB"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- River bank -->\r\n      <path d=\"M100 245 C 95 200, 92 160, 100 130 C 115 105, 150 110, 205 115\"\r\n            stroke=\"var(--river-bank)\" stroke-width=\"48\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.3\"/>\r\n      <!-- River water -->\r\n      <path d=\"M100 245 C 95 200, 92 160, 100 130 C 115 105, 150 110, 205 115\"\r\n            stroke=\"var(--river-water)\" stroke-width=\"30\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <!-- Water highlights -->\r\n      <path d=\"M100 245 C 95 200, 92 160, 100 130 C 115 105, 150 110, 205 115\"\r\n            stroke=\"var(--river-water-light)\" stroke-width=\"14\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <!-- Flow line -->\r\n      <path d=\"M103 230 C 100 195, 98 160, 105 132 C 118 110, 155 113, 195 117\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 34,
+      "name": "River (S→W)",
+      "colorVariables": {
+        "--river-water": "#1E88E5",
+        "--river-water-light": "#42A5F5",
+        "--river-bank": "#6D4C21",
+        "--river-foam": "#BBDEFB"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- River bank -->\r\n      <path d=\"M120 245 C 125 200, 128 160, 120 130 C 105 105, 70 110, 15 115\"\r\n            stroke=\"var(--river-bank)\" stroke-width=\"48\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.3\"/>\r\n      <!-- River water -->\r\n      <path d=\"M120 245 C 125 200, 128 160, 120 130 C 105 105, 70 110, 15 115\"\r\n            stroke=\"var(--river-water)\" stroke-width=\"30\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <!-- Water highlights -->\r\n      <path d=\"M120 245 C 125 200, 128 160, 120 130 C 105 105, 70 110, 15 115\"\r\n            stroke=\"var(--river-water-light)\" stroke-width=\"14\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <!-- Flow line -->\r\n      <path d=\"M117 230 C 120 195, 122 160, 115 132 C 102 110, 65 113, 25 117\" stroke=\"var(--river-foam)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 35,
+      "name": "Lake",
+      "colorVariables": {
+        "--lake-water": "#1E88E5",
+        "--lake-water-light": "#42A5F5",
+        "--lake-water-deep": "#1565C0",
+        "--lake-shore": "#8D6E4C",
+        "--lake-highlight": "#BBDEFB"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Shore -->\r\n      <ellipse cx=\"110\" cy=\"135\" rx=\"75\" ry=\"65\" fill=\"var(--lake-shore)\" opacity=\"0.3\"/>\r\n      <!-- Lake body -->\r\n      <ellipse cx=\"110\" cy=\"132\" rx=\"68\" ry=\"58\" fill=\"var(--lake-water)\"/>\r\n      <!-- Deep center -->\r\n      <ellipse cx=\"108\" cy=\"128\" rx=\"45\" ry=\"38\" fill=\"var(--lake-water-deep)\" opacity=\"0.5\"/>\r\n      <!-- Highlights -->\r\n      <ellipse cx=\"95\" cy=\"115\" rx=\"25\" ry=\"12\" fill=\"var(--lake-highlight)\" opacity=\"0.3\"/>\r\n      <ellipse cx=\"130\" cy=\"110\" rx=\"15\" ry=\"8\" fill=\"var(--lake-highlight)\" opacity=\"0.2\"/>\r\n      <!-- Ripple lines -->\r\n      <path d=\"M75 140 C 85 137, 100 138, 110 136\" stroke=\"var(--lake-water-light)\" stroke-width=\"1\" fill=\"none\" opacity=\"0.4\"/>\r\n      <path d=\"M90 155 C 105 152, 120 153, 135 150\" stroke=\"var(--lake-water-light)\" stroke-width=\"1\" fill=\"none\" opacity=\"0.3\"/>\r\n    </svg>"
+    },
+    {
+      "id": 36,
+      "name": "Castle",
+      "colorVariables": {
+        "--castle-wall": "#9E9E9E",
+        "--castle-wall-dark": "#757575",
+        "--castle-tower": "#BDBDBD",
+        "--castle-roof": "#5D4037",
+        "--castle-door": "#3E2723",
+        "--castle-window": "#37474F",
+        "--castle-flag": "#C62828"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Castle base wall -->\r\n      <rect x=\"55\" y=\"130\" width=\"110\" height=\"75\" fill=\"var(--castle-wall)\"/>\r\n      <rect x=\"55\" y=\"130\" width=\"55\" height=\"75\" fill=\"var(--castle-wall-dark)\" opacity=\"0.3\"/>\r\n      <!-- Battlements -->\r\n      <rect x=\"55\" y=\"122\" width=\"14\" height=\"12\" fill=\"var(--castle-wall)\"/>\r\n      <rect x=\"77\" y=\"122\" width=\"14\" height=\"12\" fill=\"var(--castle-wall)\"/>\r\n      <rect x=\"99\" y=\"122\" width=\"14\" height=\"12\" fill=\"var(--castle-wall)\"/>\r\n      <rect x=\"121\" y=\"122\" width=\"14\" height=\"12\" fill=\"var(--castle-wall)\"/>\r\n      <rect x=\"143\" y=\"122\" width=\"14\" height=\"12\" fill=\"var(--castle-wall)\"/>\r\n      <!-- Left tower -->\r\n      <rect x=\"42\" y=\"85\" width=\"28\" height=\"120\" fill=\"var(--castle-tower)\"/>\r\n      <rect x=\"42\" y=\"85\" width=\"14\" height=\"120\" fill=\"var(--castle-wall-dark)\" opacity=\"0.3\"/>\r\n      <polygon points=\"56,65 75,85 37,85\" fill=\"var(--castle-roof)\"/>\r\n      <!-- Right tower -->\r\n      <rect x=\"150\" y=\"85\" width=\"28\" height=\"120\" fill=\"var(--castle-tower)\"/>\r\n      <rect x=\"150\" y=\"85\" width=\"14\" height=\"120\" fill=\"var(--castle-wall-dark)\" opacity=\"0.3\"/>\r\n      <polygon points=\"164,65 183,85 145,85\" fill=\"var(--castle-roof)\"/>\r\n      <!-- Tower windows -->\r\n      <rect x=\"51\" y=\"100\" width=\"8\" height=\"12\" fill=\"var(--castle-window)\" rx=\"4\"/>\r\n      <rect x=\"160\" y=\"100\" width=\"8\" height=\"12\" fill=\"var(--castle-window)\" rx=\"4\"/>\r\n      <!-- Gate -->\r\n      <path d=\"M95 205 C 95 175, 125 175, 125 205 Z\" fill=\"var(--castle-door)\"/>\r\n      <!-- Gate grill lines -->\r\n      <line x1=\"103\" y1=\"178\" x2=\"103\" y2=\"205\" stroke=\"var(--castle-wall-dark)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n      <line x1=\"110\" y1=\"175\" x2=\"110\" y2=\"205\" stroke=\"var(--castle-wall-dark)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n      <line x1=\"117\" y1=\"178\" x2=\"117\" y2=\"205\" stroke=\"var(--castle-wall-dark)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n      <!-- Flag -->\r\n      <line x1=\"56\" y1=\"65\" x2=\"56\" y2=\"45\" stroke=\"var(--castle-wall-dark)\" stroke-width=\"1.5\"/>\r\n      <polygon points=\"56,45 72,50 56,55\" fill=\"var(--castle-flag)\"/>\r\n    </svg>"
+    },
+    {
+      "id": 37,
+      "name": "Church",
+      "colorVariables": {
+        "--church-wall": "#D7CCC8",
+        "--church-wall-shade": "#BCAAA4",
+        "--church-roof": "#5D4037",
+        "--church-roof-dark": "#3E2723",
+        "--church-steeple": "#9E9E9E",
+        "--church-cross": "#FFD54F",
+        "--church-door": "#5D4037",
+        "--church-window": "#42A5F5"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Church body -->\r\n      <rect x=\"60\" y=\"140\" width=\"100\" height=\"65\" fill=\"var(--church-wall)\"/>\r\n      <rect x=\"60\" y=\"140\" width=\"50\" height=\"65\" fill=\"var(--church-wall-shade)\" opacity=\"0.3\"/>\r\n      <!-- Main roof -->\r\n      <polygon points=\"110,105 168,140 52,140\" fill=\"var(--church-roof)\"/>\r\n      <polygon points=\"110,105 52,140 110,140\" fill=\"var(--church-roof-dark)\" opacity=\"0.3\"/>\r\n      <!-- Steeple -->\r\n      <rect x=\"100\" y=\"70\" width=\"20\" height=\"40\" fill=\"var(--church-steeple)\"/>\r\n      <polygon points=\"110,45 125,70 95,70\" fill=\"var(--church-steeple)\"/>\r\n      <!-- Cross -->\r\n      <line x1=\"110\" y1=\"28\" x2=\"110\" y2=\"48\" stroke=\"var(--church-cross)\" stroke-width=\"3\" stroke-linecap=\"round\"/>\r\n      <line x1=\"103\" y1=\"35\" x2=\"117\" y2=\"35\" stroke=\"var(--church-cross)\" stroke-width=\"3\" stroke-linecap=\"round\"/>\r\n      <!-- Stained glass window (arch) -->\r\n      <path d=\"M103 80 C 103 72, 117 72, 117 80 L 117 95 L 103 95 Z\" fill=\"var(--church-window)\"/>\r\n      <!-- Door -->\r\n      <path d=\"M102 205 C 102 190, 118 190, 118 205 Z\" fill=\"var(--church-door)\"/>\r\n      <!-- Side windows -->\r\n      <rect x=\"70\" y=\"158\" width=\"10\" height=\"14\" fill=\"var(--church-window)\" rx=\"5\"/>\r\n      <rect x=\"140\" y=\"158\" width=\"10\" height=\"14\" fill=\"var(--church-window)\" rx=\"5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 38,
+      "name": "Ancient Ruins",
+      "colorVariables": {
+        "--ruins-stone": "#9E9E9E",
+        "--ruins-stone-dark": "#757575",
+        "--ruins-stone-light": "#BDBDBD",
+        "--ruins-moss": "#6B8E23"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Broken pillar left -->\r\n      <rect x=\"50\" y=\"120\" width=\"14\" height=\"85\" fill=\"var(--ruins-stone)\"/>\r\n      <rect x=\"50\" y=\"120\" width=\"7\" height=\"85\" fill=\"var(--ruins-stone-dark)\" opacity=\"0.3\"/>\r\n      <!-- Pillar top (broken/jagged) -->\r\n      <polygon points=\"48,120 55,108 60,118 66,112\" fill=\"var(--ruins-stone)\" stroke=\"var(--ruins-stone-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Broken pillar right -->\r\n      <rect x=\"148\" y=\"135\" width=\"14\" height=\"70\" fill=\"var(--ruins-stone)\"/>\r\n      <rect x=\"148\" y=\"135\" width=\"7\" height=\"70\" fill=\"var(--ruins-stone-dark)\" opacity=\"0.3\"/>\r\n      <polygon points=\"146,135 153,122 158,132 164,128\" fill=\"var(--ruins-stone)\" stroke=\"var(--ruins-stone-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Fallen column on ground -->\r\n      <rect x=\"70\" y=\"188\" width=\"60\" height=\"12\" fill=\"var(--ruins-stone-light)\" rx=\"6\"/>\r\n      <ellipse cx=\"70\" cy=\"194\" rx=\"6\" ry=\"6\" fill=\"var(--ruins-stone)\" opacity=\"0.7\"/>\r\n      <ellipse cx=\"130\" cy=\"194\" rx=\"6\" ry=\"6\" fill=\"var(--ruins-stone)\" opacity=\"0.7\"/>\r\n      <!-- Broken wall segment -->\r\n      <polygon points=\"85,155 85,175 120,175 120,160 115,155 110,162 105,152 100,160 95,150 90,158\"\r\n              fill=\"var(--ruins-stone)\" stroke=\"var(--ruins-stone-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Scattered rubble -->\r\n      <ellipse cx=\"75\" cy=\"200\" rx=\"5\" ry=\"3\" fill=\"var(--ruins-stone-dark)\" opacity=\"0.6\"/>\r\n      <ellipse cx=\"140\" cy=\"202\" rx=\"6\" ry=\"3\" fill=\"var(--ruins-stone)\" opacity=\"0.5\"/>\r\n      <circle cx=\"95\" cy=\"205\" r=\"3\" fill=\"var(--ruins-stone-dark)\" opacity=\"0.5\"/>\r\n      <circle cx=\"125\" cy=\"200\" r=\"2.5\" fill=\"var(--ruins-stone-light)\" opacity=\"0.5\"/>\r\n      <!-- Moss on ruins -->\r\n      <path d=\"M50 155 C 48 150, 52 147, 50 142\" stroke=\"var(--ruins-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M162 160 C 164 155, 160 152, 162 147\" stroke=\"var(--ruins-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M95 175 C 93 170, 97 167, 95 163\" stroke=\"var(--ruins-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 39,
+      "name": "Geyser",
+      "colorVariables": {
+        "--geyser-rock": "#8D6E63",
+        "--geyser-rock-dark": "#6D4C41",
+        "--geyser-rock-light": "#A1887F",
+        "--geyser-water": "#64B5F6",
+        "--geyser-water-light": "#BBDEFB",
+        "--geyser-steam": "#E0E0E0",
+        "--geyser-pool": "#42A5F5"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Rock formation around pool -->\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"50\" ry=\"22\" fill=\"var(--geyser-rock)\"/>\r\n      <ellipse cx=\"110\" cy=\"193\" rx=\"45\" ry=\"18\" fill=\"var(--geyser-rock-dark)\" opacity=\"0.4\"/>\r\n      <!-- Hot pool -->\r\n      <ellipse cx=\"110\" cy=\"190\" rx=\"35\" ry=\"14\" fill=\"var(--geyser-pool)\"/>\r\n      <ellipse cx=\"105\" cy=\"188\" rx=\"20\" ry=\"8\" fill=\"var(--geyser-water)\" opacity=\"0.6\"/>\r\n      <!-- Geyser water column -->\r\n      <path d=\"M110 185 C 108 160, 105 130, 100 90\"\r\n            stroke=\"var(--geyser-water)\" stroke-width=\"10\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.8\"/>\r\n      <path d=\"M110 185 C 112 158, 110 128, 108 85\"\r\n            stroke=\"var(--geyser-water-light)\" stroke-width=\"6\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <!-- Spray at top -->\r\n      <path d=\"M100 90 C 92 70, 88 55, 85 40\" stroke=\"var(--geyser-water-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M108 85 C 110 65, 108 50, 110 35\" stroke=\"var(--geyser-water-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M100 90 C 115 68, 125 55, 130 40\" stroke=\"var(--geyser-water-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <!-- Steam clouds -->\r\n      <circle cx=\"90\" cy=\"55\" r=\"12\" fill=\"var(--geyser-steam)\" opacity=\"0.25\"/>\r\n      <circle cx=\"115\" cy=\"45\" r=\"14\" fill=\"var(--geyser-steam)\" opacity=\"0.2\"/>\r\n      <circle cx=\"130\" cy=\"60\" r=\"10\" fill=\"var(--geyser-steam)\" opacity=\"0.2\"/>\r\n      <circle cx=\"100\" cy=\"35\" r=\"10\" fill=\"var(--geyser-steam)\" opacity=\"0.15\"/>\r\n      <!-- Rock details -->\r\n      <ellipse cx=\"75\" cy=\"198\" rx=\"8\" ry=\"5\" fill=\"var(--geyser-rock-light)\" opacity=\"0.5\"/>\r\n      <ellipse cx=\"148\" cy=\"196\" rx=\"7\" ry=\"4\" fill=\"var(--geyser-rock-light)\" opacity=\"0.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 40,
+      "name": "Spring",
+      "colorVariables": {
+        "--spring-water": "#42A5F5",
+        "--spring-water-light": "#90CAF9",
+        "--spring-rock": "#9E9E9E",
+        "--spring-rock-dark": "#757575",
+        "--spring-moss": "#7CB342",
+        "--spring-stream": "#64B5F6"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Rock formation -->\r\n      <ellipse cx=\"95\" cy=\"145\" rx=\"35\" ry=\"25\" fill=\"var(--spring-rock)\"/>\r\n      <ellipse cx=\"90\" cy=\"142\" rx=\"28\" ry=\"20\" fill=\"var(--spring-rock-dark)\" opacity=\"0.4\"/>\r\n      <ellipse cx=\"110\" cy=\"155\" rx=\"20\" ry=\"12\" fill=\"var(--spring-rock)\" opacity=\"0.8\"/>\r\n      <!-- Spring source (water bubbling from rocks) -->\r\n      <path d=\"M100 140 C 98 132, 102 128, 100 120\"\r\n            stroke=\"var(--spring-water)\" stroke-width=\"6\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M105 138 C 108 130, 104 125, 107 118\"\r\n            stroke=\"var(--spring-water-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <!-- Bubbles -->\r\n      <circle cx=\"98\" cy=\"128\" r=\"3\" fill=\"var(--spring-water-light)\" opacity=\"0.5\"/>\r\n      <circle cx=\"105\" cy=\"122\" r=\"2\" fill=\"var(--spring-water-light)\" opacity=\"0.4\"/>\r\n      <circle cx=\"101\" cy=\"115\" r=\"2.5\" fill=\"var(--spring-water-light)\" opacity=\"0.3\"/>\r\n      <!-- Water pool at base -->\r\n      <ellipse cx=\"110\" cy=\"185\" rx=\"40\" ry=\"16\" fill=\"var(--spring-water)\"/>\r\n      <ellipse cx=\"105\" cy=\"183\" rx=\"25\" ry=\"10\" fill=\"var(--spring-water-light)\" opacity=\"0.4\"/>\r\n      <!-- Stream flowing out -->\r\n      <path d=\"M140 185 C 155 190, 165 195, 175 205\"\r\n            stroke=\"var(--spring-stream)\" stroke-width=\"8\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M142 184 C 157 189, 167 193, 177 202\"\r\n            stroke=\"var(--spring-water-light)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.4\"/>\r\n      <!-- Moss on rocks -->\r\n      <path d=\"M72 148 C 70 142, 74 138, 72 132\" stroke=\"var(--spring-moss)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M120 152 C 122 146, 118 142, 120 136\" stroke=\"var(--spring-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M80 158 C 78 153, 82 150, 80 145\" stroke=\"var(--spring-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 41,
+      "name": "Ancient Monument",
+      "colorVariables": {
+        "--monument-stone": "#B0BEC5",
+        "--monument-stone-dark": "#78909C",
+        "--monument-stone-light": "#CFD8DC",
+        "--monument-base": "#90A4AE",
+        "--monument-glow": "#FFD54F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Base platform (stepped) -->\r\n      <rect x=\"60\" y=\"195\" width=\"100\" height=\"15\" fill=\"var(--monument-base)\" rx=\"2\"/>\r\n      <rect x=\"70\" y=\"185\" width=\"80\" height=\"12\" fill=\"var(--monument-stone)\" rx=\"2\"/>\r\n      <!-- Central obelisk -->\r\n      <polygon points=\"110,50 125,185 95,185\" fill=\"var(--monument-stone)\"/>\r\n      <polygon points=\"110,50 95,185 110,185\" fill=\"var(--monument-stone-dark)\" opacity=\"0.3\"/>\r\n      <!-- Obelisk tip (pyramid cap) -->\r\n      <polygon points=\"110,50 118,70 102,70\" fill=\"var(--monument-stone-light)\"/>\r\n      <!-- Glow at top -->\r\n      <circle cx=\"110\" cy=\"50\" r=\"8\" fill=\"var(--monument-glow)\" opacity=\"0.3\"/>\r\n      <circle cx=\"110\" cy=\"50\" r=\"4\" fill=\"var(--monument-glow)\" opacity=\"0.5\"/>\r\n      <!-- Engravings (horizontal lines) -->\r\n      <line x1=\"100\" y1=\"100\" x2=\"120\" y2=\"100\" stroke=\"var(--monument-stone-dark)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n      <line x1=\"99\" y1=\"120\" x2=\"121\" y2=\"120\" stroke=\"var(--monument-stone-dark)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n      <line x1=\"98\" y1=\"140\" x2=\"122\" y2=\"140\" stroke=\"var(--monument-stone-dark)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n      <line x1=\"97\" y1=\"160\" x2=\"123\" y2=\"160\" stroke=\"var(--monument-stone-dark)\" stroke-width=\"1\" opacity=\"0.5\"/>\r\n      <!-- Side stones -->\r\n      <rect x=\"52\" y=\"175\" width=\"14\" height=\"22\" fill=\"var(--monument-stone-dark)\" rx=\"1\"/>\r\n      <rect x=\"154\" y=\"175\" width=\"14\" height=\"22\" fill=\"var(--monument-stone-dark)\" rx=\"1\"/>\r\n    </svg>"
+    },
+    {
+      "id": 42,
+      "name": "Ruined Home",
+      "colorVariables": {
+        "--ruined-wall": "#A1887F",
+        "--ruined-wall-dark": "#8D6E63",
+        "--ruined-wood": "#6D4C41",
+        "--ruined-roof": "#5D4037",
+        "--ruined-rubble": "#9E9E9E",
+        "--ruined-moss": "#7CB342",
+        "--ruined-ground": "#8D6E4C"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Left standing wall -->\r\n      <rect x=\"60\" y=\"120\" width=\"12\" height=\"80\" fill=\"var(--ruined-wall)\"/>\r\n      <rect x=\"60\" y=\"120\" width=\"6\" height=\"80\" fill=\"var(--ruined-wall-dark)\" opacity=\"0.3\"/>\r\n      <!-- Broken top of left wall -->\r\n      <polygon points=\"58,120 64,108 70,118 74,112\" fill=\"var(--ruined-wall)\" stroke=\"var(--ruined-wall-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Right wall fragment -->\r\n      <rect x=\"140\" y=\"140\" width=\"12\" height=\"60\" fill=\"var(--ruined-wall)\"/>\r\n      <polygon points=\"138,140 144,130 150,138 154,134\" fill=\"var(--ruined-wall)\" stroke=\"var(--ruined-wall-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Back wall (low, broken) -->\r\n      <rect x=\"72\" y=\"125\" width=\"68\" height=\"8\" fill=\"var(--ruined-wall-dark)\" opacity=\"0.5\"/>\r\n      <!-- Collapsed roof beams -->\r\n      <line x1=\"65\" y1=\"115\" x2=\"135\" y2=\"145\" stroke=\"var(--ruined-wood)\" stroke-width=\"4\" stroke-linecap=\"round\"/>\r\n      <line x1=\"80\" y1=\"110\" x2=\"145\" y2=\"155\" stroke=\"var(--ruined-roof)\" stroke-width=\"3\" stroke-linecap=\"round\" opacity=\"0.7\"/>\r\n      <!-- Rubble pile -->\r\n      <ellipse cx=\"105\" cy=\"192\" rx=\"30\" ry=\"10\" fill=\"var(--ruined-rubble)\" opacity=\"0.5\"/>\r\n      <ellipse cx=\"95\" cy=\"190\" rx=\"8\" ry=\"5\" fill=\"var(--ruined-wall-dark)\" opacity=\"0.6\"/>\r\n      <ellipse cx=\"115\" cy=\"188\" rx=\"10\" ry=\"6\" fill=\"var(--ruined-wall)\" opacity=\"0.5\"/>\r\n      <circle cx=\"100\" cy=\"195\" r=\"4\" fill=\"var(--ruined-rubble)\" opacity=\"0.4\"/>\r\n      <circle cx=\"120\" cy=\"193\" r=\"3\" fill=\"var(--ruined-rubble)\" opacity=\"0.4\"/>\r\n      <!-- Moss growing -->\r\n      <path d=\"M60 165 C 56 160, 54 155, 56 148\" stroke=\"var(--ruined-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M152 170 C 156 165, 154 160, 156 155\" stroke=\"var(--ruined-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <!-- Empty doorway -->\r\n      <rect x=\"92\" y=\"160\" width=\"18\" height=\"40\" fill=\"var(--ruined-ground)\" opacity=\"0.5\" rx=\"1\"/>\r\n    </svg>"
+    },
+    {
+      "id": 43,
+      "name": "Bandit Camp",
+      "colorVariables": {
+        "--bandit-tent-a": "#8D6E63",
+        "--bandit-tent-b": "#795548",
+        "--bandit-tent-dark": "#5D4037",
+        "--bandit-fire": "#FF6F00",
+        "--bandit-fire-light": "#FFB300",
+        "--bandit-log": "#6D4C41",
+        "--bandit-ground": "#8D6E4C",
+        "--bandit-fence": "#A1887F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Tent 1 (left) -->\r\n      <polygon points=\"65,120 95,190 35,190\" fill=\"var(--bandit-tent-a)\"/>\r\n      <polygon points=\"65,120 35,190 65,190\" fill=\"var(--bandit-tent-dark)\" opacity=\"0.3\"/>\r\n      <line x1=\"65\" y1=\"120\" x2=\"65\" y2=\"115\" stroke=\"var(--bandit-fence)\" stroke-width=\"2\"/>\r\n      <!-- Tent opening -->\r\n      <polygon points=\"55,190 65,160 75,190\" fill=\"var(--bandit-tent-dark)\" opacity=\"0.6\"/>\r\n      <!-- Tent 2 (right) -->\r\n      <polygon points=\"155,115 185,185 125,185\" fill=\"var(--bandit-tent-b)\"/>\r\n      <polygon points=\"155,115 125,185 155,185\" fill=\"var(--bandit-tent-dark)\" opacity=\"0.3\"/>\r\n      <line x1=\"155\" y1=\"115\" x2=\"155\" y2=\"110\" stroke=\"var(--bandit-fence)\" stroke-width=\"2\"/>\r\n      <polygon points=\"145,185 155,155 165,185\" fill=\"var(--bandit-tent-dark)\" opacity=\"0.6\"/>\r\n      <!-- Campfire (center) -->\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"12\" ry=\"4\" fill=\"var(--bandit-ground)\" opacity=\"0.6\"/>\r\n      <!-- Logs around fire -->\r\n      <line x1=\"98\" y1=\"194\" x2=\"122\" y2=\"194\" stroke=\"var(--bandit-log)\" stroke-width=\"4\" stroke-linecap=\"round\"/>\r\n      <line x1=\"104\" y1=\"198\" x2=\"116\" y2=\"190\" stroke=\"var(--bandit-log)\" stroke-width=\"3\" stroke-linecap=\"round\"/>\r\n      <!-- Flames -->\r\n      <path d=\"M110 194 C 108 186, 112 180, 110 172\" stroke=\"var(--bandit-fire)\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M107 192 C 104 185, 108 179, 105 173\" stroke=\"var(--bandit-fire-light)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.7\"/>\r\n      <path d=\"M113 192 C 116 185, 112 180, 115 174\" stroke=\"var(--bandit-fire-light)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.7\"/>\r\n      <!-- Crude fence/palisade section -->\r\n      <line x1=\"40\" y1=\"195\" x2=\"40\" y2=\"175\" stroke=\"var(--bandit-fence)\" stroke-width=\"3\" stroke-linecap=\"round\"/>\r\n      <line x1=\"50\" y1=\"193\" x2=\"50\" y2=\"170\" stroke=\"var(--bandit-fence)\" stroke-width=\"3\" stroke-linecap=\"round\"/>\r\n      <line x1=\"38\" y1=\"180\" x2=\"52\" y2=\"178\" stroke=\"var(--bandit-fence)\" stroke-width=\"2\"/>\r\n    </svg>"
+    },
+    {
+      "id": 44,
+      "name": "Monster Burrow",
+      "colorVariables": {
+        "--burrow-hole": "#1a1a1a",
+        "--burrow-hole-rim": "#5D4037",
+        "--burrow-dirt": "#8D6E4C",
+        "--burrow-dirt-dark": "#6D4C41",
+        "--burrow-bone": "#E0E0E0",
+        "--burrow-scratch": "#A1887F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Mound of dirt around hole -->\r\n      <ellipse cx=\"110\" cy=\"170\" rx=\"50\" ry=\"30\" fill=\"var(--burrow-dirt)\"/>\r\n      <ellipse cx=\"110\" cy=\"168\" rx=\"42\" ry=\"24\" fill=\"var(--burrow-dirt-dark)\" opacity=\"0.4\"/>\r\n      <!-- Burrow hole -->\r\n      <ellipse cx=\"110\" cy=\"165\" rx=\"28\" ry=\"16\" fill=\"var(--burrow-hole)\"/>\r\n      <ellipse cx=\"108\" cy=\"163\" rx=\"20\" ry=\"11\" fill=\"var(--burrow-hole)\" opacity=\"0.8\"/>\r\n      <!-- Hole rim highlight -->\r\n      <path d=\"M82 165 C 88 155, 100 150, 110 150 C 120 150, 132 155, 138 165\"\r\n            stroke=\"var(--burrow-hole-rim)\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/>\r\n      <!-- Scratch marks around entrance -->\r\n      <line x1=\"75\" y1=\"158\" x2=\"68\" y2=\"148\" stroke=\"var(--burrow-scratch)\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\"0.6\"/>\r\n      <line x1=\"78\" y1=\"162\" x2=\"70\" y2=\"155\" stroke=\"var(--burrow-scratch)\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\"0.6\"/>\r\n      <line x1=\"145\" y1=\"158\" x2=\"152\" y2=\"148\" stroke=\"var(--burrow-scratch)\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\"0.6\"/>\r\n      <line x1=\"142\" y1=\"162\" x2=\"150\" y2=\"155\" stroke=\"var(--burrow-scratch)\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\"0.6\"/>\r\n      <!-- Scattered bones -->\r\n      <line x1=\"70\" y1=\"190\" x2=\"82\" y2=\"188\" stroke=\"var(--burrow-bone)\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\"0.6\"/>\r\n      <line x1=\"74\" y1=\"186\" x2=\"78\" y2=\"192\" stroke=\"var(--burrow-bone)\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\"0.5\"/>\r\n      <line x1=\"138\" y1=\"192\" x2=\"150\" y2=\"188\" stroke=\"var(--burrow-bone)\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\"0.6\"/>\r\n      <circle cx=\"155\" cy=\"186\" r=\"3\" fill=\"var(--burrow-bone)\" opacity=\"0.4\"/>\r\n      <!-- Dirt clumps -->\r\n      <ellipse cx=\"80\" cy=\"182\" rx=\"6\" ry=\"3\" fill=\"var(--burrow-dirt)\" opacity=\"0.6\"/>\r\n      <ellipse cx=\"140\" cy=\"180\" rx=\"7\" ry=\"3\" fill=\"var(--burrow-dirt)\" opacity=\"0.6\"/>\r\n    </svg>"
+    },
+    {
+      "id": 45,
+      "name": "Cave",
+      "colorVariables": {
+        "--cave-rock": "#757575",
+        "--cave-rock-dark": "#616161",
+        "--cave-rock-light": "#9E9E9E",
+        "--cave-opening": "#1a1a1a",
+        "--cave-shadow": "#2a2a2a"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Rock face / cliff -->\r\n      <path d=\"M30 210 C 30 170, 35 120, 50 90 C 65 65, 85 50, 110 45 C 135 50, 155 65, 170 90 C 185 120, 190 170, 190 210 Z\"\r\n            fill=\"var(--cave-rock)\"/>\r\n      <path d=\"M30 210 C 30 170, 35 120, 50 90 C 65 65, 85 50, 110 45 L 110 210 Z\"\r\n            fill=\"var(--cave-rock-dark)\" opacity=\"0.3\"/>\r\n      <!-- Rock texture lines -->\r\n      <line x1=\"60\" y1=\"80\" x2=\"75\" y2=\"85\" stroke=\"var(--cave-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"140\" y1=\"78\" x2=\"155\" y2=\"85\" stroke=\"var(--cave-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"50\" y1=\"130\" x2=\"65\" y2=\"128\" stroke=\"var(--cave-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"155\" y1=\"125\" x2=\"175\" y2=\"130\" stroke=\"var(--cave-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <!-- Cave opening -->\r\n      <path d=\"M75 210 C 75 165, 90 145, 110 140 C 130 145, 145 165, 145 210 Z\" fill=\"var(--cave-opening)\"/>\r\n      <!-- Cave shadow depth -->\r\n      <path d=\"M82 210 C 82 175, 95 155, 110 150 C 125 155, 138 175, 138 210 Z\" fill=\"var(--cave-shadow)\" opacity=\"0.5\"/>\r\n      <!-- Cave rim highlight -->\r\n      <path d=\"M75 210 C 75 165, 90 145, 110 140 C 130 145, 145 165, 145 210\"\r\n            stroke=\"var(--cave-rock-light)\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/>\r\n    </svg>"
+    },
+    {
+      "id": 46,
+      "name": "Mine",
+      "colorVariables": {
+        "--mine-rock": "#757575",
+        "--mine-rock-dark": "#616161",
+        "--mine-timber": "#8D6E4C",
+        "--mine-timber-dark": "#6D4C41",
+        "--mine-opening": "#1a1a1a",
+        "--mine-shadow": "#2a2a2a",
+        "--mine-rail": "#9E9E9E",
+        "--mine-cart": "#795548"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Rock hillside -->\r\n      <path d=\"M35 210 C 35 160, 50 110, 80 85 C 100 70, 120 70, 140 85 C 170 110, 185 160, 185 210 Z\"\r\n            fill=\"var(--mine-rock)\"/>\r\n      <path d=\"M35 210 C 35 160, 50 110, 80 85 C 100 70, 110 70, 110 210 Z\"\r\n            fill=\"var(--mine-rock-dark)\" opacity=\"0.3\"/>\r\n      <!-- Mine entrance (squared off) -->\r\n      <rect x=\"80\" y=\"145\" width=\"60\" height=\"65\" fill=\"var(--mine-opening)\"/>\r\n      <rect x=\"85\" y=\"150\" width=\"50\" height=\"55\" fill=\"var(--mine-shadow)\" opacity=\"0.5\"/>\r\n      <!-- Timber frame -->\r\n      <rect x=\"76\" y=\"140\" width=\"8\" height=\"72\" fill=\"var(--mine-timber)\"/>\r\n      <rect x=\"136\" y=\"140\" width=\"8\" height=\"72\" fill=\"var(--mine-timber)\"/>\r\n      <rect x=\"76\" y=\"136\" width=\"68\" height=\"8\" fill=\"var(--mine-timber)\"/>\r\n      <!-- Timber dark edges -->\r\n      <rect x=\"76\" y=\"140\" width=\"4\" height=\"72\" fill=\"var(--mine-timber-dark)\" opacity=\"0.4\"/>\r\n      <rect x=\"136\" y=\"140\" width=\"4\" height=\"72\" fill=\"var(--mine-timber-dark)\" opacity=\"0.4\"/>\r\n      <!-- Rails coming out -->\r\n      <line x1=\"95\" y1=\"210\" x2=\"95\" y2=\"230\" stroke=\"var(--mine-rail)\" stroke-width=\"2\"/>\r\n      <line x1=\"125\" y1=\"210\" x2=\"125\" y2=\"230\" stroke=\"var(--mine-rail)\" stroke-width=\"2\"/>\r\n      <line x1=\"90\" y1=\"218\" x2=\"130\" y2=\"218\" stroke=\"var(--mine-rail)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <line x1=\"90\" y1=\"225\" x2=\"130\" y2=\"225\" stroke=\"var(--mine-rail)\" stroke-width=\"1.5\" opacity=\"0.6\"/>\r\n      <!-- Mine cart -->\r\n      <rect x=\"98\" y=\"210\" width=\"24\" height=\"14\" fill=\"var(--mine-cart)\" rx=\"2\"/>\r\n      <circle cx=\"102\" cy=\"226\" r=\"3\" fill=\"var(--mine-rail)\" opacity=\"0.7\"/>\r\n      <circle cx=\"118\" cy=\"226\" r=\"3\" fill=\"var(--mine-rail)\" opacity=\"0.7\"/>\r\n    </svg>"
+    },
+    {
+      "id": 47,
+      "name": "Ancient City",
+      "colorVariables": {
+        "--ancient-city-wall": "#B0BEC5",
+        "--ancient-city-wall-dark": "#78909C",
+        "--ancient-city-tower": "#90A4AE",
+        "--ancient-city-pillar": "#CFD8DC",
+        "--ancient-city-moss": "#6B8E23"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Back wall -->\r\n      <rect x=\"35\" y=\"100\" width=\"150\" height=\"10\" fill=\"var(--ancient-city-wall-dark)\" opacity=\"0.5\"/>\r\n      <!-- Left tower (crumbling) -->\r\n      <rect x=\"35\" y=\"70\" width=\"25\" height=\"135\" fill=\"var(--ancient-city-wall)\"/>\r\n      <rect x=\"35\" y=\"70\" width=\"12\" height=\"135\" fill=\"var(--ancient-city-wall-dark)\" opacity=\"0.3\"/>\r\n      <polygon points=\"37,70 42,60 48,68 55,62 62,70\" fill=\"var(--ancient-city-wall)\" stroke=\"var(--ancient-city-wall-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Right tower -->\r\n      <rect x=\"160\" y=\"75\" width=\"25\" height=\"130\" fill=\"var(--ancient-city-wall)\"/>\r\n      <rect x=\"160\" y=\"75\" width=\"12\" height=\"130\" fill=\"var(--ancient-city-wall-dark)\" opacity=\"0.3\"/>\r\n      <polygon points=\"158,75 165,65 172,73 180,68 187,75\" fill=\"var(--ancient-city-wall)\" stroke=\"var(--ancient-city-wall-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Central temple/pyramid structure -->\r\n      <polygon points=\"110,55 150,120 70,120\" fill=\"var(--ancient-city-tower)\"/>\r\n      <polygon points=\"110,55 70,120 110,120\" fill=\"var(--ancient-city-wall-dark)\" opacity=\"0.3\"/>\r\n      <rect x=\"70\" y=\"120\" width=\"80\" height=\"82\" fill=\"var(--ancient-city-wall)\"/>\r\n      <rect x=\"70\" y=\"120\" width=\"40\" height=\"82\" fill=\"var(--ancient-city-wall-dark)\" opacity=\"0.2\"/>\r\n      <!-- Pillars in front -->\r\n      <rect x=\"78\" y=\"130\" width=\"6\" height=\"72\" fill=\"var(--ancient-city-pillar)\"/>\r\n      <rect x=\"97\" y=\"130\" width=\"6\" height=\"72\" fill=\"var(--ancient-city-pillar)\"/>\r\n      <rect x=\"117\" y=\"130\" width=\"6\" height=\"72\" fill=\"var(--ancient-city-pillar)\"/>\r\n      <rect x=\"136\" y=\"130\" width=\"6\" height=\"72\" fill=\"var(--ancient-city-pillar)\"/>\r\n      <!-- Moss/overgrowth -->\r\n      <path d=\"M35 150 C 30 145, 28 140, 30 132\" stroke=\"var(--ancient-city-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M185 155 C 190 150, 188 145, 190 138\" stroke=\"var(--ancient-city-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M90 120 C 88 115, 92 112, 90 108\" stroke=\"var(--ancient-city-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.4\"/>\r\n    </svg>"
+    },
+    {
+      "id": 48,
+      "name": "Fantasy City",
+      "colorVariables": {
+        "--fantasy-city-wall": "#D7CCC8",
+        "--fantasy-city-wall-dark": "#BCAAA4",
+        "--fantasy-city-tower-a": "#7986CB",
+        "--fantasy-city-tower-b": "#9FA8DA",
+        "--fantasy-city-roof": "#5C6BC0",
+        "--fantasy-city-roof-alt": "#7E57C2",
+        "--fantasy-city-spire": "#FFD54F",
+        "--fantasy-city-window": "#FFEE58",
+        "--fantasy-city-gate": "#5D4037"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- City wall base -->\r\n      <rect x=\"30\" y=\"160\" width=\"160\" height=\"45\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"30\" y=\"160\" width=\"80\" height=\"45\" fill=\"var(--fantasy-city-wall-dark)\" opacity=\"0.2\"/>\r\n      <!-- Battlements -->\r\n      <rect x=\"30\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"50\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"70\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"90\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"110\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"130\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"150\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <rect x=\"170\" y=\"153\" width=\"12\" height=\"10\" fill=\"var(--fantasy-city-wall)\"/>\r\n      <!-- Left tower with spire -->\r\n      <rect x=\"30\" y=\"90\" width=\"30\" height=\"75\" fill=\"var(--fantasy-city-tower-a)\"/>\r\n      <polygon points=\"45,50 65,90 25,90\" fill=\"var(--fantasy-city-roof)\"/>\r\n      <circle cx=\"45\" cy=\"50\" r=\"3\" fill=\"var(--fantasy-city-spire)\"/>\r\n      <rect x=\"40\" y=\"110\" width=\"10\" height=\"14\" fill=\"var(--fantasy-city-window)\" rx=\"5\" opacity=\"0.8\"/>\r\n      <!-- Central tall tower -->\r\n      <rect x=\"90\" y=\"60\" width=\"35\" height=\"100\" fill=\"var(--fantasy-city-tower-b)\"/>\r\n      <polygon points=\"107,20 130,60 85,60\" fill=\"var(--fantasy-city-roof-alt)\"/>\r\n      <circle cx=\"107\" cy=\"20\" r=\"4\" fill=\"var(--fantasy-city-spire)\"/>\r\n      <rect x=\"100\" y=\"80\" width=\"12\" height=\"18\" fill=\"var(--fantasy-city-window)\" rx=\"6\" opacity=\"0.8\"/>\r\n      <rect x=\"100\" y=\"110\" width=\"12\" height=\"18\" fill=\"var(--fantasy-city-window)\" rx=\"6\" opacity=\"0.8\"/>\r\n      <!-- Right tower -->\r\n      <rect x=\"155\" y=\"85\" width=\"28\" height=\"78\" fill=\"var(--fantasy-city-tower-a)\"/>\r\n      <polygon points=\"169,48 188,85 150,85\" fill=\"var(--fantasy-city-roof)\"/>\r\n      <circle cx=\"169\" cy=\"48\" r=\"3\" fill=\"var(--fantasy-city-spire)\"/>\r\n      <rect x=\"163\" y=\"105\" width=\"10\" height=\"14\" fill=\"var(--fantasy-city-window)\" rx=\"5\" opacity=\"0.8\"/>\r\n      <!-- Gate -->\r\n      <path d=\"M100 205 C 100 185, 120 185, 120 205 Z\" fill=\"var(--fantasy-city-gate)\"/>\r\n    </svg>"
+    },
+    {
+      "id": 49,
+      "name": "Fantasy Town",
+      "colorVariables": {
+        "--fantasy-town-wall-a": "#D7CCC8",
+        "--fantasy-town-wall-b": "#C8B99A",
+        "--fantasy-town-roof-a": "#7E57C2",
+        "--fantasy-town-roof-b": "#5C6BC0",
+        "--fantasy-town-roof-c": "#8D4925",
+        "--fantasy-town-door": "#5D4037",
+        "--fantasy-town-window": "#FFEE58"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- House 1 (left) -->\r\n      <rect x=\"35\" y=\"145\" width=\"40\" height=\"35\" fill=\"var(--fantasy-town-wall-a)\"/>\r\n      <polygon points=\"55,118 80,145 30,145\" fill=\"var(--fantasy-town-roof-a)\"/>\r\n      <polygon points=\"55,118 30,145 55,145\" fill=\"var(--fantasy-town-roof-b)\" opacity=\"0.3\"/>\r\n      <rect x=\"48\" y=\"160\" width=\"10\" height=\"20\" fill=\"var(--fantasy-town-door)\" rx=\"1\"/>\r\n      <rect x=\"38\" y=\"152\" width=\"7\" height=\"8\" fill=\"var(--fantasy-town-window)\" rx=\"1\" opacity=\"0.8\"/>\r\n      <!-- House 2 (center, taller) -->\r\n      <rect x=\"82\" y=\"125\" width=\"50\" height=\"55\" fill=\"var(--fantasy-town-wall-b)\"/>\r\n      <rect x=\"82\" y=\"125\" width=\"25\" height=\"55\" fill=\"var(--fantasy-town-wall-a)\" opacity=\"0.3\"/>\r\n      <polygon points=\"107,85 140,125 74,125\" fill=\"var(--fantasy-town-roof-c)\"/>\r\n      <polygon points=\"107,85 74,125 107,125\" fill=\"var(--fantasy-town-roof-a)\" opacity=\"0.2\"/>\r\n      <!-- Steeple/tower on center building -->\r\n      <rect x=\"100\" y=\"68\" width=\"14\" height=\"22\" fill=\"var(--fantasy-town-wall-a)\"/>\r\n      <polygon points=\"107,52 118,68 96,68\" fill=\"var(--fantasy-town-roof-b)\"/>\r\n      <circle cx=\"107\" cy=\"52\" r=\"2.5\" fill=\"var(--fantasy-town-window)\"/>\r\n      <rect x=\"94\" y=\"140\" width=\"10\" height=\"14\" fill=\"var(--fantasy-town-window)\" rx=\"5\" opacity=\"0.8\"/>\r\n      <rect x=\"110\" y=\"140\" width=\"10\" height=\"14\" fill=\"var(--fantasy-town-window)\" rx=\"5\" opacity=\"0.8\"/>\r\n      <rect x=\"100\" y=\"160\" width=\"14\" height=\"20\" fill=\"var(--fantasy-town-door)\" rx=\"1\"/>\r\n      <!-- House 3 (right) -->\r\n      <rect x=\"140\" y=\"140\" width=\"38\" height=\"38\" fill=\"var(--fantasy-town-wall-a)\"/>\r\n      <polygon points=\"159,112 184,140 134,140\" fill=\"var(--fantasy-town-roof-b)\"/>\r\n      <polygon points=\"159,112 134,140 159,140\" fill=\"var(--fantasy-town-roof-a)\" opacity=\"0.3\"/>\r\n      <rect x=\"150\" y=\"158\" width=\"10\" height=\"20\" fill=\"var(--fantasy-town-door)\" rx=\"1\"/>\r\n      <rect x=\"165\" y=\"148\" width=\"7\" height=\"8\" fill=\"var(--fantasy-town-window)\" rx=\"1\" opacity=\"0.8\"/>\r\n    </svg>"
+    },
+    {
+      "id": 50,
+      "name": "Stronghold",
+      "colorVariables": {
+        "--stronghold-wall": "#78909C",
+        "--stronghold-wall-dark": "#546E7A",
+        "--stronghold-tower": "#90A4AE",
+        "--stronghold-tower-dark": "#607D8B",
+        "--stronghold-roof": "#37474F",
+        "--stronghold-gate": "#263238",
+        "--stronghold-gate-frame": "#455A64",
+        "--stronghold-flag": "#C62828",
+        "--stronghold-window": "#37474F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Outer wall -->\r\n      <rect x=\"30\" y=\"145\" width=\"160\" height=\"60\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"30\" y=\"145\" width=\"80\" height=\"60\" fill=\"var(--stronghold-wall-dark)\" opacity=\"0.25\"/>\r\n      <!-- Battlements on wall -->\r\n      <rect x=\"30\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"50\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"70\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"90\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"110\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"130\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"150\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <rect x=\"170\" y=\"137\" width=\"12\" height=\"12\" fill=\"var(--stronghold-wall)\"/>\r\n      <!-- Corner tower left -->\r\n      <rect x=\"22\" y=\"80\" width=\"32\" height=\"125\" fill=\"var(--stronghold-tower)\"/>\r\n      <rect x=\"22\" y=\"80\" width=\"16\" height=\"125\" fill=\"var(--stronghold-tower-dark)\" opacity=\"0.3\"/>\r\n      <rect x=\"22\" y=\"72\" width=\"32\" height=\"12\" fill=\"var(--stronghold-tower)\"/>\r\n      <rect x=\"22\" y=\"72\" width=\"8\" height=\"5\" fill=\"var(--stronghold-wall-dark)\"/>\r\n      <rect x=\"34\" y=\"72\" width=\"8\" height=\"5\" fill=\"var(--stronghold-wall-dark)\"/>\r\n      <rect x=\"46\" y=\"72\" width=\"8\" height=\"5\" fill=\"var(--stronghold-wall-dark)\"/>\r\n      <polygon points=\"38,55 58,72 18,72\" fill=\"var(--stronghold-roof)\"/>\r\n      <!-- Corner tower right -->\r\n      <rect x=\"166\" y=\"80\" width=\"32\" height=\"125\" fill=\"var(--stronghold-tower)\"/>\r\n      <rect x=\"166\" y=\"80\" width=\"16\" height=\"125\" fill=\"var(--stronghold-tower-dark)\" opacity=\"0.3\"/>\r\n      <rect x=\"166\" y=\"72\" width=\"32\" height=\"12\" fill=\"var(--stronghold-tower)\"/>\r\n      <rect x=\"166\" y=\"72\" width=\"8\" height=\"5\" fill=\"var(--stronghold-wall-dark)\"/>\r\n      <rect x=\"178\" y=\"72\" width=\"8\" height=\"5\" fill=\"var(--stronghold-wall-dark)\"/>\r\n      <rect x=\"190\" y=\"72\" width=\"8\" height=\"5\" fill=\"var(--stronghold-wall-dark)\"/>\r\n      <polygon points=\"182,55 202,72 162,72\" fill=\"var(--stronghold-roof)\"/>\r\n      <!-- Center keep -->\r\n      <rect x=\"80\" y=\"85\" width=\"60\" height=\"62\" fill=\"var(--stronghold-tower)\"/>\r\n      <rect x=\"80\" y=\"85\" width=\"30\" height=\"62\" fill=\"var(--stronghold-tower-dark)\" opacity=\"0.25\"/>\r\n      <rect x=\"80\" y=\"78\" width=\"60\" height=\"10\" fill=\"var(--stronghold-tower)\"/>\r\n      <polygon points=\"110,58 145,78 75,78\" fill=\"var(--stronghold-roof)\"/>\r\n      <!-- Keep windows -->\r\n      <rect x=\"90\" y=\"98\" width=\"8\" height=\"12\" fill=\"var(--stronghold-window)\" rx=\"4\"/>\r\n      <rect x=\"122\" y=\"98\" width=\"8\" height=\"12\" fill=\"var(--stronghold-window)\" rx=\"4\"/>\r\n      <!-- Gate -->\r\n      <path d=\"M100 205 C 100 185, 120 185, 120 205 Z\" fill=\"var(--stronghold-gate)\"/>\r\n      <path d=\"M100 205 C 100 185, 120 185, 120 205\" stroke=\"var(--stronghold-gate-frame)\" stroke-width=\"3\" fill=\"none\"/>\r\n      <!-- Flag on keep -->\r\n      <line x1=\"110\" y1=\"58\" x2=\"110\" y2=\"40\" stroke=\"var(--stronghold-wall-dark)\" stroke-width=\"1.5\"/>\r\n      <polygon points=\"110,40 126,45 110,50\" fill=\"var(--stronghold-flag)\"/>\r\n    </svg>"
+    },
+    {
+      "id": 51,
+      "name": "Settlement",
+      "colorVariables": {
+        "--settlement-hut-a": "#A1887F",
+        "--settlement-hut-b": "#8D6E63",
+        "--settlement-roof-a": "#795548",
+        "--settlement-roof-b": "#6D4C41",
+        "--settlement-fence": "#8D6E4C",
+        "--settlement-ground": "#6D5A2E",
+        "--settlement-fire": "#FF8F00",
+        "--settlement-fire-glow": "#FFB300"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Hut 1 (left) -->\r\n      <rect x=\"40\" y=\"155\" width=\"35\" height=\"30\" fill=\"var(--settlement-hut-a)\"/>\r\n      <polygon points=\"57,130 80,155 34,155\" fill=\"var(--settlement-roof-a)\"/>\r\n      <polygon points=\"57,130 34,155 57,155\" fill=\"var(--settlement-roof-b)\" opacity=\"0.3\"/>\r\n      <rect x=\"50\" y=\"167\" width=\"10\" height=\"18\" fill=\"var(--settlement-roof-b)\" rx=\"1\"/>\r\n      <!-- Hut 2 (right) -->\r\n      <rect x=\"135\" y=\"150\" width=\"38\" height=\"32\" fill=\"var(--settlement-hut-b)\"/>\r\n      <polygon points=\"154,122 180,150 128,150\" fill=\"var(--settlement-roof-a)\"/>\r\n      <polygon points=\"154,122 128,150 154,150\" fill=\"var(--settlement-roof-b)\" opacity=\"0.3\"/>\r\n      <rect x=\"145\" y=\"164\" width=\"10\" height=\"18\" fill=\"var(--settlement-roof-b)\" rx=\"1\"/>\r\n      <!-- Hut 3 (center back, smaller) -->\r\n      <rect x=\"85\" y=\"130\" width=\"30\" height=\"25\" fill=\"var(--settlement-hut-a)\"/>\r\n      <polygon points=\"100,110 120,130 80,130\" fill=\"var(--settlement-roof-b)\"/>\r\n      <rect x=\"92\" y=\"140\" width=\"8\" height=\"15\" fill=\"var(--settlement-roof-b)\" rx=\"1\"/>\r\n      <!-- Fence around settlement -->\r\n      <line x1=\"30\" y1=\"192\" x2=\"30\" y2=\"175\" stroke=\"var(--settlement-fence)\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\r\n      <line x1=\"40\" y1=\"190\" x2=\"40\" y2=\"172\" stroke=\"var(--settlement-fence)\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\r\n      <line x1=\"28\" y1=\"180\" x2=\"42\" y2=\"178\" stroke=\"var(--settlement-fence)\" stroke-width=\"1.5\"/>\r\n      <line x1=\"175\" y1=\"190\" x2=\"175\" y2=\"172\" stroke=\"var(--settlement-fence)\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\r\n      <line x1=\"185\" y1=\"192\" x2=\"185\" y2=\"175\" stroke=\"var(--settlement-fence)\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\r\n      <line x1=\"173\" y1=\"178\" x2=\"187\" y2=\"180\" stroke=\"var(--settlement-fence)\" stroke-width=\"1.5\"/>\r\n      <!-- Central campfire -->\r\n      <ellipse cx=\"110\" cy=\"195\" rx=\"10\" ry=\"3\" fill=\"var(--settlement-ground)\" opacity=\"0.5\"/>\r\n      <path d=\"M110 195 C 108 188, 112 183, 110 175\" stroke=\"var(--settlement-fire)\" stroke-width=\"3\" stroke-linecap=\"round\" fill=\"none\"/>\r\n      <path d=\"M108 193 C 105 187, 109 182, 106 176\" stroke=\"var(--settlement-fire-glow)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.7\"/>\r\n      <path d=\"M112 193 C 115 187, 111 183, 114 177\" stroke=\"var(--settlement-fire-glow)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.7\"/>\r\n    </svg>"
+    },
+    {
+      "id": 52,
+      "name": "Ancient Tower",
+      "colorVariables": {
+        "--ancient-tower-stone": "#B0BEC5",
+        "--ancient-tower-dark": "#78909C",
+        "--ancient-tower-roof": "#607D8B",
+        "--ancient-tower-window": "#37474F",
+        "--ancient-tower-glow": "#FFD54F"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Tower base (wider) -->\r\n      <rect x=\"80\" y=\"180\" width=\"60\" height=\"30\" fill=\"var(--ancient-tower-stone)\"/>\r\n      <rect x=\"80\" y=\"180\" width=\"30\" height=\"30\" fill=\"var(--ancient-tower-dark)\" opacity=\"0.25\"/>\r\n      <!-- Tower body -->\r\n      <rect x=\"85\" y=\"75\" width=\"50\" height=\"108\" fill=\"var(--ancient-tower-stone)\"/>\r\n      <rect x=\"85\" y=\"75\" width=\"25\" height=\"108\" fill=\"var(--ancient-tower-dark)\" opacity=\"0.25\"/>\r\n      <!-- Conical roof -->\r\n      <polygon points=\"110,28 142,75 78,75\" fill=\"var(--ancient-tower-roof)\"/>\r\n      <polygon points=\"110,28 78,75 110,75\" fill=\"var(--ancient-tower-dark)\" opacity=\"0.2\"/>\r\n      <!-- Roof tip ornament -->\r\n      <circle cx=\"110\" cy=\"28\" r=\"4\" fill=\"var(--ancient-tower-glow)\" opacity=\"0.7\"/>\r\n      <circle cx=\"110\" cy=\"28\" r=\"7\" fill=\"var(--ancient-tower-glow)\" opacity=\"0.2\"/>\r\n      <!-- Windows (arched) -->\r\n      <rect x=\"100\" y=\"90\" width=\"12\" height=\"16\" fill=\"var(--ancient-tower-window)\" rx=\"6\"/>\r\n      <rect x=\"100\" y=\"120\" width=\"12\" height=\"16\" fill=\"var(--ancient-tower-window)\" rx=\"6\"/>\r\n      <rect x=\"100\" y=\"150\" width=\"12\" height=\"16\" fill=\"var(--ancient-tower-window)\" rx=\"6\"/>\r\n      <!-- Stone block lines -->\r\n      <line x1=\"85\" y1=\"100\" x2=\"135\" y2=\"100\" stroke=\"var(--ancient-tower-dark)\" stroke-width=\"0.5\" opacity=\"0.3\"/>\r\n      <line x1=\"85\" y1=\"115\" x2=\"135\" y2=\"115\" stroke=\"var(--ancient-tower-dark)\" stroke-width=\"0.5\" opacity=\"0.3\"/>\r\n      <line x1=\"85\" y1=\"140\" x2=\"135\" y2=\"140\" stroke=\"var(--ancient-tower-dark)\" stroke-width=\"0.5\" opacity=\"0.3\"/>\r\n      <line x1=\"85\" y1=\"170\" x2=\"135\" y2=\"170\" stroke=\"var(--ancient-tower-dark)\" stroke-width=\"0.5\" opacity=\"0.3\"/>\r\n      <!-- Door -->\r\n      <path d=\"M103 210 C 103 198, 117 198, 117 210 Z\" fill=\"var(--ancient-tower-dark)\"/>\r\n    </svg>"
+    },
+    {
+      "id": 53,
+      "name": "Ruined Tower",
+      "colorVariables": {
+        "--ruined-tower-stone": "#9E9E9E",
+        "--ruined-tower-dark": "#757575",
+        "--ruined-tower-moss": "#6B8E23",
+        "--ruined-tower-rubble": "#8D6E63"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Rubble pile at base -->\r\n      <ellipse cx=\"120\" cy=\"200\" rx=\"35\" ry=\"12\" fill=\"var(--ruined-tower-rubble)\" opacity=\"0.5\"/>\r\n      <ellipse cx=\"130\" cy=\"198\" rx=\"10\" ry=\"6\" fill=\"var(--ruined-tower-stone)\" opacity=\"0.5\"/>\r\n      <circle cx=\"145\" cy=\"202\" r=\"5\" fill=\"var(--ruined-tower-dark)\" opacity=\"0.4\"/>\r\n      <circle cx=\"105\" cy=\"205\" r=\"4\" fill=\"var(--ruined-tower-stone)\" opacity=\"0.4\"/>\r\n      <!-- Tower body (broken, no roof) -->\r\n      <rect x=\"85\" y=\"80\" width=\"50\" height=\"125\" fill=\"var(--ruined-tower-stone)\"/>\r\n      <rect x=\"85\" y=\"80\" width=\"25\" height=\"125\" fill=\"var(--ruined-tower-dark)\" opacity=\"0.25\"/>\r\n      <!-- Jagged broken top -->\r\n      <polygon points=\"83,80 90,55 98,78 105,60 112,75 120,50 128,72 135,65 137,80\"\r\n              fill=\"var(--ruined-tower-stone)\" stroke=\"var(--ruined-tower-dark)\" stroke-width=\"0.5\"/>\r\n      <!-- Broken windows (empty holes) -->\r\n      <rect x=\"100\" y=\"95\" width=\"12\" height=\"16\" fill=\"var(--ruined-tower-dark)\" rx=\"6\"/>\r\n      <rect x=\"100\" y=\"130\" width=\"14\" height=\"18\" fill=\"var(--ruined-tower-dark)\" rx=\"3\"/>\r\n      <!-- Cracks -->\r\n      <path d=\"M92 100 L 88 120 L 90 135\" stroke=\"var(--ruined-tower-dark)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M130 90 L 133 110 L 128 125\" stroke=\"var(--ruined-tower-dark)\" stroke-width=\"1\" fill=\"none\" opacity=\"0.4\"/>\r\n      <!-- Moss -->\r\n      <path d=\"M85 150 C 80 145, 78 140, 80 132\" stroke=\"var(--ruined-tower-moss)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M135 140 C 140 135, 138 130, 140 122\" stroke=\"var(--ruined-tower-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M95 180 C 90 175, 88 170, 90 165\" stroke=\"var(--ruined-tower-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n    </svg>"
+    },
+    {
+      "id": 54,
+      "name": "Dungeon Entrance",
+      "colorVariables": {
+        "--dungeon-rock": "#616161",
+        "--dungeon-rock-dark": "#424242",
+        "--dungeon-rock-light": "#757575",
+        "--dungeon-opening": "#0a0a0a",
+        "--dungeon-shadow": "#1a1a1a",
+        "--dungeon-stairs": "#555",
+        "--dungeon-stairs-dark": "#3a3a3a",
+        "--dungeon-chain": "#9E9E9E"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Stone structure around entrance -->\r\n      <rect x=\"55\" y=\"100\" width=\"110\" height=\"110\" fill=\"var(--dungeon-rock)\"/>\r\n      <rect x=\"55\" y=\"100\" width=\"55\" height=\"110\" fill=\"var(--dungeon-rock-dark)\" opacity=\"0.25\"/>\r\n      <!-- Stone block pattern -->\r\n      <line x1=\"55\" y1=\"120\" x2=\"165\" y2=\"120\" stroke=\"var(--dungeon-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"55\" y1=\"140\" x2=\"165\" y2=\"140\" stroke=\"var(--dungeon-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"110\" y1=\"100\" x2=\"110\" y2=\"120\" stroke=\"var(--dungeon-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"85\" y1=\"120\" x2=\"85\" y2=\"140\" stroke=\"var(--dungeon-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <line x1=\"135\" y1=\"120\" x2=\"135\" y2=\"140\" stroke=\"var(--dungeon-rock-dark)\" stroke-width=\"1\" opacity=\"0.3\"/>\r\n      <!-- Archway entrance -->\r\n      <path d=\"M80 210 C 80 160, 140 160, 140 210 Z\" fill=\"var(--dungeon-opening)\"/>\r\n      <path d=\"M85 210 C 85 168, 135 168, 135 210 Z\" fill=\"var(--dungeon-shadow)\" opacity=\"0.5\"/>\r\n      <!-- Arch frame -->\r\n      <path d=\"M80 210 C 80 160, 140 160, 140 210\" stroke=\"var(--dungeon-rock-light)\" stroke-width=\"4\" fill=\"none\"/>\r\n      <!-- Keystone at top of arch -->\r\n      <polygon points=\"110,158 116,165 104,165\" fill=\"var(--dungeon-rock-light)\"/>\r\n      <!-- Stairs descending into darkness -->\r\n      <rect x=\"85\" y=\"195\" width=\"50\" height=\"4\" fill=\"var(--dungeon-stairs)\" opacity=\"0.7\"/>\r\n      <rect x=\"88\" y=\"200\" width=\"44\" height=\"4\" fill=\"var(--dungeon-stairs-dark)\" opacity=\"0.6\"/>\r\n      <rect x=\"91\" y=\"205\" width=\"38\" height=\"4\" fill=\"var(--dungeon-stairs)\" opacity=\"0.4\"/>\r\n      <!-- Hanging chains -->\r\n      <path d=\"M88 162 C 86 170, 88 178, 86 186\" stroke=\"var(--dungeon-chain)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M132 162 C 134 170, 132 178, 134 186\" stroke=\"var(--dungeon-chain)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.5\"/>\r\n      <!-- Skull decoration above arch -->\r\n      <circle cx=\"110\" cy=\"148\" r=\"6\" fill=\"var(--dungeon-rock-light)\" opacity=\"0.6\"/>\r\n      <circle cx=\"108\" cy=\"146\" r=\"1.5\" fill=\"var(--dungeon-rock-dark)\" opacity=\"0.6\"/>\r\n      <circle cx=\"112\" cy=\"146\" r=\"1.5\" fill=\"var(--dungeon-rock-dark)\" opacity=\"0.6\"/>\r\n    </svg>"
+    },
+    {
+      "id": 55,
+      "name": "Ancient Stone Wall",
+      "colorVariables": {
+        "--stonewall-block-a": "#B0BEC5",
+        "--stonewall-block-b": "#90A4AE",
+        "--stonewall-block-c": "#CFD8DC",
+        "--stonewall-mortar": "#78909C",
+        "--stonewall-moss": "#6B8E23",
+        "--stonewall-crack": "#607D8B"
+      },
+      "scale": {
+        "width": 220,
+        "height": 250,
+        "viewBox": "0 0 220 250"
+      },
+      "svgCode": "<svg viewBox=\"0 0 220 250\">\r\n            <!-- Wall runs left to right -->\r\n      <rect x=\"20\" y=\"130\" width=\"180\" height=\"70\" fill=\"var(--stonewall-block-b)\"/>\r\n      <!-- Stone block pattern -->\r\n      <!-- Row 1 -->\r\n      <rect x=\"22\" y=\"132\" width=\"30\" height=\"16\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"56\" y=\"132\" width=\"24\" height=\"16\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"84\" y=\"132\" width=\"32\" height=\"16\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"120\" y=\"132\" width=\"26\" height=\"16\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"150\" y=\"132\" width=\"28\" height=\"16\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"182\" y=\"132\" width=\"16\" height=\"16\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <!-- Row 2 (offset) -->\r\n      <rect x=\"22\" y=\"150\" width=\"18\" height=\"18\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"44\" y=\"150\" width=\"28\" height=\"18\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"76\" y=\"150\" width=\"24\" height=\"18\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"104\" y=\"150\" width=\"32\" height=\"18\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"140\" y=\"150\" width=\"22\" height=\"18\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"166\" y=\"150\" width=\"30\" height=\"18\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <!-- Row 3 -->\r\n      <rect x=\"22\" y=\"170\" width=\"26\" height=\"16\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"52\" y=\"170\" width=\"30\" height=\"16\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"86\" y=\"170\" width=\"22\" height=\"16\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"112\" y=\"170\" width=\"28\" height=\"16\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"144\" y=\"170\" width=\"24\" height=\"16\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"172\" y=\"170\" width=\"24\" height=\"16\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <!-- Row 4 (bottom, partial/crumbling) -->\r\n      <rect x=\"22\" y=\"188\" width=\"24\" height=\"12\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"50\" y=\"188\" width=\"20\" height=\"12\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"74\" y=\"188\" width=\"28\" height=\"12\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"106\" y=\"188\" width=\"22\" height=\"12\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"132\" y=\"188\" width=\"26\" height=\"12\" fill=\"var(--stonewall-block-c)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <rect x=\"162\" y=\"188\" width=\"18\" height=\"12\" fill=\"var(--stonewall-block-a)\" rx=\"1\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <!-- Wall top (uneven/weathered) -->\r\n      <polygon points=\"20,130 30,118 50,124 70,115 90,122 110,112 130,120 150,116 170,125 190,118 200,130\"\r\n              fill=\"var(--stonewall-block-b)\" stroke=\"var(--stonewall-mortar)\" stroke-width=\"1\"/>\r\n      <!-- Cracks -->\r\n      <path d=\"M65 140 L 62 155 L 66 165\" stroke=\"var(--stonewall-crack)\" stroke-width=\"1\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M145 135 L 148 150 L 144 162\" stroke=\"var(--stonewall-crack)\" stroke-width=\"1\" fill=\"none\" opacity=\"0.4\"/>\r\n      <!-- Moss on wall -->\r\n      <path d=\"M35 132 C 33 127, 37 123, 35 118\" stroke=\"var(--stonewall-moss)\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.6\"/>\r\n      <path d=\"M110 118 C 108 113, 112 110, 110 106\" stroke=\"var(--stonewall-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <path d=\"M175 125 C 177 120, 173 117, 175 112\" stroke=\"var(--stonewall-moss)\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" opacity=\"0.5\"/>\r\n      <!-- Fallen stones at base -->\r\n      <ellipse cx=\"45\" cy=\"208\" rx=\"8\" ry=\"4\" fill=\"var(--stonewall-block-a)\" opacity=\"0.5\"/>\r\n      <ellipse cx=\"165\" cy=\"206\" rx=\"7\" ry=\"4\" fill=\"var(--stonewall-block-c)\" opacity=\"0.5\"/>\r\n      <circle cx=\"100\" cy=\"210\" r=\"4\" fill=\"var(--stonewall-block-b)\" opacity=\"0.4\"/>\r\n    </svg>"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="256"
+    height="256"
+    viewBox="0 0 256 256">
+
+  <!-- Transparent background -->
+  <rect x="0" y="0" width="256" height="256" fill="white" />
+
+  <!-- Cross-hatch lines -->
+  <g fill="none" stroke="#000" stroke-width="3">
+
+    <!-- Diagonal: top-left to bottom-right -->
+    <line x1="-32" y1="0"   x2="64"  y2="256" />
+    <line x1="32"  y1="0"   x2="128" y2="256" />
+    <line x1="96"  y1="0"   x2="192" y2="256" />
+    <line x1="160" y1="0"   x2="256" y2="256" />
+    <line x1="224" y1="0"   x2="320" y2="256" />
+
+    <!-- Diagonal: top-right to bottom-left -->
+    <line x1="288" y1="0"   x2="192" y2="256" />
+    <line x1="224" y1="0"   x2="128" y2="256" />
+    <line x1="160" y1="0"   x2="64"  y2="256" />
+    <line x1="96"  y1="0"   x2="0"   y2="256" />
+    <line x1="32"  y1="0"   x2="-64" y2="256" />
+
+  </g>
+</svg>

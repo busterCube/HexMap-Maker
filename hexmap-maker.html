@@ -891,6 +891,201 @@
             width: 100%;
             min-height: 30px;
         }
+        /* Pattern/Stamp Editor Dialog */
+        .pattern-dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+        .pattern-dialog-overlay.visible {
+            display: flex;
+        }
+        .pattern-dialog {
+            background: var(--bg-section);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        .pattern-dialog h3 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            color: var(--text);
+        }
+        .pattern-dialog label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+        .pattern-dialog input[type="text"],
+        .pattern-dialog input[type="number"],
+        .pattern-dialog textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .pattern-dialog textarea {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        .pattern-preview-area {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #f9f9f9;
+            padding: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            position: relative;
+        }
+        .pattern-preview-area .preview-grid {
+            border: 1px dashed #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .pattern-preview-area .preview-grid svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .pattern-dialog .btn-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .pattern-dialog .btn-cancel {
+            padding: 8px 20px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .pattern-dialog .btn-confirm {
+            padding: 8px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .pattern-dialog .btn-confirm:hover { background: var(--primary-hover); }
+        .pattern-dialog .btn-cancel:hover { background: var(--border); }
+        /* Pattern/Stamp color variable editor */
+        .color-var-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .color-var-row label {
+            min-width: 140px;
+            margin-bottom: 0;
+            font-weight: 500;
+            font-size: 12px;
+        }
+        .color-var-row input[type="color"] {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px;
+            cursor: pointer;
+        }
+        /* Pattern/Stamp list items */
+        .stamp-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .stamp-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 56px;
+        }
+        .stamp-preview {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            position: relative;
+            background: var(--bg-panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .stamp-preview:hover {
+            border-color: var(--primary);
+        }
+        .stamp-preview.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        .stamp-preview svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .stamp-preview .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 18px;
+            height: 18px;
+            background: var(--danger);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            font-size: 10px;
+            cursor: pointer;
+            display: none;
+            line-height: 1;
+        }
+        .stamp-preview:hover .delete-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stamp-name {
+            font-size: 9px;
+            text-align: center;
+            max-width: 56px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            color: var(--text-light);
+            margin-top: 3px;
+        }
+        .stamp-name:hover {
+            text-decoration: underline;
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -903,6 +1098,7 @@
     <div id="context-menu">
         <div class="context-menu-item" id="ctx-clear-hex">Clear Hex</div>
         <div class="context-menu-item" id="ctx-clear-fill">Clear Fill</div>
+        <div class="context-menu-item" id="ctx-remove-pattern-stamp" style="display:none;">Remove Pattern/Stamp</div>
         <div class="context-menu-item" id="ctx-add-tag">Add Tag</div>
         <div class="context-menu-item" id="ctx-edit-tag" style="display:none;">Edit Tag</div>
     </div>
@@ -1002,9 +1198,31 @@
                 </div>
                 <button id="apply-bg-color">Apply Color</button><br><br>
                 <label>Or use an image:</label><br>
+                <label style="display:inline-flex;align-items:center;gap:6px;margin:8px 0;cursor:pointer;">
+                    <input type="checkbox" id="bg-stretch-fit" checked> Stretch to fit
+                </label><br>
                 <button id="import-bg-image">Import Image</button>
                 <input type="file" id="bg-image-file" accept="image/*" style="display: none;"><br>
                 <button id="clear-bg-image">Clear Image</button>
+                <div id="bg-position-controls" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+                    <label style="font-weight:600;font-size:13px;">Image Position:</label>
+                    <div style="display:flex;align-items:center;gap:6px;margin:8px 0;">
+                        <label style="font-size:12px;">Step (px):</label>
+                        <input type="number" id="bg-move-step" value="10" min="1" max="100" style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:120px;margin:0 auto;">
+                        <div></div>
+                        <button class="bg-move-btn" id="bg-move-up" style="padding:6px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--bg-section);font-size:14px;" title="Move Up">▲</button>
+                        <div></div>
+                        <button class="bg-move-btn" id="bg-move-left" style="padding:6px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--bg-section);font-size:14px;" title="Move Left">◀</button>
+                        <button id="bg-move-reset" style="padding:6px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--bg-panel);font-size:10px;" title="Reset Position">•</button>
+                        <button class="bg-move-btn" id="bg-move-right" style="padding:6px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--bg-section);font-size:14px;" title="Move Right">▶</button>
+                        <div></div>
+                        <button class="bg-move-btn" id="bg-move-down" style="padding:6px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--bg-section);font-size:14px;" title="Move Down">▼</button>
+                        <div></div>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-light);margin-top:6px;">Move the background image on the canvas.</p>
+                </div>
                 <p>Set a background color or image for the map.</p>
             </div>
         </div>
@@ -1017,7 +1235,7 @@
                 <p>Save your map as JSON or import a previously saved map.</p>
             </div>
         </div>
-        <p style="text-align: center; color: #94a3b8; font-size: 11px; margin-top: 20px;">Version 1.0 — 2/28/2026</p>
+        <p style="text-align: center; color: #94a3b8; font-size: 11px; margin-top: 20px;">Version 1.1 — 3/28/2026</p>
     </div>
     <div id="menu">
         <h2>Tools</h2>
@@ -1041,6 +1259,38 @@
                         <input type="file" id="import-palette-file" accept=".json" style="display: none;">
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Patterns</h3>
+            <div class="tool-section-content">
+                <div class="palette-header">
+                    <h4>Pattern Library</h4>
+                    <button class="palette-add-btn" id="pattern-add" title="Add pattern SVG">+</button>
+                </div>
+                <div class="stamp-container" id="pattern-container"></div>
+                <div class="palette-actions" style="margin-top: 10px;">
+                    <button id="save-patterns" style="margin-right: 5px;">Save Patterns</button>
+                    <button id="import-patterns">Import Patterns</button>
+                    <input type="file" id="import-patterns-file" accept=".json" style="display: none;">
+                </div>
+                <p style="margin-top: 10px;">Click + to add pattern SVGs (max 20). Click a pattern then click a hex to apply.</p>
+            </div>
+        </div>
+        <div class="tool-section collapsed">
+            <h3>Stamps</h3>
+            <div class="tool-section-content">
+                <div class="palette-header">
+                    <h4>Stamp Library</h4>
+                    <button class="palette-add-btn" id="stamp-import-json" title="Import stamp set JSON" style="width:auto;padding:4px 10px;font-size:12px;">Import Set</button>
+                </div>
+                <input type="file" id="stamp-json-file" accept=".json" style="display: none;">
+                <div class="stamp-container" id="stamp-container"></div>
+                <div class="palette-actions" style="margin-top: 10px;">
+                    <button id="save-stamps" style="margin-right: 5px;">Save Stamps</button>
+                    <button id="clear-stamps">Clear All</button>
+                </div>
+                <p style="margin-top: 10px;">Import a stamp set JSON to load stamps. Click a stamp then click a hex to place it.</p>
             </div>
         </div>
         <div class="tool-section collapsed">
@@ -1120,6 +1370,52 @@
             </div>
         </div>
     </div>
+    <!-- Pattern/Stamp Editor Dialog -->
+    <div class="pattern-dialog-overlay" id="pattern-dialog-overlay">
+        <div class="pattern-dialog">
+            <h3 id="pattern-dialog-title">Add Pattern</h3>
+            <label for="pattern-name-input">Pattern Name:</label>
+            <input type="text" id="pattern-name-input" placeholder="e.g. Sparkles">
+            <label for="pattern-svg-input">SVG Code:</label>
+            <textarea id="pattern-svg-input" rows="10" placeholder="Paste SVG code here..."></textarea>
+            <label>Preview:</label>
+            <div class="pattern-preview-area">
+                <div class="preview-grid" id="pattern-preview-grid"></div>
+            </div>
+            <div id="pattern-color-vars"></div>
+            <div class="btn-row">
+                <button class="btn-cancel" id="pattern-dialog-cancel">Cancel</button>
+                <button class="btn-confirm" id="pattern-dialog-confirm">Save Pattern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stamp Editor Dialog -->
+    <div class="pattern-dialog-overlay" id="stamp-dialog-overlay">
+        <div class="pattern-dialog">
+            <h3 id="stamp-dialog-title">Edit Stamp</h3>
+            <label for="stamp-name-input">Stamp Name:</label>
+            <input type="text" id="stamp-name-input" placeholder="e.g. Castle">
+            <label for="stamp-svg-input">SVG Code:</label>
+            <textarea id="stamp-svg-input" rows="10" placeholder="SVG code..."></textarea>
+            <label>Color Variables:</label>
+            <div id="stamp-color-vars"></div>
+            <label>Scale:</label>
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <label style="display:inline;">Width: <input type="number" id="stamp-width-input" value="220" min="10" max="500" style="width:70px;"></label>
+                <label style="display:inline;">Height: <input type="number" id="stamp-height-input" value="250" min="10" max="500" style="width:70px;"></label>
+            </div>
+            <label>Preview:</label>
+            <div class="pattern-preview-area">
+                <div class="preview-grid" id="stamp-preview-grid"></div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-cancel" id="stamp-dialog-cancel">Cancel</button>
+                <button class="btn-confirm" id="stamp-dialog-confirm">Save Stamp</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="hexmap-maker.js"></script>
 </body>
 </html>

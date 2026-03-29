@@ -1,0 +1,54 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="256"
+    height="256"
+    viewBox="0 0 256 256">
+
+  <!-- Transparent background -->
+  <rect x="0" y="0" width="256" height="256" fill="white" />
+
+  <!-- Chevrons: 5 rows, 6 per row, tighter spacing -->
+  <g fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- Row 1 -->
+    <path d="M16 40 L32 20 L48 40" />
+    <path d="M58 40 L74 20 L90 40" />
+    <path d="M100 40 L116 20 L132 40" />
+    <path d="M142 40 L158 20 L174 40" />
+    <path d="M184 40 L200 20 L216 40" />
+    <path d="M226 40 L242 20 L258 40" />
+
+    <!-- Row 2 -->
+    <path d="M16 80 L32 60 L48 80" />
+    <path d="M58 80 L74 60 L90 80" />
+    <path d="M100 80 L116 60 L132 80" />
+    <path d="M142 80 L158 60 L174 80" />
+    <path d="M184 80 L200 60 L216 80" />
+    <path d="M226 80 L242 60 L258 80" />
+
+    <!-- Row 3 -->
+    <path d="M16 120 L32 100 L48 120" />
+    <path d="M58 120 L74 100 L90 120" />
+    <path d="M100 120 L116 100 L132 120" />
+    <path d="M142 120 L158 100 L174 120" />
+    <path d="M184 120 L200 100 L216 120" />
+    <path d="M226 120 L242 100 L258 120" />
+
+    <!-- Row 4 -->
+    <path d="M16 160 L32 140 L48 160" />
+    <path d="M58 160 L74 140 L90 160" />
+    <path d="M100 160 L116 140 L132 160" />
+    <path d="M142 160 L158 140 L174 160" />
+    <path d="M184 160 L200 140 L216 160" />
+    <path d="M226 160 L242 140 L258 160" />
+
+    <!-- Row 5 -->
+    <path d="M16 200 L32 180 L48 200" />
+    <path d="M58 200 L74 180 L90 200" />
+    <path d="M100 200 L116 180 L132 200" />
+    <path d="M142 200 L158 180 L174 200" />
+    <path d="M184 200 L200 180 L216 200" />
+    <path d="M226 200 L242 180 L258 200" />
+
+  </g>
+</svg>

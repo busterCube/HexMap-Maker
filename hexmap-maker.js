@@ -13,6 +13,11 @@ let isDarkMode = false;
 // Background state
 let bgColor = '#ffffff';
 let bgImageData = null; // Base64 image data
+let bgStretchToFit = true;
+let bgImageOffsetX = 0;
+let bgImageOffsetY = 0;
+let bgImageNaturalWidth = 0;
+let bgImageNaturalHeight = 0;
 
 // Camera panning state
 let cameraOffsetX = 0;
@@ -74,6 +79,13 @@ const MAX_ICONS = 40;
 // Tag Catalog state
 let tagCatalog = []; // Array of {id, displayText, name, meta: [{key, value}], row, col}
 let nextTagId = 1;
+
+// Pattern/Stamp state (declared early so generateGrid can reference)
+let patternLibrary = []; // Array of {id, name, svgCode}
+let selectedPatternIndex = -1;
+let stampLibrary = []; // Array of {id, name, svgCode, colorVariables, scale}
+let selectedStampIndex = -1;
+let hexSvgOverlays = {}; // hex index → overlay data
 
 menuToggle.addEventListener('click', () => {
     menu.classList.toggle('open');
@@ -148,7 +160,39 @@ document.getElementById('apply-bg-color').addEventListener('click', () => {
     bgColor = document.getElementById('bg-color').value;
     bgImageData = null;
     document.getElementById('bg-image').style.display = 'none';
+    document.getElementById('bg-position-controls').style.display = 'none';
     renderer.setClearColor(bgColor);
+});
+
+function applyBgImageStyle() {
+    const bgImage = document.getElementById('bg-image');
+    const container = document.getElementById('bg-image-container');
+    if (bgStretchToFit) {
+        bgImage.style.width = '100%';
+        bgImage.style.height = '100%';
+        bgImage.style.objectFit = 'cover';
+        bgImage.style.position = '';
+        bgImage.style.left = '';
+        bgImage.style.top = '';
+        container.style.overflow = 'hidden';
+        document.getElementById('bg-position-controls').style.display = 'none';
+    } else {
+        bgImage.style.width = bgImageNaturalWidth + 'px';
+        bgImage.style.height = bgImageNaturalHeight + 'px';
+        bgImage.style.objectFit = '';
+        bgImage.style.position = 'absolute';
+        bgImage.style.left = bgImageOffsetX + 'px';
+        bgImage.style.top = bgImageOffsetY + 'px';
+        container.style.overflow = 'visible';
+        document.getElementById('bg-position-controls').style.display = '';
+    }
+}
+
+document.getElementById('bg-stretch-fit').addEventListener('change', (e) => {
+    bgStretchToFit = e.target.checked;
+    if (bgImageData) {
+        applyBgImageStyle();
+    }
 });
 
 document.getElementById('import-bg-image').addEventListener('click', () => {
@@ -162,19 +206,95 @@ document.getElementById('bg-image-file').addEventListener('change', (e) => {
     const reader = new FileReader();
     reader.onload = (event) => {
         bgImageData = event.target.result;
+        bgStretchToFit = document.getElementById('bg-stretch-fit').checked;
+        bgImageOffsetX = 0;
+        bgImageOffsetY = 0;
+
         const bgImage = document.getElementById('bg-image');
-        bgImage.src = bgImageData;
-        bgImage.style.display = 'block';
-        renderer.setClearColor(0x000000, 0); // Make canvas transparent to show image
+        const tempImg = new Image();
+        tempImg.onload = () => {
+            bgImageNaturalWidth = tempImg.naturalWidth;
+            bgImageNaturalHeight = tempImg.naturalHeight;
+
+            if (!bgStretchToFit) {
+                // Calculate grid pixel dimensions
+                const gridPxW = gridWidth * hexSizePx * 2;
+                const gridPxH = gridHeight * hexSizePx * 2;
+                const needResize = tempImg.naturalWidth > gridPxW || tempImg.naturalHeight > gridPxH;
+                if (needResize) {
+                    const newW = Math.max(gridWidth, Math.ceil(tempImg.naturalWidth / (hexSizePx * 2)));
+                    const newH = Math.max(gridHeight, Math.ceil(tempImg.naturalHeight / (hexSizePx * 2)));
+                    const msg = 'The image (' + tempImg.naturalWidth + '×' + tempImg.naturalHeight + 'px) is larger than the current grid (' + gridPxW + '×' + gridPxH + 'px).\n\nResize grid to ' + newW + '×' + newH + ' to fit?\n\nClick OK to resize (save first if needed), or Cancel to import without resizing.';
+                    if (confirm(msg)) {
+                        gridWidth = newW;
+                        gridHeight = newH;
+                        document.getElementById('grid-width').value = newW;
+                        document.getElementById('grid-height').value = newH;
+                        cameraOffsetX = 0;
+                        cameraOffsetY = 0;
+                        camera.position.set(0, 0, 10);
+                        camera.lookAt(0, 0, 0);
+                        generateGrid();
+                        reapplyTagsFromCatalog();
+                    }
+                }
+            }
+
+            bgImage.src = bgImageData;
+            bgImage.style.display = 'block';
+            renderer.setClearColor(0x000000, 0);
+            applyBgImageStyle();
+        };
+        tempImg.src = bgImageData;
     };
     reader.readAsDataURL(file);
-    e.target.value = ''; // Reset so same file can be selected again
+    e.target.value = '';
 });
 
 document.getElementById('clear-bg-image').addEventListener('click', () => {
     bgImageData = null;
-    document.getElementById('bg-image').style.display = 'none';
+    bgImageOffsetX = 0;
+    bgImageOffsetY = 0;
+    bgImageNaturalWidth = 0;
+    bgImageNaturalHeight = 0;
+    const bgImage = document.getElementById('bg-image');
+    bgImage.style.display = 'none';
+    bgImage.style.width = '100%';
+    bgImage.style.height = '100%';
+    bgImage.style.objectFit = 'cover';
+    bgImage.style.position = '';
+    bgImage.style.left = '';
+    bgImage.style.top = '';
+    document.getElementById('bg-image-container').style.overflow = 'hidden';
+    document.getElementById('bg-position-controls').style.display = 'none';
     renderer.setClearColor(bgColor);
+});
+
+// Background image position controls
+document.getElementById('bg-move-up').addEventListener('click', () => {
+    const step = parseInt(document.getElementById('bg-move-step').value) || 10;
+    bgImageOffsetY -= step;
+    applyBgImageStyle();
+});
+document.getElementById('bg-move-down').addEventListener('click', () => {
+    const step = parseInt(document.getElementById('bg-move-step').value) || 10;
+    bgImageOffsetY += step;
+    applyBgImageStyle();
+});
+document.getElementById('bg-move-left').addEventListener('click', () => {
+    const step = parseInt(document.getElementById('bg-move-step').value) || 10;
+    bgImageOffsetX -= step;
+    applyBgImageStyle();
+});
+document.getElementById('bg-move-right').addEventListener('click', () => {
+    const step = parseInt(document.getElementById('bg-move-step').value) || 10;
+    bgImageOffsetX += step;
+    applyBgImageStyle();
+});
+document.getElementById('bg-move-reset').addEventListener('click', () => {
+    bgImageOffsetX = 0;
+    bgImageOffsetY = 0;
+    applyBgImageStyle();
 });
 
 document.getElementById('hex-color').addEventListener('input', (e) => {
@@ -686,6 +806,14 @@ function generateGrid() {
         hex.userData.tagData = null;
     });
 
+    // Remove existing SVG overlays
+    for (const k of Object.keys(hexSvgOverlays)) {
+        if (hexSvgOverlays[k] && hexSvgOverlays[k].element) {
+            hexSvgOverlays[k].element.remove();
+        }
+        delete hexSvgOverlays[k];
+    }
+
     // Remove existing hexes
     hexes.forEach(hex => scene.remove(hex));
     hexes = [];
@@ -1113,6 +1241,7 @@ function onMouseClick(event) {
     }
     if (isDrawing || isErasing) return; // don't fill when drawing or erasing
     if (selectedIconIndex >= 0) return; // don't fill when placing icons
+    if (selectedPatternIndex >= 0 || selectedStampIndex >= 0) return; // don't fill when placing patterns/stamps
     if (event.button !== 0) return; // only left click
     if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon') || event.target.closest('.tag-dialog-overlay') || event.target.closest('.tag-catalog-overlay')) return; // ignore menu, scrollbar, map icon, and dialog clicks
     
@@ -1279,6 +1408,11 @@ document.getElementById('ctx-clear-hex').addEventListener('click', (e) => {
             selectedHex.userData.tagElement = null;
             selectedHex.userData.tag = null;
             selectedHex.userData.tagData = null;
+        }
+        // Clear any Pattern/Stamp overlay
+        const hexIdx = hexes.indexOf(selectedHex);
+        if (hexIdx >= 0 && hexSvgOverlays[hexIdx]) {
+            removePatternStampFromHex(hexIdx);
         }
     }
     hideContextMenu();
@@ -1815,9 +1949,9 @@ function initDrawingCanvas() {
 
 function onMouseDown(event) {
     // Left-click drag fill
-    if (event.button === 0 && !isDrawing && !isErasing && !isBorderMode && !isRemovingBorder && selectedIconIndex < 0) {
+    if (event.button === 0 && !isDrawing && !isErasing && !isBorderMode && !isRemovingBorder && selectedIconIndex < 0 && selectedPatternIndex < 0 && selectedStampIndex < 0) {
         if (contextMenuOpen) return; // don't fill right after closing context menu
-        if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon') || event.target.closest('.tag-dialog-overlay') || event.target.closest('.tag-catalog-overlay')) return;
+        if (event.target.closest('#context-menu') || event.target.closest('#menu') || event.target.closest('#system-menu') || event.target.closest('.scrollbar') || event.target.closest('.map-icon') || event.target.closest('.tag-dialog-overlay') || event.target.closest('.tag-catalog-overlay') || event.target.closest('.pattern-dialog-overlay')) return;
         isLeftFilling = true;
         // Fill hex under cursor immediately
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -1929,7 +2063,11 @@ function renderIconLibrary() {
                 iconPreview.classList.remove('selected');
             } else {
                 selectedIconIndex = index;
+                selectedPatternIndex = -1;
+                selectedStampIndex = -1;
                 document.querySelectorAll('.icon-preview').forEach(el => el.classList.remove('selected'));
+                document.querySelectorAll('#pattern-container .stamp-preview').forEach(el => el.classList.remove('selected'));
+                document.querySelectorAll('#stamp-container .stamp-preview').forEach(el => el.classList.remove('selected'));
                 iconPreview.classList.add('selected');
             }
         });
@@ -2636,6 +2774,11 @@ document.getElementById('save-map').addEventListener('click', () => {
         hexOrientation: hexOrientation,
         bgColor: bgColor,
         bgImageData: bgImageData,
+        bgStretchToFit: bgStretchToFit,
+        bgImageOffsetX: bgImageOffsetX,
+        bgImageOffsetY: bgImageOffsetY,
+        bgImageNaturalWidth: bgImageNaturalWidth,
+        bgImageNaturalHeight: bgImageNaturalHeight,
         hexes: hexData,
         drawingData: drawingData,
         mapIcons: mapIconsData,
@@ -2686,16 +2829,24 @@ document.getElementById('import-file').addEventListener('change', (e) => {
             // Restore background
             bgColor = saveData.bgColor || '#ffffff';
             bgImageData = saveData.bgImageData || null;
+            bgStretchToFit = saveData.bgStretchToFit !== undefined ? saveData.bgStretchToFit : true;
+            bgImageOffsetX = saveData.bgImageOffsetX || 0;
+            bgImageOffsetY = saveData.bgImageOffsetY || 0;
+            bgImageNaturalWidth = saveData.bgImageNaturalWidth || 0;
+            bgImageNaturalHeight = saveData.bgImageNaturalHeight || 0;
             document.getElementById('bg-color').value = bgColor;
             document.getElementById('bg-color-text').value = bgColor;
+            document.getElementById('bg-stretch-fit').checked = bgStretchToFit;
             
             if (bgImageData) {
                 const bgImage = document.getElementById('bg-image');
                 bgImage.src = bgImageData;
                 bgImage.style.display = 'block';
                 renderer.setClearColor(0x000000, 0);
+                applyBgImageStyle();
             } else {
                 document.getElementById('bg-image').style.display = 'none';
+                document.getElementById('bg-position-controls').style.display = 'none';
                 renderer.setClearColor(bgColor);
             }
             
@@ -2832,6 +2983,53 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                 });
             }
             
+            // Restore pattern library
+            if (saveData.patternLibrary) {
+                patternLibrary = saveData.patternLibrary;
+                selectedPatternIndex = -1;
+                renderPatternLibrary();
+            }
+
+            // Restore stamp library
+            if (saveData.stampLibrary) {
+                stampLibrary = saveData.stampLibrary;
+                selectedStampIndex = -1;
+                renderStampLibrary();
+            }
+
+            // Clear existing SVG overlays
+            for (const k of Object.keys(hexSvgOverlays)) {
+                removePatternStampFromHex(parseInt(k));
+            }
+
+            // Restore SVG overlays
+            if (saveData.hexSvgOverlays) {
+                for (const [hexIdx, data] of Object.entries(saveData.hexSvgOverlays)) {
+                    const idx = parseInt(hexIdx);
+                    if (idx >= 0 && idx < hexes.length) {
+                        const el = document.createElement('div');
+                        el.className = 'hex-svg-overlay';
+                        el.style.position = 'absolute';
+                        el.style.pointerEvents = 'none';
+                        el.style.zIndex = '90';
+                        el.innerHTML = data.svgCode;
+                        const svg = el.querySelector('svg');
+                        if (svg) { svg.style.width = '100%'; svg.style.height = '100%'; }
+                        document.body.appendChild(el);
+                        hexSvgOverlays[idx] = {
+                            type: data.type,
+                            libraryIndex: data.libraryIndex,
+                            svgCode: data.svgCode,
+                            element: el,
+                            worldX: data.worldX,
+                            worldY: data.worldY,
+                            name: data.name
+                        };
+                        positionSvgOverlay(idx);
+                    }
+                }
+            }
+
             alert('Map imported successfully!');
         } catch (err) {
             alert('Error importing map: ' + err.message);
@@ -2841,4 +3039,708 @@ document.getElementById('import-file').addEventListener('change', (e) => {
     
     // Reset file input so same file can be imported again
     e.target.value = '';
+});
+
+// ===== PATTERNS & STAMPS FUNCTIONALITY =====
+
+const MAX_PATTERNS = 20;
+const MAX_STAMPS = 80;
+
+// --- Pattern Library Rendering ---
+function renderPatternLibrary() {
+    const container = document.getElementById('pattern-container');
+    container.innerHTML = '';
+    patternLibrary.forEach((item, index) => {
+        const el = document.createElement('div');
+        el.className = 'stamp-item';
+
+        const preview = document.createElement('div');
+        preview.className = 'stamp-preview';
+        if (index === selectedPatternIndex) preview.classList.add('selected');
+        preview.title = item.name;
+        preview.innerHTML = item.svgCode;
+
+        preview.addEventListener('click', () => {
+            if (selectedPatternIndex === index) {
+                selectedPatternIndex = -1;
+            } else {
+                selectedPatternIndex = index;
+                selectedStampIndex = -1;
+                selectedIconIndex = -1;
+                document.querySelectorAll('#stamp-container .stamp-preview').forEach(el => el.classList.remove('selected'));
+                document.querySelectorAll('.icon-preview').forEach(el => el.classList.remove('selected'));
+            }
+            renderPatternLibrary();
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = '×';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            patternLibrary.splice(index, 1);
+            if (selectedPatternIndex === index) selectedPatternIndex = -1;
+            else if (selectedPatternIndex > index) selectedPatternIndex--;
+            renderPatternLibrary();
+        });
+        preview.appendChild(deleteBtn);
+
+        const name = document.createElement('span');
+        name.className = 'stamp-name';
+        name.textContent = item.name;
+        name.title = 'Click to edit';
+        name.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPatternDialog(index);
+        });
+
+        el.appendChild(preview);
+        el.appendChild(name);
+        container.appendChild(el);
+    });
+}
+
+// --- Stamp Library Rendering ---
+function renderStampLibrary() {
+    const container = document.getElementById('stamp-container');
+    container.innerHTML = '';
+    stampLibrary.forEach((item, index) => {
+        const el = document.createElement('div');
+        el.className = 'stamp-item';
+
+        const preview = document.createElement('div');
+        preview.className = 'stamp-preview';
+        if (index === selectedStampIndex) preview.classList.add('selected');
+        preview.title = item.name;
+        // Render SVG with color variables applied
+        preview.innerHTML = applyColorVariables(item.svgCode, item.colorVariables);
+
+        preview.addEventListener('click', () => {
+            if (selectedStampIndex === index) {
+                selectedStampIndex = -1;
+            } else {
+                selectedStampIndex = index;
+                selectedPatternIndex = -1;
+                selectedIconIndex = -1;
+                document.querySelectorAll('#pattern-container .stamp-preview').forEach(el => el.classList.remove('selected'));
+                document.querySelectorAll('.icon-preview').forEach(el => el.classList.remove('selected'));
+            }
+            renderStampLibrary();
+        });
+
+        preview.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            openStampDialog(index);
+        });
+
+        const name = document.createElement('span');
+        name.className = 'stamp-name';
+        name.textContent = item.name;
+        name.title = 'Double-click preview or click name to edit';
+        name.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openStampDialog(index);
+        });
+
+        el.appendChild(preview);
+        el.appendChild(name);
+        container.appendChild(el);
+    });
+}
+
+function applyColorVariables(svgCode, colorVars) {
+    if (!colorVars) return svgCode;
+    let result = svgCode;
+    for (const [varName, value] of Object.entries(colorVars)) {
+        const regex = new RegExp('var\\(\\s*' + varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\)', 'g');
+        result = result.replace(regex, value);
+    }
+    return result;
+}
+
+// --- Pattern Dialog ---
+let editingPatternIndex = -1;
+
+function openPatternDialog(index = -1) {
+    editingPatternIndex = index;
+    const overlay = document.getElementById('pattern-dialog-overlay');
+    const title = document.getElementById('pattern-dialog-title');
+    const nameInput = document.getElementById('pattern-name-input');
+    const svgInput = document.getElementById('pattern-svg-input');
+
+    if (index >= 0) {
+        const p = patternLibrary[index];
+        title.textContent = 'Edit Pattern';
+        nameInput.value = p.name;
+        svgInput.value = p.svgCode;
+    } else {
+        title.textContent = 'Add Pattern';
+        nameInput.value = '';
+        svgInput.value = '';
+    }
+    overlay.classList.add('visible');
+    updatePatternPreview();
+}
+
+function updatePatternPreview() {
+    const svgCode = document.getElementById('pattern-svg-input').value;
+    const previewGrid = document.getElementById('pattern-preview-grid');
+    // Size the preview grid to match current hex size
+    const sizePx = hexSizePx * 2;
+    previewGrid.style.width = sizePx + 'px';
+    previewGrid.style.height = sizePx + 'px';
+    if (svgCode.trim()) {
+        previewGrid.innerHTML = svgCode;
+        const svg = previewGrid.querySelector('svg');
+        if (svg) {
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+        }
+    } else {
+        previewGrid.innerHTML = '<span style="color:#aaa;font-size:12px;">No SVG</span>';
+    }
+}
+
+document.getElementById('pattern-svg-input').addEventListener('input', updatePatternPreview);
+
+document.getElementById('pattern-dialog-cancel').addEventListener('click', () => {
+    document.getElementById('pattern-dialog-overlay').classList.remove('visible');
+});
+
+document.getElementById('pattern-dialog-confirm').addEventListener('click', () => {
+    const nameInput = document.getElementById('pattern-name-input');
+    const svgInput = document.getElementById('pattern-svg-input');
+    const name = nameInput.value.trim();
+    const svgCode = svgInput.value.trim();
+
+    if (!name) { alert('Pattern name is required.'); return; }
+    if (!svgCode) { alert('SVG code is required.'); return; }
+
+    if (editingPatternIndex >= 0) {
+        patternLibrary[editingPatternIndex].name = name;
+        patternLibrary[editingPatternIndex].svgCode = svgCode;
+    } else {
+        if (patternLibrary.length >= MAX_PATTERNS) {
+            alert('Maximum ' + MAX_PATTERNS + ' patterns allowed.');
+            return;
+        }
+        patternLibrary.push({
+            id: patternLibrary.length + 1,
+            name: name,
+            svgCode: svgCode
+        });
+    }
+    document.getElementById('pattern-dialog-overlay').classList.remove('visible');
+    renderPatternLibrary();
+});
+
+document.getElementById('pattern-add').addEventListener('click', () => {
+    if (patternLibrary.length >= MAX_PATTERNS) {
+        alert('Pattern library is full! Maximum ' + MAX_PATTERNS + ' patterns.');
+        return;
+    }
+    openPatternDialog(-1);
+});
+
+// --- Stamp Dialog ---
+let editingStampIndex = -1;
+
+function openStampDialog(index) {
+    editingStampIndex = index;
+    const stamp = stampLibrary[index];
+    const overlay = document.getElementById('stamp-dialog-overlay');
+    document.getElementById('stamp-dialog-title').textContent = 'Edit Stamp: ' + stamp.name;
+    document.getElementById('stamp-name-input').value = stamp.name;
+    document.getElementById('stamp-svg-input').value = stamp.svgCode;
+    document.getElementById('stamp-width-input').value = stamp.scale ? stamp.scale.width : 220;
+    document.getElementById('stamp-height-input').value = stamp.scale ? stamp.scale.height : 250;
+
+    // Build color variable editors
+    const colorVarsDiv = document.getElementById('stamp-color-vars');
+    colorVarsDiv.innerHTML = '';
+    if (stamp.colorVariables) {
+        for (const [varName, value] of Object.entries(stamp.colorVariables)) {
+            const row = document.createElement('div');
+            row.className = 'color-var-row';
+            const label = document.createElement('label');
+            label.textContent = varName;
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.value = value;
+            input.dataset.varName = varName;
+            input.addEventListener('input', updateStampPreview);
+            row.appendChild(label);
+            row.appendChild(input);
+            colorVarsDiv.appendChild(row);
+        }
+    }
+
+    overlay.classList.add('visible');
+    updateStampPreview();
+}
+
+function updateStampPreview() {
+    const svgCode = document.getElementById('stamp-svg-input').value;
+    const previewGrid = document.getElementById('stamp-preview-grid');
+    const sizePx = hexSizePx * 2;
+    previewGrid.style.width = sizePx + 'px';
+    previewGrid.style.height = sizePx + 'px';
+
+    // Gather current color vars
+    const colorVars = {};
+    document.querySelectorAll('#stamp-color-vars input[type="color"]').forEach(input => {
+        colorVars[input.dataset.varName] = input.value;
+    });
+
+    if (svgCode.trim()) {
+        previewGrid.innerHTML = applyColorVariables(svgCode, colorVars);
+        const svg = previewGrid.querySelector('svg');
+        if (svg) {
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+        }
+    } else {
+        previewGrid.innerHTML = '<span style="color:#aaa;font-size:12px;">No SVG</span>';
+    }
+}
+
+document.getElementById('stamp-svg-input').addEventListener('input', updateStampPreview);
+document.getElementById('stamp-width-input').addEventListener('input', updateStampPreview);
+document.getElementById('stamp-height-input').addEventListener('input', updateStampPreview);
+
+document.getElementById('stamp-dialog-cancel').addEventListener('click', () => {
+    document.getElementById('stamp-dialog-overlay').classList.remove('visible');
+});
+
+document.getElementById('stamp-dialog-confirm').addEventListener('click', () => {
+    const name = document.getElementById('stamp-name-input').value.trim();
+    const svgCode = document.getElementById('stamp-svg-input').value.trim();
+    const width = parseInt(document.getElementById('stamp-width-input').value) || 220;
+    const height = parseInt(document.getElementById('stamp-height-input').value) || 250;
+
+    if (!name) { alert('Stamp name is required.'); return; }
+
+    stampLibrary[editingStampIndex].name = name;
+    stampLibrary[editingStampIndex].svgCode = svgCode;
+    stampLibrary[editingStampIndex].scale = { width, height, viewBox: '0 0 ' + width + ' ' + height };
+
+    // Update color variables
+    const colorVars = {};
+    document.querySelectorAll('#stamp-color-vars input[type="color"]').forEach(input => {
+        colorVars[input.dataset.varName] = input.value;
+    });
+    stampLibrary[editingStampIndex].colorVariables = colorVars;
+
+    document.getElementById('stamp-dialog-overlay').classList.remove('visible');
+    renderStampLibrary();
+    // Update any placed overlays using this stamp
+    updatePlacedStampOverlays(editingStampIndex);
+});
+
+function updatePlacedStampOverlays(stampIdx) {
+    for (const [hexIdx, overlay] of Object.entries(hexSvgOverlays)) {
+        if (overlay.type === 'stamp' && overlay.libraryIndex === stampIdx) {
+            const stamp = stampLibrary[stampIdx];
+            overlay.svgCode = applyColorVariables(stamp.svgCode, stamp.colorVariables);
+            if (overlay.element) {
+                overlay.element.innerHTML = overlay.svgCode;
+                const svg = overlay.element.querySelector('svg');
+                if (svg) {
+                    svg.style.width = '100%';
+                    svg.style.height = '100%';
+                }
+            }
+        }
+    }
+}
+
+// --- Import Stamp Set JSON ---
+document.getElementById('stamp-import-json').addEventListener('click', () => {
+    document.getElementById('stamp-json-file').click();
+});
+
+document.getElementById('stamp-json-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (data.icons && Array.isArray(data.icons)) {
+                const available = MAX_STAMPS - stampLibrary.length;
+                if (available <= 0) {
+                    alert('Stamp library is full! Maximum ' + MAX_STAMPS + ' stamps allowed.');
+                    return;
+                }
+                const toImport = data.icons.slice(0, available);
+                toImport.forEach(icon => {
+                    stampLibrary.push({
+                        id: icon.id,
+                        name: icon.name,
+                        svgCode: icon.svgCode,
+                        colorVariables: icon.colorVariables || {},
+                        scale: icon.scale || data.globalScale || { width: 220, height: 250 }
+                    });
+                });
+                renderStampLibrary();
+                let msg = toImport.length + ' stamps imported successfully!';
+                if (toImport.length < data.icons.length) {
+                    msg += ' (' + (data.icons.length - toImport.length) + ' skipped — max ' + MAX_STAMPS + ' reached)';
+                }
+                alert(msg);
+            } else {
+                alert('Invalid stamp set format. Expected "icons" array.');
+            }
+        } catch (err) {
+            alert('Error importing stamp set: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
+
+// --- Save/Import Patterns ---
+document.getElementById('save-patterns').addEventListener('click', () => {
+    const saveData = {
+        version: 1,
+        type: 'patterns',
+        patterns: patternLibrary.map((p, i) => ({ id: i + 1, name: p.name, svgCode: p.svgCode }))
+    };
+    const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hexmap_patterns_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+document.getElementById('import-patterns').addEventListener('click', () => {
+    document.getElementById('import-patterns-file').click();
+});
+
+document.getElementById('import-patterns-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (data.type === 'patterns' && data.patterns) {
+                data.patterns.forEach(p => {
+                    if (patternLibrary.length < MAX_PATTERNS) {
+                        patternLibrary.push({ id: p.id, name: p.name, svgCode: p.svgCode });
+                    }
+                });
+                renderPatternLibrary();
+                alert('Patterns imported successfully!');
+            } else {
+                alert('Invalid patterns file format.');
+            }
+        } catch (err) {
+            alert('Error importing patterns: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
+
+// --- Save/Clear Stamps ---
+document.getElementById('save-stamps').addEventListener('click', () => {
+    const saveData = {
+        name: 'Saved Stamp Set',
+        version: '1.0',
+        icons: stampLibrary.map(s => ({
+            id: s.id,
+            name: s.name,
+            svgCode: s.svgCode,
+            colorVariables: s.colorVariables || {},
+            scale: s.scale || { width: 220, height: 250 }
+        }))
+    };
+    const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hexmap_stamps_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+document.getElementById('clear-stamps').addEventListener('click', () => {
+    if (confirm('Remove all stamps from the library?')) {
+        stampLibrary = [];
+        selectedStampIndex = -1;
+        renderStampLibrary();
+    }
+});
+
+// --- Place Pattern/Stamp on Hex ---
+function placePatternStampOnHex(hexIndex, type, libraryIndex) {
+    const hex = hexes[hexIndex];
+    const center = hexCenters[hexIndex];
+
+    // Check if already occupied
+    if (hexSvgOverlays[hexIndex]) {
+        alert('This hex already has a Pattern/Stamp. Right-click and select "Remove Pattern/Stamp" first.');
+        return;
+    }
+
+    let svgCode, overlayName;
+    if (type === 'pattern') {
+        const pattern = patternLibrary[libraryIndex];
+        svgCode = pattern.svgCode;
+        overlayName = pattern.name;
+    } else {
+        const stamp = stampLibrary[libraryIndex];
+        svgCode = applyColorVariables(stamp.svgCode, stamp.colorVariables);
+        overlayName = stamp.name;
+    }
+
+    // Create DOM overlay element
+    const el = document.createElement('div');
+    el.className = 'hex-svg-overlay';
+    el.style.position = 'absolute';
+    el.style.pointerEvents = 'none';
+    el.style.zIndex = '90'; // Above fill (Three.js canvas), below drawing canvas (100)
+    el.innerHTML = svgCode;
+    const svg = el.querySelector('svg');
+    if (svg) {
+        svg.style.width = '100%';
+        svg.style.height = '100%';
+    }
+    document.body.appendChild(el);
+
+    hexSvgOverlays[hexIndex] = {
+        type: type,
+        libraryIndex: libraryIndex,
+        svgCode: svgCode,
+        element: el,
+        worldX: center.x,
+        worldY: center.y,
+        name: overlayName
+    };
+
+    positionSvgOverlay(hexIndex);
+}
+
+function positionSvgOverlay(hexIndex) {
+    const overlay = hexSvgOverlays[hexIndex];
+    if (!overlay || !overlay.element) return;
+
+    const screenPos = worldToScreen(overlay.worldX, overlay.worldY);
+
+    // Calculate hex size in screen pixels
+    const edgeWorld = new THREE.Vector3(overlay.worldX + hexRadius, overlay.worldY, 0);
+    edgeWorld.project(camera);
+    const edgeScreenX = (edgeWorld.x * 0.5 + 0.5) * window.innerWidth;
+    const hexScreenRadius = Math.abs(edgeScreenX - screenPos.x);
+    const overlaySize = hexScreenRadius * 2;
+
+    overlay.element.style.width = overlaySize + 'px';
+    overlay.element.style.height = overlaySize + 'px';
+    overlay.element.style.left = (screenPos.x - overlaySize / 2) + 'px';
+    overlay.element.style.top = (screenPos.y - overlaySize / 2) + 'px';
+}
+
+function updateAllSvgOverlayPositions() {
+    for (const hexIndex of Object.keys(hexSvgOverlays)) {
+        positionSvgOverlay(parseInt(hexIndex));
+    }
+}
+
+function removePatternStampFromHex(hexIndex) {
+    const overlay = hexSvgOverlays[hexIndex];
+    if (overlay && overlay.element) {
+        overlay.element.remove();
+    }
+    delete hexSvgOverlays[hexIndex];
+}
+
+// Hook into camera/pan updates
+const _origUpdateTagPositions = updateTagPositions;
+updateTagPositions = function() {
+    _origUpdateTagPositions();
+    updateAllSvgOverlayPositions();
+};
+
+// --- Click handler for placing patterns/stamps on hexes ---
+document.getElementById('canvas').addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    if (isDrawing || isErasing || isBorderMode || isRemovingBorder) return;
+    if (e.target.closest('#context-menu') || e.target.closest('#menu') || e.target.closest('#system-menu')) return;
+
+    if (selectedPatternIndex >= 0 || selectedStampIndex >= 0) {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(hexes);
+        if (intersects.length > 0) {
+            const hex = intersects[0].object;
+            const hexIndex = hexes.indexOf(hex);
+            if (hexIndex >= 0) {
+                if (selectedPatternIndex >= 0) {
+                    placePatternStampOnHex(hexIndex, 'pattern', selectedPatternIndex);
+                } else {
+                    placePatternStampOnHex(hexIndex, 'stamp', selectedStampIndex);
+                }
+            }
+        }
+        e.stopPropagation();
+        e.preventDefault();
+    }
+}, true); // capture phase so it fires before the fill handler
+
+// --- Context Menu: Remove Pattern/Stamp ---
+document.getElementById('ctx-remove-pattern-stamp').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (selectedHex) {
+        const hexIndex = hexes.indexOf(selectedHex);
+        if (hexIndex >= 0 && hexSvgOverlays[hexIndex]) {
+            removePatternStampFromHex(hexIndex);
+        }
+    }
+    hideContextMenu();
+});
+
+// Update context menu visibility for pattern/stamp option
+const _origOnContextMenu = onContextMenu;
+window.removeEventListener('contextmenu', _origOnContextMenu);
+window.addEventListener('contextmenu', function(event) {
+    event.preventDefault();
+    if (isDrawing || isErasing) return;
+    hideContextMenu();
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(hexes);
+
+    if (intersects.length > 0) {
+        const hex = intersects[0].object;
+        selectedHex = hex;
+        const hexIndex = hexes.indexOf(hex);
+
+        // Show/hide Remove Pattern/Stamp option
+        const removeItem = document.getElementById('ctx-remove-pattern-stamp');
+        removeItem.style.display = (hexIndex >= 0 && hexSvgOverlays[hexIndex]) ? '' : 'none';
+
+        // Update Add Tag / Clear Tag option
+        const addTagItem = document.getElementById('ctx-add-tag');
+        const editTagItem = document.getElementById('ctx-edit-tag');
+        if (hex.userData.tag) {
+            addTagItem.textContent = 'Clear Tag';
+            editTagItem.style.display = '';
+        } else {
+            addTagItem.textContent = 'Add Tag';
+            editTagItem.style.display = 'none';
+        }
+
+        const contextMenu = document.getElementById('context-menu');
+        contextMenu.style.left = event.clientX + 'px';
+        contextMenu.style.top = event.clientY + 'px';
+        contextMenu.classList.add('visible');
+    }
+});
+
+// --- Prevent Fill when Pattern/Stamp tool is active ---
+const _origOnMouseDown = onMouseDown;
+window.removeEventListener('mousedown', _origOnMouseDown);
+window.addEventListener('mousedown', function(event) {
+    // Skip fill if pattern or stamp tool is active
+    if (selectedPatternIndex >= 0 || selectedStampIndex >= 0) return;
+    _origOnMouseDown(event);
+});
+
+// --- Integrate with Save/Load ---
+// Patch the existing save handler
+const saveBtn = document.getElementById('save-map');
+const oldSaveListeners = saveBtn.cloneNode(true);
+saveBtn.replaceWith(oldSaveListeners);
+// Re-reference
+const saveBtnNew = document.getElementById('save-map');
+saveBtnNew.addEventListener('click', () => {
+    // Collect hex data
+    const hexData = hexes.map((hex, index) => {
+        const center = hexCenters[index];
+        return {
+            row: center.row,
+            col: center.col,
+            color: '#' + hex.material.color.getHexString(),
+            opacity: hex.material.opacity,
+            tag: hex.userData.tag || null
+        };
+    });
+
+    let drawingData = null;
+    if (drawingCanvas) {
+        drawingData = drawingCanvas.toDataURL('image/png');
+    }
+
+    const mapIconsData = [];
+    mapIcons.forEach(icon => {
+        mapIconsData.push({
+            imageData: icon.dataset.imageData,
+            worldX: parseFloat(icon.dataset.worldX),
+            worldY: parseFloat(icon.dataset.worldY),
+            width: icon.style.width,
+            height: icon.style.height
+        });
+    });
+
+    // Collect pattern/stamp overlay data
+    const overlayData = {};
+    for (const [hexIdx, overlay] of Object.entries(hexSvgOverlays)) {
+        overlayData[hexIdx] = {
+            type: overlay.type,
+            libraryIndex: overlay.libraryIndex,
+            svgCode: overlay.svgCode,
+            worldX: overlay.worldX,
+            worldY: overlay.worldY,
+            name: overlay.name
+        };
+    }
+
+    const saveData = {
+        version: 2,
+        gridWidth: gridWidth,
+        gridHeight: gridHeight,
+        hexSizePx: hexSizePx,
+        hexOrientation: hexOrientation,
+        bgColor: bgColor,
+        bgImageData: bgImageData,
+        bgStretchToFit: bgStretchToFit,
+        bgImageOffsetX: bgImageOffsetX,
+        bgImageOffsetY: bgImageOffsetY,
+        bgImageNaturalWidth: bgImageNaturalWidth,
+        bgImageNaturalHeight: bgImageNaturalHeight,
+        hexes: hexData,
+        drawingData: drawingData,
+        mapIcons: mapIconsData,
+        iconLibrary: iconLibrary,
+        palette: palette,
+        customBorders: customBorders,
+        tagCatalog: tagCatalog,
+        patternLibrary: patternLibrary,
+        stampLibrary: stampLibrary.map(s => ({
+            id: s.id, name: s.name, svgCode: s.svgCode,
+            colorVariables: s.colorVariables || {},
+            scale: s.scale || { width: 220, height: 250 }
+        })),
+        hexSvgOverlays: overlayData
+    };
+
+    const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hexmap_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 });
