@@ -911,7 +911,7 @@
             background: var(--bg-section);
             border-radius: var(--radius-lg);
             padding: 24px;
-            width: 520px;
+            width: 598px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
@@ -1394,9 +1394,14 @@
             <label>Color Variables:</label>
             <div id="stamp-color-vars"></div>
             <label>Scale:</label>
-            <div style="display:flex;gap:10px;margin-bottom:12px;">
+            <div style="display:flex;gap:10px;margin-bottom:6px;">
                 <label style="display:inline;">Width: <input type="number" id="stamp-width-input" value="220" min="10" max="500" style="width:70px;"></label>
                 <label style="display:inline;">Height: <input type="number" id="stamp-height-input" value="250" min="10" max="500" style="width:70px;"></label>
+            </div>
+            <label>Offset:</label>
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <label style="display:inline;">X: <input type="number" id="stamp-offset-x-input" value="0" min="-500" max="500" style="width:70px;"></label>
+                <label style="display:inline;">Y: <input type="number" id="stamp-offset-y-input" value="0" min="-500" max="500" style="width:70px;"></label>
             </div>
             <label>Preview:</label>
             <div class="pattern-preview-area">

@@ -2909,6 +2909,9 @@ document.getElementById('import-file').addEventListener('change', (e) => {
                         el.innerHTML = data.svgCode;
                         const svg = el.querySelector('svg');
                         if (svg) {
+                            if (data.type === 'stamp' && stampLibrary[data.libraryIndex] && stampLibrary[data.libraryIndex].scale && stampLibrary[data.libraryIndex].scale.viewBox) {
+                                svg.setAttribute('viewBox', stampLibrary[data.libraryIndex].scale.viewBox);
+                            }
                             svg.style.width = '100%';
                             svg.style.height = '100%';
                         }
@@ -3149,6 +3152,8 @@ function openStampDialog(index) {
     document.getElementById('stamp-svg-input').value = stamp.svgCode;
     document.getElementById('stamp-width-input').value = stamp.scale ? stamp.scale.width : 220;
     document.getElementById('stamp-height-input').value = stamp.scale ? stamp.scale.height : 250;
+    document.getElementById('stamp-offset-x-input').value = stamp.scale ? (stamp.scale.offsetX || 0) : 0;
+    document.getElementById('stamp-offset-y-input').value = stamp.scale ? (stamp.scale.offsetY || 0) : 0;
 
     const colorVarsDiv = document.getElementById('stamp-color-vars');
     colorVarsDiv.innerHTML = '';
@@ -3189,6 +3194,11 @@ function updateStampPreview() {
         previewGrid.innerHTML = applyColorVariables(svgCode, colorVars);
         const svg = previewGrid.querySelector('svg');
         if (svg) {
+            const w = parseInt(document.getElementById('stamp-width-input').value) || 220;
+            const h = parseInt(document.getElementById('stamp-height-input').value) || 250;
+            const ox = parseInt(document.getElementById('stamp-offset-x-input').value) || 0;
+            const oy = parseInt(document.getElementById('stamp-offset-y-input').value) || 0;
+            svg.setAttribute('viewBox', ox + ' ' + oy + ' ' + w + ' ' + h);
             svg.style.width = '100%';
             svg.style.height = '100%';
         }
@@ -3200,6 +3210,8 @@ function updateStampPreview() {
 document.getElementById('stamp-svg-input').addEventListener('input', updateStampPreview);
 document.getElementById('stamp-width-input').addEventListener('input', updateStampPreview);
 document.getElementById('stamp-height-input').addEventListener('input', updateStampPreview);
+document.getElementById('stamp-offset-x-input').addEventListener('input', updateStampPreview);
+document.getElementById('stamp-offset-y-input').addEventListener('input', updateStampPreview);
 
 document.getElementById('stamp-dialog-cancel').addEventListener('click', () => {
     document.getElementById('stamp-dialog-overlay').classList.remove('visible');
@@ -3210,12 +3222,14 @@ document.getElementById('stamp-dialog-confirm').addEventListener('click', () => 
     const svgCode = document.getElementById('stamp-svg-input').value.trim();
     const width = parseInt(document.getElementById('stamp-width-input').value) || 220;
     const height = parseInt(document.getElementById('stamp-height-input').value) || 250;
+    const offsetX = parseInt(document.getElementById('stamp-offset-x-input').value) || 0;
+    const offsetY = parseInt(document.getElementById('stamp-offset-y-input').value) || 0;
 
     if (!name) { alert('Stamp name is required.'); return; }
 
     stampLibrary[editingStampIndex].name = name;
     stampLibrary[editingStampIndex].svgCode = svgCode;
-    stampLibrary[editingStampIndex].scale = { width, height, viewBox: '0 0 ' + width + ' ' + height };
+    stampLibrary[editingStampIndex].scale = { width, height, offsetX, offsetY, viewBox: offsetX + ' ' + offsetY + ' ' + width + ' ' + height };
 
     const colorVars = {};
     document.querySelectorAll('#stamp-color-vars input[type="color"]').forEach(input => {
@@ -3237,6 +3251,9 @@ function updatePlacedStampOverlays(stampIdx) {
                 overlay.element.innerHTML = overlay.svgCode;
                 const svg = overlay.element.querySelector('svg');
                 if (svg) {
+                    if (stamp.scale && stamp.scale.viewBox) {
+                        svg.setAttribute('viewBox', stamp.scale.viewBox);
+                    }
                     svg.style.width = '100%';
                     svg.style.height = '100%';
                 }
@@ -3265,12 +3282,22 @@ document.getElementById('stamp-json-file').addEventListener('change', (e) => {
                 }
                 const toImport = data.icons.slice(0, available);
                 toImport.forEach(icon => {
+                    const rawScale = icon.scale || data.globalScale || { width: 220, height: 250 };
+                    if (rawScale.viewBox && rawScale.offsetX == null) {
+                        const parts = rawScale.viewBox.split(/\s+/).map(Number);
+                        if (parts.length === 4) {
+                            rawScale.offsetX = parts[0];
+                            rawScale.offsetY = parts[1];
+                            rawScale.width = parts[2];
+                            rawScale.height = parts[3];
+                        }
+                    }
                     stampLibrary.push({
                         id: icon.id,
                         name: icon.name,
                         svgCode: icon.svgCode,
                         colorVariables: icon.colorVariables || {},
-                        scale: icon.scale || data.globalScale || { width: 220, height: 250 }
+                        scale: rawScale
                     });
                 });
                 renderStampLibrary();
@@ -3399,6 +3426,12 @@ function placePatternStampOnSquare(sqIndex, type, libraryIndex) {
     el.innerHTML = svgCode;
     const svg = el.querySelector('svg');
     if (svg) {
+        if (type === 'stamp') {
+            const stamp = stampLibrary[libraryIndex];
+            if (stamp.scale && stamp.scale.viewBox) {
+                svg.setAttribute('viewBox', stamp.scale.viewBox);
+            }
+        }
         svg.style.width = '100%';
         svg.style.height = '100%';
     }
